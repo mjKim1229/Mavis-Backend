@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class FeignConfig {
-    //Feign 사용시 TimeOut 설정
     private static final long CONNECTION_TIMEOUT = 10;
     private static final long READ_TIMEOUT = 5;
 

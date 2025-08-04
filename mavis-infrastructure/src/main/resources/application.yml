@@ -1,0 +1,4 @@
+oauth:
+  client-id: 3ec0c30fd9b512a0f61b53ff0c314767
+  redirect-url: http://localhost:8080/api/v1/auths/oauth/kakao
+  admin-key: eafbae4e549ae395e2ba33423142910e
