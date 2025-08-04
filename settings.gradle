@@ -1,3 +1,4 @@
 rootProject.name = 'mavis-backend'
 
 include(':mavis-infrastructure')
+include(':Mavis-Api')
