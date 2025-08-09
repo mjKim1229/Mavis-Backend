@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
         name = "KakaoAuthClient",
         url = "https://kauth.kakao.com"
 )
-public interface KakaoAuthClient {
+public interface KakaoOAuthClient {
     @PostMapping(value = "/oauth/token?grant_type=authorization_code", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     KakaoTokenResponse kakaoAuth(KakaoOAuthRequest kakaoOAuthRequest);
 }

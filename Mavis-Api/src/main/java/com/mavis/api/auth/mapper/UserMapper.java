@@ -1,0 +1,20 @@
+package com.mavis.api.auth.mapper;
+
+import com.mavis.infrastructure.outer.api.oauth.dto.KakaoOAuthRequest;
+import com.mavis.infrastructure.outer.api.oauth.properties.KakaoProperties;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+public class UserMapper {
+    private final KakaoProperties kakaoProperties;
+
+    public KakaoOAuthRequest fromCode(String code) {
+        return KakaoOAuthRequest.builder()
+                .code(code)
+                .redirectUrl(kakaoProperties.getRedirectUrl())
+                .clientId(kakaoProperties.getClientId())
+                .build();
+    }
+}
