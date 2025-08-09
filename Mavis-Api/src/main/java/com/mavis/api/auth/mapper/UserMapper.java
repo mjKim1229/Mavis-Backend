@@ -1,7 +1,7 @@
 package com.mavis.api.auth.mapper;
 
 import com.mavis.infrastructure.outer.api.oauth.dto.KakaoOAuthRequest;
-import com.mavis.infrastructure.outer.api.oauth.properties.KakaoProperties;
+import com.mavis.common.properties.KakaoProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
