@@ -1,0 +1,18 @@
+package com.mavis.infrastructure.outer.api.oauth.dto;
+
+import feign.form.FormProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+@Builder
+public class KakaoOAuthRequest {
+    @FormProperty("client_id")
+    private String clientId;
+    @FormProperty("redirect_uri")
+    private String redirectUrl;
+    @FormProperty("code")
+    private String code;
+}
