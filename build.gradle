@@ -42,6 +42,7 @@ subprojects {
     }
 
     dependencies {
+        implementation 'org.springframework.boot:spring-boot-starter'
         // Lombok
         compileOnly "org.projectlombok:lombok"
         annotationProcessor "org.projectlombok:lombok"
