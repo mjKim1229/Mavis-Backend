@@ -9,6 +9,8 @@ import com.mavis.infrastructure.outer.api.oauth.dto.KakaoUserInfoResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import static com.mavis.common.consts.MavisStatic.BEARER;
+
 @Component
 @RequiredArgsConstructor
 public class UserFacade {
@@ -19,7 +21,7 @@ public class UserFacade {
     public KakaoUserInfoResponse register(String code) {
         KakaoOAuthRequest kakaoOAuthRequest = userMapper.fromCode(code);
         KakaoTokenResponse kakaoTokenResponse = kakaoOAuthClient.kakaoAuth(kakaoOAuthRequest);
-        String bearerAccessToken = "Bearer " + kakaoTokenResponse.accessToken();
+        String bearerAccessToken = BEARER + kakaoTokenResponse.accessToken();
         return kakaoInfoClient.getUserInfo(bearerAccessToken);
     }
 }
