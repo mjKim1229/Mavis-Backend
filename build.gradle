@@ -22,7 +22,6 @@ configurations {
 ext {
     set('springCloudVersion', '2025.0.0')
     set('feignHc5Version', '13.2')
-    set('lombokVersion', '1.18.30')
 }
 
 allprojects {
@@ -44,8 +43,8 @@ subprojects {
 
     dependencies {
         // Lombok
-        compileOnly "org.projectlombok:lombok:${lombokVersion}"
-        annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+        compileOnly "org.projectlombok:lombok"
+        annotationProcessor "org.projectlombok:lombok"
 
         // Test
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
