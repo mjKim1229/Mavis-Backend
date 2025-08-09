@@ -1,5 +1,6 @@
 package com.mavis.api.auth.controller;
 
+import com.mavis.api.auth.dto.UserKakaoOauthResponse;
 import com.mavis.api.auth.facade.UserFacade;
 import com.mavis.infrastructure.outer.api.oauth.dto.KakaoUserInfoResponse;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ public class AuthController {
     private final UserFacade userFacade;
 
     @GetMapping("/oauth/kakao")
-    public KakaoUserInfoResponse register(@RequestParam String code) {
+    public UserKakaoOauthResponse register(@RequestParam String code) {
         return userFacade.register(code);
     }
 }
