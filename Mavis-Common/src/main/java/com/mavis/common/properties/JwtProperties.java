@@ -2,6 +2,6 @@ package com.mavis.common.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "auth.jwt")
-public class JwtProperties {
+@ConfigurationProperties("auth.jwt")
+public record JwtProperties(String secretKey, Long accessExp, Long refreshExp) {
 }
