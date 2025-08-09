@@ -13,8 +13,8 @@ public class UserMapper {
     public KakaoOAuthRequest fromCode(String code) {
         return KakaoOAuthRequest.builder()
                 .code(code)
-                .redirectUrl(kakaoProperties.getRedirectUrl())
-                .clientId(kakaoProperties.getClientId())
+                .redirectUrl(kakaoProperties.redirectUrl())
+                .clientId(kakaoProperties.clientId())
                 .build();
     }
 }
