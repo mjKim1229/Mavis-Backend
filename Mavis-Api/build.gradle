@@ -4,3 +4,13 @@ dependencies {
     implementation project(':Mavis-Infrastructure')
     implementation project(':Mavis-Common')
 }
+
+tasks.register('copySubmoduleYml', Copy) {
+    from "${rootProject.projectDir}/Mavis-Submodule/Mavis-Api"
+    include "*.yml"
+    into "${projectDir}/src/main/resources"
+}
+
+tasks.named('processResources') {
+    dependsOn 'copySubmoduleYml'
+}
