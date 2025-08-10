@@ -1,5 +1,7 @@
 package com.mavis.common.jwt;
 
+import com.mavis.common.exception.ExpiredTokenException;
+import com.mavis.common.exception.InvalidTokenException;
 import com.mavis.common.properties.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -29,9 +31,9 @@ public class JwtTokenProvider {
                     .build()
                     .parseSignedClaims(token);
         } catch (ExpiredJwtException e) {
-            throw new RuntimeException();
+            throw ExpiredTokenException.EXCEPTION;
         } catch (Exception e) {
-            throw new RuntimeException();
+            throw InvalidTokenException.EXCEPTION;
         }
     }
 
@@ -87,6 +89,6 @@ public class JwtTokenProvider {
             String id = payload.getSubject();
             return Long.valueOf(id);
         }
-        throw new RuntimeException();
+        throw InvalidTokenException.EXCEPTION;
     }
 }
