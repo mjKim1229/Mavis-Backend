@@ -1,0 +1,3 @@
+[submodule "Mavis-Submodule"]
+	path = Mavis-Submodule
+	url = https://github.com/mjKim1229/Mavis-Submodule.git

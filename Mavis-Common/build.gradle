@@ -11,3 +11,13 @@ bootJar {
 jar {
     enabled = true
 }
+
+tasks.register('copySubmoduleYml', Copy) {
+    from "${rootProject.projectDir}/Mavis-Submodule/Mavis-Common"
+    include "*.yml"
+    into "${projectDir}/src/main/resources"
+}
+
+tasks.named('processResources') {
+    dependsOn 'copySubmoduleYml'
+}
