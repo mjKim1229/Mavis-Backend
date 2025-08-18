@@ -5,6 +5,7 @@ import com.mavis.api.auth.implement.UserJwtGenerator;
 import com.mavis.api.auth.mapper.UserMapper;
 import com.mavis.common.dto.JwtPair;
 import com.mavis.common.properties.KakaoProperties;
+import com.mavis.common.properties.NaverProperties;
 import com.mavis.infrastructure.outer.api.oauth.client.kakao.KakaoInfoClient;
 import com.mavis.infrastructure.outer.api.oauth.client.kakao.KakaoOAuthClient;
 import com.mavis.infrastructure.outer.api.oauth.client.naver.NaverInfoClient;
@@ -25,6 +26,7 @@ public class UserFacade {
     private final UserJwtGenerator userJwtGenerator;
     private final KakaoProperties kakaoProperties;
     private final NaverInfoClient naverInfoClient;
+    private final NaverProperties naverProperties;
 
     public UserKakaoOauthResponse register(String code) {
         KakaoOAuthRequest kakaoOAuthRequest = userMapper.fromCode(code);
@@ -38,7 +40,7 @@ public class UserFacade {
         return new UserKakaoOauthResponse(userInfo.id(), jwtPair);
     }
 
-    public void withDraw() {
+    public void withDrawKakao() {
     }
 
     private void unlinkKakao(Long snsId) {
@@ -52,5 +54,11 @@ public class UserFacade {
         NaverTokenResponse naverTokenResponse = naverOAuthClient.naverAuth(naverOAuthRequest);
         String bearerAccessToken = BEARER + naverTokenResponse.accessToken();
         NaverUserInfoResponse userInfo = naverInfoClient.getUserInfo(bearerAccessToken);
+    }
+
+    public void withDrawNaver() {
+        NaverTokenRevokeRequest.builder()
+                .clientId(naverProperties.clientId())
+                .grantType("delete");
     }
 }
