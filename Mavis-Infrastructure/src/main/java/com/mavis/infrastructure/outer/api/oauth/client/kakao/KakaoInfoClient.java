@@ -1,4 +1,4 @@
-package com.mavis.infrastructure.outer.api.oauth.client;
+package com.mavis.infrastructure.outer.api.oauth.client.kakao;
 
 import com.mavis.infrastructure.outer.api.oauth.config.FeignConfig;
 import com.mavis.infrastructure.outer.api.oauth.dto.KakaoUserInfoResponse;

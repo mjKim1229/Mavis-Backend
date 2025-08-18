@@ -19,6 +19,11 @@ public class AuthController {
         return userFacade.register(code);
     }
 
+    @GetMapping("/oauth/naver")
+    public void registerNaver(@RequestParam String code) {
+        userFacade.registerNaver(code);
+    }
+
     @DeleteMapping("/withdraw")
     public void withDrawKakaoUser() {
 
