@@ -1,5 +1,6 @@
 package com.mavis.api.inquiry.domain;
 
+import com.mavis.api.common.jpa.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -11,7 +12,7 @@ import lombok.*;
 @Entity
 @Builder
 @AllArgsConstructor
-public class Inquiry {
+public class Inquiry extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
