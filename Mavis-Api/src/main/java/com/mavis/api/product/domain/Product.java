@@ -1,10 +1,10 @@
 package com.mavis.api.product.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.mavis.common.enums.ProductSubCategory;
+import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Getter
 @Entity
@@ -19,6 +19,10 @@ public class Product {
     private String name;
 
     private Integer price;
+
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Enumerated(EnumType.STRING)
+    private ProductSubCategory subCategory;
 
     @Builder.Default
     private boolean isDeleted = false;

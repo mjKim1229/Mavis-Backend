@@ -4,19 +4,19 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public enum ProductSubCategory implements EnumMapperType {
-    COTTON("면 자수"),
-    COTTON_MESH("면 망사 자수"),
-    COTTON_CHIFFON("면 샤 자수"),
-    COTTON_POLY_PATCH("면 폴리패치 자수"),
-    CHIFFON("쉬폰 자수"),
-    TENCEL("텐셀 자수"),
-    THREE_D_PATCH("입체 패치 자수"),
-    COLOR("컬러 자수"),
-    HAND("핸들 자수"),
-    SPANGLE("스팡글 자수"),
-    COTTON_LACE("면 레이스"),
-    COTTON_MESH_LACE("면 망사 레이스"),
-    POLY_LACE("폴리 레이스");
+    COTTON("면자수"),
+    COTTON_MESH("면망사자수"),
+    COTTON_CHIFFON("면샤자수"),
+    COTTON_POLY_PATCH("면,폴리패치자수"),
+    CHIFFON("쉬폰자수"),
+    TENCEL("텐셀자수"),
+    THREE_D_PATCH("입체패치자수"),
+    COLOR("컬러자수"),
+    HAND("핸들자수"),
+    SPANGLE("스팡글자수"),
+    COTTON_LACE("면레이스"),
+    COTTON_MESH_LACE("면망사레이스"),
+    POLY_LACE("폴리레이스");
 
     private final String title;
 
