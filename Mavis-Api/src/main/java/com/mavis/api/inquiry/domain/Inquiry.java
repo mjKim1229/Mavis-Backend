@@ -7,6 +7,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
@@ -22,9 +24,9 @@ public class Inquiry extends BaseEntity {
     private String answer;
     private Long answerAdminId;
     private Long questionUserId;
-    private String productId;
+    private Long productId;
     private boolean isPrivate;
-
+    private LocalDateTime answeredDatetime;
     @Builder.Default
     private boolean isDeleted = false;
 }
