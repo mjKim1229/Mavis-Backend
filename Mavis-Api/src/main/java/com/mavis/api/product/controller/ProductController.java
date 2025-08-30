@@ -1,6 +1,7 @@
 package com.mavis.api.product.controller;
 
 import com.mavis.api.product.dto.GetProductResponse;
+import com.mavis.api.product.dto.ProductNoticeResponse;
 import com.mavis.api.product.dto.SubCategoryVO;
 import com.mavis.api.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -26,5 +27,10 @@ public class ProductController {
     @GetMapping("/category")
     public List<SubCategoryVO> getProductCategory() {
         return productService.getProductTotalCategory();
+    }
+
+    @GetMapping("/{id}/notice")
+    public ProductNoticeResponse getProductNotice(@PathVariable Long id) {
+        return productService.getProductNotice(id);
     }
 }

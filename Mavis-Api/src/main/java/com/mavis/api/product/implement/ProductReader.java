@@ -2,9 +2,12 @@ package com.mavis.api.product.implement;
 
 import com.mavis.api.product.domain.Product;
 import com.mavis.api.product.domain.ProductColor;
+import com.mavis.api.product.domain.ProductNotice;
 import com.mavis.api.product.dto.ColorVO;
+import com.mavis.api.product.dto.ProductNoticeResponse;
 import com.mavis.api.product.exception.ProductNotFoundException;
 import com.mavis.api.product.repository.ProductColorRepository;
+import com.mavis.api.product.repository.ProductNoticeRepository;
 import com.mavis.api.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -16,6 +19,7 @@ import java.util.List;
 public class ProductReader {
     private final ProductRepository productRepository;
     private final ProductColorRepository productColorRepository;
+    private final ProductNoticeRepository productNoticeRepository;
 
     public Product readById(Long id) {
         return productRepository.findByIdAndIsDeletedFalse(id)
@@ -24,5 +28,10 @@ public class ProductReader {
 
     public List<ColorVO> readProductColors(Long productId) {
         return productColorRepository.getProductColors(productId);
+    }
+
+    public ProductNoticeResponse readProductNotice(Long productId) {
+        return productNoticeRepository.getProductNoticeByProductId(productId)
+                .orElseThrow(() -> ProductNotFoundException.EXCEPTION);
     }
 }
