@@ -1,20 +1,24 @@
 package com.mavis.api.product.service;
 
 import com.mavis.api.product.domain.Product;
+import com.mavis.api.product.domain.ProductNotice;
 import com.mavis.api.product.dto.ColorVO;
 import com.mavis.api.product.dto.GetProductResponse;
+import com.mavis.api.product.dto.ProductNoticeResponse;
 import com.mavis.api.product.dto.SubCategoryVO;
 import com.mavis.api.product.implement.ProductReader;
 import com.mavis.common.enums.EnumMapper;
 import com.mavis.common.enums.ProductCategory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ProductService {
 
     private final EnumMapper enumMapper;
@@ -34,5 +38,9 @@ public class ProductService {
                         )
                 )
                 .toList();
+    }
+
+    public ProductNoticeResponse getProductNotice(Long productId) {
+        return productReader.readProductNotice(productId);
     }
 }
