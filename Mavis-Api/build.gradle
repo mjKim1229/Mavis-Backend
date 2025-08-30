@@ -9,6 +9,8 @@ dependencies {
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9");
+
     implementation project(':Mavis-Infrastructure')
     implementation project(':Mavis-Common')
 }
