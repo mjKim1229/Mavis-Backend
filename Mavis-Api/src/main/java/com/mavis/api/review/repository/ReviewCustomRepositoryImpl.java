@@ -23,7 +23,10 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
         return queryFactory
                 .select(Projections.constructor(
                         ProductReviewTotal.class,
-                        Expressions.numberTemplate(Double.class, "ROUND({0}, 1)", review.score.avg()),
+                        Expressions.numberTemplate(
+                                Double.class, "ROUND({0}, 1)",
+                                review.score.avg().coalesce(0.0)
+                        ),
                         review.count()
                 ))
                 .from(review)
