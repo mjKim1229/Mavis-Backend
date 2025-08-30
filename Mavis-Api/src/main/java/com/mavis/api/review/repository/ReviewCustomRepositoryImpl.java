@@ -1,14 +1,19 @@
 package com.mavis.api.review.repository;
 
+import com.mavis.api.review.domain.Review;
 import com.mavis.api.review.dto.ProductReviewTotal;
 import com.mavis.api.review.dto.ReviewResponse;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.support.PageableExecutionUtils;
 
 import java.util.List;
@@ -42,7 +47,7 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
     }
 
     public Page<ReviewResponse> queryProductReviews(Long productId, Pageable pageable) {
-        List<ReviewResponse> reviewResponses = queryFactory.select(
+        JPAQuery<ReviewResponse> query = queryFactory.select(
                         Projections.constructor(
                                 ReviewResponse.class,
                                 review.id,
@@ -59,9 +64,17 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                 .join(product).on(productColor.productId.eq(product.id))
                 .where(product.id.eq(productId))
                 .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .orderBy(review.id.desc())
-                .fetch();
+                .limit(pageable.getPageSize());
+
+        for (Sort.Order order : pageable.getSort()) {
+            PathBuilder<Review> entityPath = new PathBuilder<>(Review.class, "review");
+            query.orderBy(new OrderSpecifier<>(
+                    order.isAscending() ? Order.ASC : Order.DESC,
+                    entityPath.get(order.getProperty(), Comparable.class)
+            ));
+        }
+
+        List<ReviewResponse> reviewResponses = query.fetch();
 
         JPAQuery<Long> countQuery = queryFactory.select(review.count())
                 .from(review)
@@ -71,6 +84,6 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                 .join(product).on(productColor.productId.eq(product.id))
                 .where(product.id.eq(productId));
 
-        return PageableExecutionUtils.getPage(reviewResponses, pageable, countQuery::fetchCount);
+        return PageableExecutionUtils.getPage(reviewResponses, pageable, countQuery::fetchOne);
     }
 }
