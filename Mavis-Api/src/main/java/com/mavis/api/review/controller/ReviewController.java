@@ -6,6 +6,7 @@ import com.mavis.api.review.dto.ProductReviewTotal;
 import com.mavis.api.review.dto.ReviewResponse;
 import com.mavis.api.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +28,7 @@ public class ReviewController {
     }
 
     @GetMapping("/{productId}")
-    public PageResponse<ReviewResponse> getProductReviews(@PathVariable Long productId, Pageable pageable) {
+    public PageResponse<ReviewResponse> getProductReviews(@PathVariable Long productId, @ParameterObject Pageable pageable) {
         return reviewService.getProductReviews(productId, pageable);
     }
 }
