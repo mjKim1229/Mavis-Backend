@@ -34,7 +34,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
     public Optional<ProductNoticeResponse> getProductNoticeByProductId(Long productId) {
         ProductNoticeResponse productNotice = queryFactory
-                .select(Projections.fields(
+                .select(Projections.constructor(
                                 ProductNoticeResponse.class,
                                 Expressions.as(Expressions.constant(productId), "productId"),
                                 QProductNotice.productNotice.precaution,
