@@ -50,7 +50,7 @@ jobs:
           target: /home/ubuntu
 
       - name: Deploy to dev
-        if: contains(github.ref, 'dev')
+        if: contains(github.ref, 'deploy/34-배포-설정')
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST_DEV }}
