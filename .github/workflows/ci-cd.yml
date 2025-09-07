@@ -34,6 +34,7 @@ jobs:
       - name: docker build and push to dev
         if: contains(github.ref, 'deploy/34-배포-설정')
         run: |
+          cd Mavis-Api
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}/backend .
           docker push ${{ secrets.DOCKER_REPO }}/backend
