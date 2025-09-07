@@ -1,4 +1,4 @@
-FROM openjdk:21-alpine
+FROM eclipse-temurin:21-jdk
 
 ARG JAR_FILE=build/libs/Mavis-Api.jar
 
