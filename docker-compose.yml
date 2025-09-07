@@ -1,0 +1,10 @@
+services:
+  backend:
+    container_name: backend
+    image: mavisgaram/backend
+    environment:
+      - TZ=Asia/Seoul
+    volumes:
+      - ./logs:/logs
+    ports:
+      - "8080:8080"
