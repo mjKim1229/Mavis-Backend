@@ -2,7 +2,7 @@ name: CI-CD
 
 on:
   push:
-    branches: [ "deploy/34-배포-설정"]
+    branches: [ "dev"]
 
 jobs:
   CI-CD:
@@ -36,7 +36,7 @@ jobs:
         run: ./gradlew :Mavis-Api:clean build -x test
 
       - name: docker build and push to dev
-        if: contains(github.ref, 'deploy/34-배포-설정')
+        if: contains(github.ref, 'dev')
         run: |
           cd Mavis-Api
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
@@ -44,7 +44,7 @@ jobs:
           docker push ${{ secrets.DOCKER_REPO }}/backend
 
       - name: Copy docker-compose.yml to EC2 DEV
-        if: contains(github.ref, 'deploy/34-배포-설정')
+        if: contains(github.ref, 'dev')
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.HOST_DEV }}
@@ -54,7 +54,7 @@ jobs:
           target: /home/ubuntu
 
       - name: Deploy to dev
-        if: contains(github.ref, 'deploy/34-배포-설정')
+        if: contains(github.ref, 'dev')
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST_DEV }}
