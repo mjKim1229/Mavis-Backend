@@ -1,6 +1,9 @@
 package com.mavis.api.review.service;
 
 import com.mavis.api.common.page.PageResponse;
+import com.mavis.api.order.domain.Order;
+import com.mavis.api.order.exception.OrderNotFoundException;
+import com.mavis.api.order.repository.OrderRepository;
 import com.mavis.api.review.domain.Review;
 import com.mavis.api.review.domain.ReviewImage;
 import com.mavis.api.review.dto.CreateReviewRequest;
@@ -20,11 +23,14 @@ import java.util.List;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
+    private final OrderRepository orderRepository;
 
     @Transactional
     public void createReview(CreateReviewRequest request) {
         //TODO order 조회 후 검증 [user]
-        Review review = request.toEntity();
+        Order order = orderRepository.findById(request.orderId())
+                .orElseThrow(() -> OrderNotFoundException.EXCEPTION);
+        Review review = request.toEntity(order);
         reviewRepository.save(review);
     }
 

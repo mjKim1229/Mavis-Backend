@@ -3,7 +3,12 @@ package com.mavis.api.order.domain;
 import com.mavis.api.common.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
+
+@Builder
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "orders")
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -19,4 +24,7 @@ public class Order extends BaseEntity {
     private int quantity;
 
     private int price;
+
+    @Builder.Default
+    private boolean isDeleted = false;
 }
