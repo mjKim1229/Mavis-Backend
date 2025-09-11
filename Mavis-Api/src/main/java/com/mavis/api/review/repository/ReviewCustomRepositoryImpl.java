@@ -40,9 +40,7 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                 ))
                 .from(review)
                 .join(order).on(review.orderId.eq(order.id))
-                .join(productColor).on(order.productColorId.eq(productColor.id))
-                .join(product).on(productColor.productId.eq(product.id))
-                .where(product.id.eq(productId))
+                .where(order.productId.eq(productId))
                 .fetchOne();
     }
 
@@ -53,15 +51,12 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                                 review.id,
                                 review.score,
                                 review.createdAt,
-                                color.name,
                                 order.quantity
                         )
                 )
                 .from(review)
                 .join(order).on(review.orderId.eq(order.id))
-                .join(productColor).on(order.productColorId.eq(productColor.id))
-                .join(color).on(productColor.colorId.eq(color.id))
-                .join(product).on(productColor.productId.eq(product.id))
+                .join(product).on(order.productId.eq(product.id))
                 .where(product.id.eq(productId))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize());
@@ -79,9 +74,7 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
         JPAQuery<Long> countQuery = queryFactory.select(review.count())
                 .from(review)
                 .join(order).on(review.orderId.eq(order.id))
-                .join(productColor).on(order.productColorId.eq(productColor.id))
-                .join(color).on(productColor.colorId.eq(color.id))
-                .join(product).on(productColor.productId.eq(product.id))
+                .join(product).on(order.productId.eq(product.id))
                 .where(product.id.eq(productId));
 
         return PageableExecutionUtils.getPage(reviewResponses, pageable, countQuery::fetchOne);

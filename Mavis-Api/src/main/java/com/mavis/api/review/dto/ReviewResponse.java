@@ -6,7 +6,6 @@ public record ReviewResponse(
         Long reviewId,
         int score,
         LocalDateTime createdAt,
-        String color,
         int quantity
 ) {
 }
