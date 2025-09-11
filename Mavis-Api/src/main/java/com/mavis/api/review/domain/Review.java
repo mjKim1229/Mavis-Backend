@@ -1,16 +1,15 @@
 package com.mavis.api.review.domain;
 
 import com.mavis.api.common.jpa.BaseEntity;
+import com.mavis.api.order.domain.Order;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
 @Entity
 @Builder
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Review extends BaseEntity {
@@ -19,7 +18,10 @@ public class Review extends BaseEntity {
     private Long id;
     private int score;
     private String content;
-    private Long orderId;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private Order order;
     private Long userId;
 
     @OneToMany
