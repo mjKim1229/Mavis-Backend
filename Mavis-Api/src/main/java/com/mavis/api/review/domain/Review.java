@@ -24,6 +24,6 @@ public class Review extends BaseEntity {
     private Order order;
     private Long userId;
 
-    @OneToMany
+    @OneToMany(mappedBy = "review")
     private List<ReviewImage> images;
 }
