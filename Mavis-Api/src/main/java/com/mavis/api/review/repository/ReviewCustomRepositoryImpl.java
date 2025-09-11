@@ -40,7 +40,7 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                 ))
                 .from(review)
                 .join(order).on(review.orderId.eq(order.id))
-                .where(product.id.eq(productId))
+                .where(order.productId.eq(productId))
                 .fetchOne();
     }
 
