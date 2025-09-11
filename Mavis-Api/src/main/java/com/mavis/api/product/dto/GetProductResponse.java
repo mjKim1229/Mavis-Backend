@@ -10,14 +10,16 @@ public record GetProductResponse(
         Long id,
         String name,
         Integer price,
-        List<ColorVO> colors
+        List<ColorVO> colors,
+        List<String> imageUrls
 ) {
-    public static GetProductResponse from(Product product, List<ColorVO> colors) {
+    public static GetProductResponse from(Product product, List<ColorVO> colors, List<String> imageUrls) {
         return GetProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
                 .price(product.getPrice())
                 .colors(colors)
+                .imageUrls(imageUrls)
                 .build();
     }
 }

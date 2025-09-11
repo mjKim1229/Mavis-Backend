@@ -28,7 +28,7 @@ public class Product extends BaseEntity {
     private ProductSubCategory subCategory;
 
     @OneToMany
-    private List<ProductImage> imageUrls;
+    private List<ProductImage> images;
 
     @Builder.Default
     private boolean isDeleted = false;
