@@ -7,6 +7,8 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.util.List;
+
 @Getter
 @Entity
 @Builder
@@ -24,6 +26,9 @@ public class Product extends BaseEntity {
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Enumerated(EnumType.STRING)
     private ProductSubCategory subCategory;
+
+    @OneToMany
+    private List<ProductImage> images;
 
     @Builder.Default
     private boolean isDeleted = false;

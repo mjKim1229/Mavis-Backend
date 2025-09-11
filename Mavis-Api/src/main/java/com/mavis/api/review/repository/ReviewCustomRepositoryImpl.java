@@ -1,6 +1,7 @@
 package com.mavis.api.review.repository;
 
 import com.mavis.api.review.domain.Review;
+import com.mavis.api.review.domain.ReviewImage;
 import com.mavis.api.review.dto.ProductReviewTotal;
 import com.mavis.api.review.dto.ReviewResponse;
 import com.querydsl.core.types.Order;
@@ -39,25 +40,16 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                         review.count()
                 ))
                 .from(review)
-                .join(order).on(review.orderId.eq(order.id))
+                .join(order).on(review.order.id.eq(order.id))
                 .where(order.productId.eq(productId))
                 .fetchOne();
     }
 
-    public Page<ReviewResponse> queryProductReviews(Long productId, Pageable pageable) {
-        JPAQuery<ReviewResponse> query = queryFactory.select(
-                        Projections.constructor(
-                                ReviewResponse.class,
-                                review.id,
-                                review.score,
-                                review.createdAt,
-                                order.quantity
-                        )
-                )
-                .from(review)
-                .join(order).on(review.orderId.eq(order.id))
-                .join(product).on(order.productId.eq(product.id))
-                .where(product.id.eq(productId))
+    public Page<Review> queryProductReviews(Long productId, Pageable pageable) {
+        JPAQuery<Review> query = queryFactory
+                .selectFrom(review)
+                .join(order).on(review.order.id.eq(order.id)).fetchJoin()
+                .where(order.productId.eq(productId))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize());
 
@@ -69,14 +61,13 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
             ));
         }
 
-        List<ReviewResponse> reviewResponses = query.fetch();
+        List<Review> reviews = query.fetch();
 
         JPAQuery<Long> countQuery = queryFactory.select(review.count())
                 .from(review)
-                .join(order).on(review.orderId.eq(order.id))
-                .join(product).on(order.productId.eq(product.id))
-                .where(product.id.eq(productId));
+                .join(order).on(review.order.id.eq(order.id))
+                .where(order.productId.eq(productId));
 
-        return PageableExecutionUtils.getPage(reviewResponses, pageable, countQuery::fetchOne);
+        return PageableExecutionUtils.getPage(reviews, pageable, countQuery::fetchOne);
     }
 }

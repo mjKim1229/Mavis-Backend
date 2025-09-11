@@ -1,6 +1,7 @@
 package com.mavis.api.product.service;
 
 import com.mavis.api.product.domain.Product;
+import com.mavis.api.product.domain.ProductImage;
 import com.mavis.api.product.domain.ProductNotice;
 import com.mavis.api.product.dto.ColorVO;
 import com.mavis.api.product.dto.GetProductResponse;
@@ -27,7 +28,11 @@ public class ProductService {
     public GetProductResponse getProductById(Long id) {
         Product product = productReader.readById(id);
         List<ColorVO> colors = productReader.readProductColors(product.getId());
-        return GetProductResponse.from(product, colors);
+        List<String> imageUrls = product.getImages()
+                .stream()
+                .map(ProductImage::getImageUrl)
+                .toList();
+        return GetProductResponse.from(product, colors, imageUrls);
     }
 
     public List<SubCategoryVO> getProductTotalCategory() {

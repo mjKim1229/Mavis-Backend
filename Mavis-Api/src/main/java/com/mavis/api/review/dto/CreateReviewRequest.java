@@ -1,5 +1,6 @@
 package com.mavis.api.review.dto;
 
+import com.mavis.api.order.domain.Order;
 import com.mavis.api.review.domain.Review;
 
 public record CreateReviewRequest(
@@ -7,11 +8,11 @@ public record CreateReviewRequest(
         String content,
         Long orderId
 ) {
-    public Review toEntity() {
+    public Review toEntity(Order order) {
         return Review.builder()
                 .score(score)
                 .content(content)
-                .orderId(orderId)
+                .order(order)
                 .build();
     }
 }
