@@ -23,5 +23,5 @@ public class Review extends BaseEntity {
     private Long userId;
 
     @OneToMany
-    private List<ReviewImage> imageUrls;
+    private List<ReviewImage> images;
 }
