@@ -12,7 +12,7 @@ public class Order extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long productColorId;
+    private Long productId;
 
     private Long userId;
 
