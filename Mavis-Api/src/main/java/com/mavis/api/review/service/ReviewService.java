@@ -1,6 +1,7 @@
 package com.mavis.api.review.service;
 
 import com.mavis.api.common.page.PageResponse;
+import com.mavis.api.global.security.SecurityUtils;
 import com.mavis.api.order.domain.Order;
 import com.mavis.api.order.exception.OrderNotFoundException;
 import com.mavis.api.order.repository.OrderRepository;
@@ -27,7 +28,7 @@ public class ReviewService {
 
     @Transactional
     public void createReview(CreateReviewRequest request) {
-        //TODO order 조회 후 검증 [user]
+        Long userId = SecurityUtils.getCurrentUserId();
         Order order = orderRepository.findById(request.orderId())
                 .orElseThrow(() -> OrderNotFoundException.EXCEPTION);
         Review review = request.toEntity(order);
