@@ -40,9 +40,6 @@ public class S3FileUploader {
         } catch (Exception exception) {
         }
 
-        // public url 반환
-        String string = s3Client.utilities().getUrl(url -> url.bucket(bucketName).key(s3FileName)).toString();
-        System.out.println("string = " + string);
-        return string;
+        return s3Client.utilities().getUrl(url -> url.bucket(bucketName).key(s3FileName)).toString();
     }
 }
