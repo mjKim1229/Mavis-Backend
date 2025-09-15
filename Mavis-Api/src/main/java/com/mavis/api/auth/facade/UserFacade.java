@@ -1,8 +1,9 @@
 package com.mavis.api.auth.facade;
 
-import com.mavis.api.auth.dto.UserKakaoOauthResponse;
+import com.mavis.api.auth.dto.UserOauthResponse;
 import com.mavis.api.auth.implement.UserJwtGenerator;
 import com.mavis.api.auth.mapper.UserMapper;
+import com.mavis.api.auth.service.UserService;
 import com.mavis.common.dto.JwtPair;
 import com.mavis.common.properties.KakaoProperties;
 import com.mavis.common.properties.NaverProperties;
@@ -27,8 +28,9 @@ public class UserFacade {
     private final KakaoProperties kakaoProperties;
     private final NaverInfoClient naverInfoClient;
     private final NaverProperties naverProperties;
+    private final UserService userService;
 
-    public UserKakaoOauthResponse register(String code) {
+    public UserOauthResponse register(String code) {
         KakaoOAuthRequest kakaoOAuthRequest = userMapper.fromCode(code);
         KakaoTokenResponse kakaoTokenResponse = kakaoOAuthClient.kakaoAuth(kakaoOAuthRequest);
 
@@ -37,7 +39,7 @@ public class UserFacade {
 
         //TODO user 저장 service
         JwtPair jwtPair = userJwtGenerator.getJwtPair(userInfo.id());
-        return new UserKakaoOauthResponse(userInfo.id(), jwtPair);
+        return new UserOauthResponse(userInfo.id(), jwtPair);
     }
 
     public void withDrawKakao() {
@@ -49,11 +51,15 @@ public class UserFacade {
         kakaoInfoClient.unlink(header, unlinkKakaoTarget);
     }
 
-    public void registerNaver(String code) {
+    public UserOauthResponse registerNaver(String code) {
         NaverOAuthRequest naverOAuthRequest = userMapper.fromNaverCode(code);
         NaverTokenResponse naverTokenResponse = naverOAuthClient.naverAuth(naverOAuthRequest);
         String bearerAccessToken = BEARER + naverTokenResponse.accessToken();
         NaverUserInfoResponse userInfo = naverInfoClient.getUserInfo(bearerAccessToken);
+        Long userId = userService.saveNaverUser(userInfo.response());
+
+        JwtPair jwtPair = userJwtGenerator.getJwtPair(userId);
+        return new UserOauthResponse(userId, jwtPair);
     }
 
     public void withDrawNaver() {
