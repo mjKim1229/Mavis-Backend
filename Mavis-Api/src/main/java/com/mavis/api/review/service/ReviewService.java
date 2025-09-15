@@ -28,10 +28,11 @@ public class ReviewService {
 
     @Transactional
     public void createReview(CreateReviewRequest request) {
+        //TODO 검증
         Long userId = SecurityUtils.getCurrentUserId();
         Order order = orderRepository.findById(request.orderId())
                 .orElseThrow(() -> OrderNotFoundException.EXCEPTION);
-        Review review = request.toEntity(order);
+        Review review = request.toEntity(order, userId);
         reviewRepository.save(review);
     }
 

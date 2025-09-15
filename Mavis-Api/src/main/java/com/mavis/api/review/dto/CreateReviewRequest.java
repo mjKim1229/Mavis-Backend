@@ -8,8 +8,9 @@ public record CreateReviewRequest(
         String content,
         Long orderId
 ) {
-    public Review toEntity(Order order) {
+    public Review toEntity(Order order, Long userId) {
         return Review.builder()
+                .userId(userId)
                 .score(score)
                 .content(content)
                 .order(order)
