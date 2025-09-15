@@ -14,6 +14,7 @@ dependencies {
 
     implementation project(':Mavis-Infrastructure')
     implementation project(':Mavis-Common')
+    implementation project(':Mavis-Domain')
 }
 
 tasks.register('copySubmoduleYml', Copy) {

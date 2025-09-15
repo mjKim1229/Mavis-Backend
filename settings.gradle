@@ -3,4 +3,5 @@ rootProject.name = 'mavis-backend'
 include(':Mavis-Infrastructure')
 include(':Mavis-Api')
 include(':Mavis-Common')
+include(':Mavis-Domain')
 
