@@ -3,3 +3,11 @@ dependencies{
     implementation 'com.h2database:h2'
     runtimeOnly 'com.mysql:mysql-connector-j'
 }
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}
