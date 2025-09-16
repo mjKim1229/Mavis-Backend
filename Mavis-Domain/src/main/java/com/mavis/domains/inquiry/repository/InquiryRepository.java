@@ -1,6 +1,6 @@
-package com.mavis.api.inquiry.repository;
+package com.mavis.domains.inquiry.repository;
 
-import com.mavis.api.inquiry.domain.Inquiry;
+import com.mavis.domains.inquiry.domain.Inquiry;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
