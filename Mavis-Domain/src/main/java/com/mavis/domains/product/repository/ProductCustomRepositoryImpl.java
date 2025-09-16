@@ -1,9 +1,9 @@
-package com.mavis.api.product.repository;
+package com.mavis.domains.product.repository;
 
-import com.mavis.api.product.domain.ProductNotice;
-import com.mavis.api.product.domain.QProductNotice;
-import com.mavis.api.product.dto.ColorVO;
-import com.mavis.api.product.dto.ProductNoticeResponse;
+
+import com.mavis.domains.product.domain.QProductNotice;
+import com.mavis.domains.product.vo.ColorVO;
+import com.mavis.domains.product.vo.ProductNoticeResponse;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -12,9 +12,8 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 import java.util.Optional;
 
-import static com.mavis.api.product.domain.QColor.color;
-import static com.mavis.api.product.domain.QProductColor.productColor;
-import static com.mavis.api.product.domain.QProductNotice.*;
+import static com.mavis.domains.product.domain.QColor.color;
+import static com.mavis.domains.product.domain.QProductColor.productColor;
 
 @RequiredArgsConstructor
 public class ProductCustomRepositoryImpl implements ProductCustomRepository {

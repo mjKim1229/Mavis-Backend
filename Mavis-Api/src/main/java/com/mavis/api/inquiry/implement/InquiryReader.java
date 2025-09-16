@@ -1,6 +1,6 @@
 package com.mavis.api.inquiry.implement;
 
-import com.mavis.api.inquiry.domain.Inquiry;
+import com.mavis.domains.inquiry.domain.Inquiry;
 import com.mavis.api.inquiry.dto.GetProductInquiryResponse;
 import com.mavis.domains.inquiry.repository.InquiryRepository;
 import lombok.RequiredArgsConstructor;

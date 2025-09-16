@@ -1,9 +1,7 @@
 package com.mavis.api.review.repository;
 
 import com.mavis.api.review.domain.Review;
-import com.mavis.api.review.domain.ReviewImage;
 import com.mavis.api.review.dto.ProductReviewTotal;
-import com.mavis.api.review.dto.ReviewResponse;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -20,9 +18,6 @@ import org.springframework.data.support.PageableExecutionUtils;
 import java.util.List;
 
 import static com.mavis.api.order.domain.QOrder.order;
-import static com.mavis.api.product.domain.QColor.color;
-import static com.mavis.api.product.domain.QProduct.product;
-import static com.mavis.api.product.domain.QProductColor.productColor;
 import static com.mavis.api.review.domain.QReview.review;
 
 @RequiredArgsConstructor

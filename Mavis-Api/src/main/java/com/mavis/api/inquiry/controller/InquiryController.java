@@ -22,6 +22,6 @@ public class InquiryController {
 
     @PostMapping("/product/{id}")
     public void createProductInquiry(@RequestBody CreateInquiryRequest request) {
-
+        inquiryService.createInquiry(request);
     }
 }

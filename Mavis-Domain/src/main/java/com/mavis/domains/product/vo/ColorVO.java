@@ -1,4 +1,4 @@
-package com.mavis.api.product.dto;
+package com.mavis.domains.product.vo;
 
 public record ColorVO(
         Long id,

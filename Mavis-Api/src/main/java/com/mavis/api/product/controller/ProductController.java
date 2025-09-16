@@ -1,7 +1,7 @@
 package com.mavis.api.product.controller;
 
 import com.mavis.api.product.dto.GetProductResponse;
-import com.mavis.api.product.dto.ProductNoticeResponse;
+import com.mavis.domains.product.vo.ProductNoticeResponse;
 import com.mavis.api.product.dto.SubCategoryVO;
 import com.mavis.api.product.service.ProductService;
 import lombok.RequiredArgsConstructor;

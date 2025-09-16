@@ -1,6 +1,6 @@
-package com.mavis.api.product.dto;
+package com.mavis.domains.product.vo;
 
-import com.mavis.api.product.domain.ProductNotice;
+import com.mavis.domains.product.domain.ProductNotice;
 import lombok.Builder;
 
 @Builder

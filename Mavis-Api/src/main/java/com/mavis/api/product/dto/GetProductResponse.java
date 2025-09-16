@@ -1,6 +1,7 @@
 package com.mavis.api.product.dto;
 
-import com.mavis.api.product.domain.Product;
+import com.mavis.domains.product.domain.Product;
+import com.mavis.domains.product.vo.ColorVO;
 import lombok.Builder;
 
 import java.util.List;
