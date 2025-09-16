@@ -1,6 +1,6 @@
-package com.mavis.api.product.domain;
+package com.mavis.domains.product.domain;
 
-import com.mavis.api.common.jpa.BaseEntity;
+import com.mavis.domains.common.jpa.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,10 +12,13 @@ import lombok.*;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Color extends BaseEntity {
+public class ProductColor extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
+    private Long productId;
+
+    private Long colorId;
 }

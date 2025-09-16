@@ -1,6 +1,6 @@
-package com.mavis.api.product.repository;
+package com.mavis.domains.product.repository;
 
-import com.mavis.api.product.domain.Product;
+import com.mavis.domains.product.domain.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

@@ -1,7 +1,7 @@
-package com.mavis.api.product.repository;
+package com.mavis.domains.product.repository;
 
-import com.mavis.api.product.dto.ColorVO;
-import com.mavis.api.product.dto.ProductNoticeResponse;
+import com.mavis.domains.product.vo.ColorVO;
+import com.mavis.domains.product.vo.ProductNoticeResponse;
 
 import java.util.List;
 import java.util.Optional;

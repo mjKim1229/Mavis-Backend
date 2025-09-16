@@ -1,10 +1,9 @@
 package com.mavis.api.inquiry.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.mavis.api.inquiry.domain.Inquiry;
+import com.mavis.domains.inquiry.domain.Inquiry;
 import lombok.Builder;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 //TODO Admin, User 닉네임

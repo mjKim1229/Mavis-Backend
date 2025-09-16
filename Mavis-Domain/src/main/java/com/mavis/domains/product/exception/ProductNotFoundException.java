@@ -1,4 +1,4 @@
-package com.mavis.api.product.exception;
+package com.mavis.domains.product.exception;
 
 import com.mavis.common.exception.MavisCodeException;
 

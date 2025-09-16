@@ -1,7 +1,7 @@
-package com.mavis.api.product.domain;
+package com.mavis.domains.product.domain;
 
-import com.mavis.api.common.jpa.BaseEntity;
 import com.mavis.common.enums.ProductSubCategory;
+import com.mavis.domains.common.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;

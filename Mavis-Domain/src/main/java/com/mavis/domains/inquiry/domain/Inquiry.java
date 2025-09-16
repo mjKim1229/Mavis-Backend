@@ -1,10 +1,8 @@
-package com.mavis.api.inquiry.domain;
+package com.mavis.domains.inquiry.domain;
 
-import com.mavis.api.common.jpa.BaseEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.mavis.domains.common.jpa.BaseEntity;
+import com.mavis.domains.product.domain.Product;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -24,7 +22,11 @@ public class Inquiry extends BaseEntity {
     private String answer;
     private Long answerAdminId;
     private Long questionUserId;
-    private Long productId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product;
+
     private boolean isPrivate;
     private LocalDateTime answeredDatetime;
     @Builder.Default
