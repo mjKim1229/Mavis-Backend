@@ -4,6 +4,7 @@ import com.mavis.common.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -39,6 +40,10 @@ public class SecurityConfig {
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
                 .requestMatchers("/swagger-resources/**", "/swagger-ui/**", "/v3/api-docs/**",
-                        "/v3/api-docs");
+                        "/v3/api-docs")
+                .requestMatchers("/v1/api/products/**")
+                .requestMatchers("/v1/api/auths/oauth/**")
+                .requestMatchers(HttpMethod.GET, "/v1/api/inquiry/product/**")
+                .requestMatchers(HttpMethod.GET, "/v1/api/review/**");
     }
 }
