@@ -1,10 +1,7 @@
 package com.mavis.domains.product.domain;
 
 import com.mavis.domains.common.jpa.BaseEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Getter
@@ -18,7 +15,16 @@ public class ProductColor extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long productId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product;
 
     private String color;
+
+    public static ProductColor of(Product product, String color) {
+        return ProductColor.builder()
+                .product(product)
+                .color(color)
+                .build();
+    }
 }

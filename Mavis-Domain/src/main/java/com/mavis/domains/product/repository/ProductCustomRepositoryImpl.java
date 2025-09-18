@@ -26,7 +26,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
                         productColor.color)
                 )
                 .from(productColor)
-                .where(productColor.productId.eq(productId))
+                .where(productColor.product.id.eq(productId))
                 .fetch();
     }
 
