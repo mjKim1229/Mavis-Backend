@@ -38,7 +38,7 @@ jobs:
       - name: Build Admin
         run: ./gradlew :Mavis-Admin:clean :Mavis-Admin:build -x test
 
-      - name: docker build and push to dev
+      - name: docker build and push to dev [API]
         if: contains(github.ref, 'feat/#55-feat-성공-응답-포맷-구성')
         run: |
           cd Mavis-Api
@@ -46,7 +46,10 @@ jobs:
           docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}/backend .
           docker push ${{ secrets.DOCKER_REPO }}/backend
           
-          cd ../Mavis-Admin
+      - name: docker build and push to dev [admin]
+        if: contains(github.ref, 'feat/#55-feat-성공-응답-포맷-구성')
+        run: |
+          cd Mavis-Admin
           docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}/admin .
           docker push ${{ secrets.DOCKER_REPO }}/admin
 
