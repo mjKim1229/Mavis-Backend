@@ -2,7 +2,7 @@ name: CI-CD
 
 on:
   push:
-    branches: [ "dev"]
+    branches: [ "feat/#55-feat-성공-응답-포맷-구성" ]
 
 jobs:
   CI-CD:
@@ -32,16 +32,27 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      - name: Build with Gradle
-        run: ./gradlew :Mavis-Api:clean build -x test
+      - name: Build Api
+        run: ./gradlew :Mavis-Api:clean :Mavis-Api:build -x test
 
-      - name: docker build and push to dev
+      - name: Build Admin
+        run: ./gradlew :Mavis-Admin:clean :Mavis-Admin:build -x test
+
+      - name: docker build and push to dev [API]
         if: contains(github.ref, 'dev')
         run: |
           cd Mavis-Api
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}/backend .
           docker push ${{ secrets.DOCKER_REPO }}/backend
+          
+      - name: docker build and push to dev [admin]
+        if: contains(github.ref, 'dev')
+        run: |
+          cd Mavis-Admin
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}/admin .
+          docker push ${{ secrets.DOCKER_REPO }}/admin
 
       - name: Copy docker-compose.yml to EC2 DEV
         if: contains(github.ref, 'dev')
@@ -64,5 +75,6 @@ jobs:
             cd /home/ubuntu
             sudo docker rm -f $(docker ps -qa)
             sudo docker pull ${{ secrets.DOCKER_REPO }}/backend
+            sudo docker pull ${{ secrets.DOCKER_REPO }}/admin
             sudo docker-compose -f docker-compose.yml up -d
             sudo docker image prune -f
