@@ -19,7 +19,7 @@ dependencies {
 }
 
 tasks.register('copySubmoduleYml', Copy) {
-    from "${rootProject.projectDir}/Mavis-Submodule/Mavis-Api"
+    from "${rootProject.projectDir}/Mavis-Submodule/Mavis-Admin"
     include "*.yml"
     into "${projectDir}/src/main/resources"
 }
