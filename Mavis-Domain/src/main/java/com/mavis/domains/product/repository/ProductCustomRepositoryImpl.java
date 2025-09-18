@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 import java.util.Optional;
 
-import static com.mavis.domains.product.domain.QColor.color;
 import static com.mavis.domains.product.domain.QProductColor.productColor;
 
 @RequiredArgsConstructor
@@ -22,11 +21,11 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
     public List<ColorVO> getProductColors(Long productId) {
         return queryFactory
-                .select(Projections.constructor(ColorVO.class,
-                        color.id,
-                        color.name))
+                .select(Projections.constructor(
+                        ColorVO.class,
+                        productColor.color)
+                )
                 .from(productColor)
-                .join(color).on(productColor.colorId.eq(color.id))
                 .where(productColor.productId.eq(productId))
                 .fetch();
     }

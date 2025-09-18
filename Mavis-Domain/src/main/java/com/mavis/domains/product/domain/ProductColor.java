@@ -20,5 +20,5 @@ public class ProductColor extends BaseEntity {
 
     private Long productId;
 
-    private Long colorId;
+    private String color;
 }
