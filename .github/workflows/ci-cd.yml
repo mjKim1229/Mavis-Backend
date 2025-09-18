@@ -2,7 +2,7 @@ name: CI-CD
 
 on:
   push:
-    branches: [ "feat/#55-feat-성공-응답-포맷-구성" ]
+    branches: [ "dev" ]
 
 jobs:
   CI-CD:
