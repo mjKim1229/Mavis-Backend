@@ -8,3 +8,13 @@ services:
       - ./logs:/logs
     ports:
       - "8080:8080"
+
+  admin:
+    container_name: admin
+    image: mavisgaram/admin
+    environment:
+      - TZ=Asia/Seoul
+    volumes:
+      - ./logs:/logs
+    ports:
+      - "8081:8081"

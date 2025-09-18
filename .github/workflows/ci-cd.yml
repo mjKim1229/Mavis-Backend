@@ -2,7 +2,7 @@ name: CI-CD
 
 on:
   push:
-    branches: [ "dev"]
+    branches: [ "feat/#55-feat-성공-응답-포맷-구성" ]
 
 jobs:
   CI-CD:
@@ -32,8 +32,11 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      - name: Build with Gradle
-        run: ./gradlew :Mavis-Api:clean build -x test
+      - name: Build Api
+        run: ./gradlew :Mavis-Api:clean :Mavis-Api:build -x test
+
+      - name: Build Admin
+        run: ./gradlew :Mavis-Admin:clean :Mavis-Admin:build -x test
 
       - name: docker build and push to dev
         if: contains(github.ref, 'dev')
@@ -42,6 +45,10 @@ jobs:
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}/backend .
           docker push ${{ secrets.DOCKER_REPO }}/backend
+          
+          cd ../Mavis-Admin
+          docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}/admin .
+          docker push ${{ secrets.DOCKER_REPO }}/admin
 
       - name: Copy docker-compose.yml to EC2 DEV
         if: contains(github.ref, 'dev')
