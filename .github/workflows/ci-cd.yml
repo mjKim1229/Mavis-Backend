@@ -50,6 +50,7 @@ jobs:
         if: contains(github.ref, 'feat/#55-feat-성공-응답-포맷-구성')
         run: |
           cd Mavis-Admin
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}/admin .
           docker push ${{ secrets.DOCKER_REPO }}/admin
 
