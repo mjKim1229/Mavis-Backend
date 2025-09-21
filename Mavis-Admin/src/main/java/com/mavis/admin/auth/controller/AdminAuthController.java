@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/v1/api/admin/auth")
 public class AdminAuthController {
 
-    private AdminAuthService adminAuthService;
+    private final AdminAuthService adminAuthService;
 
     @GetMapping
     public String adminLogin(AdminLoginRequest request) {

@@ -22,5 +22,5 @@ public class Admin {
     private String password;
 
     @Builder.Default
-    private boolean isDeleted;
+    private boolean isDeleted = false;
 }
