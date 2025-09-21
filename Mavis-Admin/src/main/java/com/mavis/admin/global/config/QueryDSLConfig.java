@@ -1,4 +1,4 @@
-package com.mavis.admin.config;
+package com.mavis.admin.global.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;

@@ -1,4 +1,4 @@
-package com.mavis.admin.config;
+package com.mavis.admin.global.config;
 
 import com.mavis.admin.global.security.JwtTokenFilter;
 import com.mavis.common.jwt.JwtTokenProvider;

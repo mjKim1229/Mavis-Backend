@@ -1,4 +1,4 @@
-package com.mavis.admin.config;
+package com.mavis.admin.global.config;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
