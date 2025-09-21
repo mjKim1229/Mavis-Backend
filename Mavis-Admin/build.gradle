@@ -18,15 +18,15 @@ dependencies {
     implementation project(':Mavis-Domain')
 }
 
-tasks.register('copySubmoduleYml', Copy) {
-    from "${rootProject.projectDir}/Mavis-Submodule/Mavis-Admin"
-    include "*.yml"
-    into "${projectDir}/src/main/resources"
-}
-
-tasks.named('processResources') {
-    dependsOn 'copySubmoduleYml'
-}
+//tasks.register('copySubmoduleYml', Copy) {
+//    from "${rootProject.projectDir}/Mavis-Submodule/Mavis-Admin"
+//    include "*.yml"
+//    into "${projectDir}/src/main/resources"
+//}
+//
+//tasks.named('processResources') {
+//    dependsOn 'copySubmoduleYml'
+//}
 
 clean {
     delete file('src/main/generated')
