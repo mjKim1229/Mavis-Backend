@@ -33,6 +33,27 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+
+      - name: Make application.yml for all modules
+        if: contains(github.ref, 'dev')
+        run: |
+          # Mavis-Api
+          echo "${{ secrets.APPLICATION_API_YML }}" > ${{ github.workspace }}/Mavis-Api/src/main/resources/application.yml
+          
+          # Mavis-Admin
+          echo "${{ secrets.APPLICATION_ADMIN_YML }}" > ${{ github.workspace }}/Mavis-Admin/src/main/resources/application.yml
+          
+          # Mavis-Domain
+          echo "${{ secrets.APPLICATION_DOMAIN_YML }}" > ${{ github.workspace }}/Mavis-Domain/src/main/resources/application-domain.yml
+          
+          # Mavis-Infrastructure
+          echo "${{ secrets.APPLICATION_INFRASTRUCTURE_YML }}" > ${{ github.workspace }}/Mavis-Infrastructure/src/main/resources/application-infrastructure.yml
+          
+          # Mavis-Common
+          echo "${{ secrets.APPLICATION_COMMON_YML }}" > ${{ github.workspace }}/Mavis-Common/src/main/resources/application-common.yml
+        shell: bash
+
+
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
