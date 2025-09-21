@@ -1,6 +1,5 @@
 package com.mavis.domain.domains.product.repository;
 
-
 import com.mavis.domain.domains.product.domain.QProductNotice;
 import com.mavis.domain.domains.product.vo.ColorVO;
 import com.mavis.domain.domains.product.vo.ProductNoticeResponse;
