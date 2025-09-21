@@ -27,7 +27,3 @@ tasks.register('copySubmoduleYml', Copy) {
 tasks.named('processResources') {
     dependsOn 'copySubmoduleYml'
 }
-
-clean {
-    delete file('src/main/generated')
-}

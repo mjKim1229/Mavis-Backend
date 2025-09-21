@@ -22,10 +22,6 @@ tasks.named('processResources') {
     dependsOn 'copySubmoduleYml'
 }
 
-clean {
-    delete file('src/main/generated')
-}
-
 bootJar {
     enabled = false
 }
