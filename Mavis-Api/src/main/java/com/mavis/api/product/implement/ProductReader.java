@@ -1,12 +1,12 @@
 package com.mavis.api.product.implement;
 
-import com.mavis.domains.product.domain.Product;
-import com.mavis.domains.product.vo.ColorVO;
-import com.mavis.domains.product.vo.ProductNoticeResponse;
-import com.mavis.domains.product.exception.ProductNotFoundException;
-import com.mavis.domains.product.repository.ProductColorRepository;
-import com.mavis.domains.product.repository.ProductNoticeRepository;
-import com.mavis.domains.product.repository.ProductRepository;
+import com.mavis.domain.domains.product.domain.Product;
+import com.mavis.domain.domains.product.vo.ColorVO;
+import com.mavis.domain.domains.product.vo.ProductNoticeResponse;
+import com.mavis.domain.domains.product.exception.ProductNotFoundException;
+import com.mavis.domain.domains.product.repository.ProductColorRepository;
+import com.mavis.domain.domains.product.repository.ProductNoticeRepository;
+import com.mavis.domain.domains.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

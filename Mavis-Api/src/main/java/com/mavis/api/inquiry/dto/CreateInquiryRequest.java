@@ -1,7 +1,7 @@
 package com.mavis.api.inquiry.dto;
 
-import com.mavis.domains.inquiry.domain.Inquiry;
-import com.mavis.domains.product.domain.Product;
+import com.mavis.domain.domains.inquiry.domain.Inquiry;
+import com.mavis.domain.domains.product.domain.Product;
 
 public record CreateInquiryRequest(
         Long productId,
