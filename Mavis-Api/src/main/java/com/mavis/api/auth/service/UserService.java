@@ -1,8 +1,8 @@
 package com.mavis.api.auth.service;
 
-import com.mavis.domains.user.domain.SnsType;
-import com.mavis.domains.user.domain.User;
-import com.mavis.domains.user.repository.UserRepository;
+import com.mavis.domain.domains.user.domain.SnsType;
+import com.mavis.domain.domains.user.domain.User;
+import com.mavis.domain.domains.user.repository.UserRepository;
 import com.mavis.infrastructure.outer.api.oauth.dto.NaverProfile;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

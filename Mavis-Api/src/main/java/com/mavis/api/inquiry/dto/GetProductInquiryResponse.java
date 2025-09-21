@@ -1,7 +1,7 @@
 package com.mavis.api.inquiry.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.mavis.domains.inquiry.domain.Inquiry;
+import com.mavis.domain.domains.inquiry.domain.Inquiry;
 import lombok.Builder;
 
 import java.time.LocalDateTime;

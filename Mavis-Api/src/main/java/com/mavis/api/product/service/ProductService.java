@@ -1,10 +1,10 @@
 package com.mavis.api.product.service;
 
-import com.mavis.domains.product.domain.Product;
-import com.mavis.domains.product.domain.ProductImage;
-import com.mavis.domains.product.vo.ColorVO;
+import com.mavis.domain.domains.product.domain.Product;
+import com.mavis.domain.domains.product.domain.ProductImage;
+import com.mavis.domain.domains.product.vo.ColorVO;
 import com.mavis.api.product.dto.GetProductResponse;
-import com.mavis.domains.product.vo.ProductNoticeResponse;
+import com.mavis.domain.domains.product.vo.ProductNoticeResponse;
 import com.mavis.api.product.dto.SubCategoryVO;
 import com.mavis.api.product.implement.ProductReader;
 import com.mavis.common.enums.EnumMapper;
