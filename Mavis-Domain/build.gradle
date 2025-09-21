@@ -12,6 +12,20 @@ dependencies{
     implementation project(":Mavis-Common")
 }
 
+tasks.register('copySubmoduleYml', Copy) {
+    from "${rootProject.projectDir}/Mavis-Submodule/Mavis-Domain"
+    include "*.yml"
+    into "${projectDir}/src/main/resources"
+}
+
+tasks.named('processResources') {
+    dependsOn 'copySubmoduleYml'
+}
+
+clean {
+    delete file('src/main/generated')
+}
+
 bootJar {
     enabled = false
 }
