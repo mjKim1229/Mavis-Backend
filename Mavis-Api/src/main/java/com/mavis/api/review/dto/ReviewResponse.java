@@ -1,6 +1,6 @@
 package com.mavis.api.review.dto;
 
-import com.mavis.domain.domains.order.domain.Order;
+import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.review.domain.Review;
 import com.mavis.domain.domains.user.domain.User;
 import lombok.Builder;
@@ -20,7 +20,7 @@ public record ReviewResponse(
         List<String> imageUrls,
         String username
 ) {
-    public static ReviewResponse of(Review review, User user, Order order, List<String> imageUrls) {
+    public static ReviewResponse of(Review review, User user, OrderItem orderItem, List<String> imageUrls) {
         return ReviewResponse.builder()
                 .reviewId(review.getId())
                 .score(review.getScore())
@@ -28,8 +28,8 @@ public record ReviewResponse(
                 .imageUrls(imageUrls)
                 .content(review.getContentForPublic())
                 .username(user.getName())
-                .quantity(order.getQuantity())
-                .color(order.getColor())
+                .quantity(orderItem.getQuantity())
+                .color(orderItem.getColor())
                 .build();
     }
 }

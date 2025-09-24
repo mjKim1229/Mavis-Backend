@@ -5,7 +5,7 @@ import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.review.dto.CreateReviewRequest;
 import com.mavis.api.review.dto.ReviewResponse;
 import com.mavis.api.review.implement.ReviewImageUploader;
-import com.mavis.domain.domains.order.domain.Order;
+import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.implement.OrderReader;
 import com.mavis.domain.domains.review.domain.Review;
 import com.mavis.domain.domains.review.domain.ReviewImage;
@@ -33,8 +33,8 @@ public class ReviewService {
     @Transactional
     public void createReview(CreateReviewRequest request, List<MultipartFile> images) {
         User user = userReader.getCurrentUser();
-        Order order = orderReader.findById(request.orderId());
-        Review review = request.toEntity(order, user);
+        OrderItem orderItem = orderReader.findById(request.orderItemId());
+        Review review = request.toEntity(orderItem, user);
         Review savedReview = reviewRepository.save(review);
         reviewImageUploader.saveReviewImages(images, savedReview);
     }
@@ -52,7 +52,7 @@ public class ReviewService {
                             .stream()
                             .map(ReviewImage::getImageUrl)
                             .toList();
-                    return ReviewResponse.of(review, review.getUser(), review.getOrder(), reviewImages);
+                    return ReviewResponse.of(review, review.getUser(), review.getOrderItem(), reviewImages);
                 });
 
         return PageResponse.of(reviewPages);

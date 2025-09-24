@@ -1,7 +1,9 @@
 package com.mavis.api.auth.controller;
 
+import com.mavis.api.auth.dto.UserLoginRequest;
 import com.mavis.api.auth.dto.UserOauthResponse;
 import com.mavis.api.auth.facade.UserFacade;
+import com.mavis.api.auth.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserFacade userFacade;
+    private final UserService userService;
 
     @GetMapping("/oauth/kakao")
     public UserOauthResponse register(@RequestParam String code) {
@@ -21,6 +24,11 @@ public class AuthController {
     @GetMapping("/oauth/naver")
     public UserOauthResponse registerNaver(@RequestParam String code) {
         return userFacade.registerNaver(code);
+    }
+
+    @PostMapping("/login")
+    public UserOauthResponse login(@RequestBody UserLoginRequest request) {
+        return userService.login(request);
     }
 
     @DeleteMapping("/withdraw")
