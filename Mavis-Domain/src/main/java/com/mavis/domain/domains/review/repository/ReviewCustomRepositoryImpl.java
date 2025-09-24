@@ -17,7 +17,7 @@ import org.springframework.data.support.PageableExecutionUtils;
 
 import java.util.List;
 
-import static com.mavis.domain.domains.order.domain.QOrder.order;
+import static com.mavis.domain.domains.order.domain.QOrderItem.orderItem;
 import static com.mavis.domain.domains.review.domain.QReview.review;
 
 @RequiredArgsConstructor
@@ -35,16 +35,16 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                         review.count()
                 ))
                 .from(review)
-                .join(order).on(review.order.id.eq(order.id))
-                .where(order.product.id.eq(productId))
+                .join(orderItem).on(review.orderItem.id.eq(orderItem.id))
+                .where(orderItem.product.id.eq(productId))
                 .fetchOne();
     }
 
     public Page<Review> queryProductReviews(Long productId, Pageable pageable) {
         JPAQuery<Review> query = queryFactory
                 .selectFrom(review)
-                .join(order).on(review.order.id.eq(order.id)).fetchJoin()
-                .where(order.product.id.eq(productId))
+                .join(orderItem).on(review.orderItem.id.eq(orderItem.id)).fetchJoin()
+                .where(orderItem.product.id.eq(productId))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize());
 
@@ -60,8 +60,8 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
 
         JPAQuery<Long> countQuery = queryFactory.select(review.count())
                 .from(review)
-                .join(order).on(review.order.id.eq(order.id))
-                .where(order.product.id.eq(productId));
+                .join(orderItem).on(review.orderItem.id.eq(orderItem.id))
+                .where(orderItem.product.id.eq(productId));
 
         return PageableExecutionUtils.getPage(reviews, pageable, countQuery::fetchOne);
     }
