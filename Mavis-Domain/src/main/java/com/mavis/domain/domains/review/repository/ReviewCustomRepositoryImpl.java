@@ -1,7 +1,7 @@
-package com.mavis.api.review.repository;
+package com.mavis.domain.domains.review.repository;
 
-import com.mavis.api.review.domain.Review;
-import com.mavis.api.review.dto.ProductReviewTotal;
+import com.mavis.domain.domains.review.domain.Review;
+import com.mavis.domain.domains.review.vo.ProductReviewTotal;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -17,8 +17,8 @@ import org.springframework.data.support.PageableExecutionUtils;
 
 import java.util.List;
 
-import static com.mavis.api.order.domain.QOrder.order;
-import static com.mavis.api.review.domain.QReview.review;
+import static com.mavis.domain.domains.order.domain.QOrder.order;
+import static com.mavis.domain.domains.review.domain.QReview.review;
 
 @RequiredArgsConstructor
 public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
@@ -36,7 +36,7 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                 ))
                 .from(review)
                 .join(order).on(review.order.id.eq(order.id))
-                .where(order.productId.eq(productId))
+                .where(order.product.id.eq(productId))
                 .fetchOne();
     }
 
@@ -44,7 +44,7 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
         JPAQuery<Review> query = queryFactory
                 .selectFrom(review)
                 .join(order).on(review.order.id.eq(order.id)).fetchJoin()
-                .where(order.productId.eq(productId))
+                .where(order.product.id.eq(productId))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize());
 
@@ -61,7 +61,7 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
         JPAQuery<Long> countQuery = queryFactory.select(review.count())
                 .from(review)
                 .join(order).on(review.order.id.eq(order.id))
-                .where(order.productId.eq(productId));
+                .where(order.product.id.eq(productId));
 
         return PageableExecutionUtils.getPage(reviews, pageable, countQuery::fetchOne);
     }

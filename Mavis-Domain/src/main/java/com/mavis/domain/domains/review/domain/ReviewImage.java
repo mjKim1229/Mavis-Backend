@@ -1,4 +1,4 @@
-package com.mavis.api.review.domain;
+package com.mavis.domain.domains.review.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
