@@ -1,4 +1,4 @@
-package com.mavis.api.review.dto;
+package com.mavis.domain.domains.review.vo;
 
 public record ProductReviewTotal(
         Double averageScore,

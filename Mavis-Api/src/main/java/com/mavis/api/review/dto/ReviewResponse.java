@@ -1,6 +1,6 @@
 package com.mavis.api.review.dto;
 
-import com.mavis.api.review.domain.Review;
+import com.mavis.domain.domains.review.domain.Review;
 import lombok.Builder;
 
 import java.time.LocalDateTime;

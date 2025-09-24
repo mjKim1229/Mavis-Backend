@@ -1,7 +1,7 @@
 package com.mavis.api.review.dto;
 
-import com.mavis.api.order.domain.Order;
-import com.mavis.api.review.domain.Review;
+import com.mavis.domain.domains.order.domain.Order;
+import com.mavis.domain.domains.review.domain.Review;
 
 public record CreateReviewRequest(
         int score,

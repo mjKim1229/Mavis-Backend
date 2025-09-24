@@ -1,6 +1,6 @@
-package com.mavis.api.order.domain;
+package com.mavis.domain.domains.order.domain;
 
-import com.mavis.api.common.jpa.BaseEntity;
+import com.mavis.domain.domains.common.jpa.BaseEntity;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.user.domain.User;
 import jakarta.persistence.*;

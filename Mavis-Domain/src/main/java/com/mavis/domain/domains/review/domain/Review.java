@@ -1,7 +1,6 @@
-package com.mavis.api.review.domain;
-
-import com.mavis.api.common.jpa.BaseEntity;
-import com.mavis.api.order.domain.Order;
+package com.mavis.domain.domains.review.domain;
+import com.mavis.domain.domains.common.jpa.BaseEntity;
+import com.mavis.domain.domains.order.domain.Order;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,6 +21,7 @@ public class Review extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order;
+
     private Long userId;
 
     @OneToMany(mappedBy = "review")
