@@ -23,4 +23,10 @@ public class Order {
 
     @OneToMany(mappedBy = "order")
     private List<OrderItem> orderItems;
+
+    public static Order of(User user) {
+        return Order.builder()
+                .user(user)
+                .build();
+    }
 }
