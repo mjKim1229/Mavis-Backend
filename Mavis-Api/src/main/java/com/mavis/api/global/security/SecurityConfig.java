@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-resources/**", "/swagger-ui/**", "/v3/api-docs/**",
                         "/v3/api-docs")
                 .requestMatchers("/v1/api/products/**")
-                .requestMatchers("/v1/api/auths/oauth/**")
+                .requestMatchers("/v1/api/auths/**")
                 .requestMatchers(HttpMethod.GET, "/v1/api/inquiry/product/**")
                 .requestMatchers(HttpMethod.GET, "/v1/api/review/**");
     }

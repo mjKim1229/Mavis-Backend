@@ -31,4 +31,11 @@ public class User {
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Enumerated(EnumType.STRING)
     private SnsType snsType;
+
+    private String username;
+
+    private String password;
+
+    @Builder.Default
+    private final boolean isDeleted = false;
 }
