@@ -24,7 +24,7 @@ public class ReviewController {
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void createReview(@RequestPart CreateReviewRequest request,
                              @RequestPart List<MultipartFile> images) {
-        reviewService.createReview(request);
+        reviewService.createReview(request, images);
     }
 
     @GetMapping("/{productId}/total")
