@@ -1,5 +1,6 @@
 package com.mavis.api.review.service;
 
+import com.mavis.api.auth.implement.UserReader;
 import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.global.security.SecurityUtils;
 import com.mavis.api.review.implement.ReviewImageUploader;
@@ -13,6 +14,7 @@ import com.mavis.api.review.dto.CreateReviewRequest;
 import com.mavis.domain.domains.review.vo.ProductReviewTotal;
 import com.mavis.api.review.dto.ReviewResponse;
 import com.mavis.domain.domains.review.repository.ReviewRepository;
+import com.mavis.domain.domains.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,12 +31,13 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ReviewImageUploader reviewImageUploader;
     private final OrderReader orderReader;
+    private final UserReader userReader;
 
     @Transactional
     public void createReview(CreateReviewRequest request, List<MultipartFile> images) {
-        Long userId = SecurityUtils.getCurrentUserId();
+        User user = userReader.getCurrentUser();
         Order order = orderReader.findById(request.orderId());
-        Review review = request.toEntity(order, userId);
+        Review review = request.toEntity(order, user);
         Review savedReview = reviewRepository.save(review);
         reviewImageUploader.saveReviewImages(images, savedReview);
     }

@@ -1,6 +1,7 @@
 package com.mavis.domain.domains.review.domain;
 import com.mavis.domain.domains.common.jpa.BaseEntity;
 import com.mavis.domain.domains.order.domain.Order;
+import com.mavis.domain.domains.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,7 +23,8 @@ public class Review extends BaseEntity {
     @JoinColumn(name = "order_id")
     private Order order;
 
-    private Long userId;
+    @ManyToOne
+    private User user;
 
     @OneToMany(mappedBy = "review")
     private List<ReviewImage> images;
