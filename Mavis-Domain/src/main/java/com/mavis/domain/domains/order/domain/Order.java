@@ -24,6 +24,9 @@ public class Order {
     @OneToMany(mappedBy = "order")
     private List<OrderItem> orderItems;
 
+    @Builder.Default
+    private boolean isDeleted = false;
+
     public static Order of(User user) {
         return Order.builder()
                 .user(user)
