@@ -2,6 +2,7 @@ package com.mavis.api.review.service;
 
 import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.global.security.SecurityUtils;
+import com.mavis.api.review.implement.ReviewImageUploader;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.exception.OrderNotFoundException;
 import com.mavis.domain.domains.order.implement.OrderReader;
@@ -26,6 +27,7 @@ import java.util.List;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
+    private final ReviewImageUploader reviewImageUploader;
     private final OrderReader orderReader;
 
     @Transactional
@@ -33,7 +35,8 @@ public class ReviewService {
         Long userId = SecurityUtils.getCurrentUserId();
         Order order = orderReader.findById(request.orderId());
         Review review = request.toEntity(order, userId);
-        reviewRepository.save(review);
+        Review savedReview = reviewRepository.save(review);
+        reviewImageUploader.saveReviewImages(images, savedReview);
     }
 
     @Transactional(readOnly = true)
