@@ -31,4 +31,13 @@ public class OrderItem extends BaseEntity {
 
     @Builder.Default
     private boolean isDeleted = false;
+
+
+    public static OrderItem of(OrderOption option, int price) {
+        return OrderItem.builder()
+                .color(option.color())
+                .quantity(option.quantity())
+                .price(price)
+                .build();
+    }
 }
