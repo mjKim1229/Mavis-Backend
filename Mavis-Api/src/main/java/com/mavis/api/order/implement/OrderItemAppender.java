@@ -24,7 +24,7 @@ public class OrderItemAppender {
                 .map(request -> {
                     Product product = productReader.readById(request.productId());
                     OrderOption option = request.option();
-                    return OrderItem.of(option, countPrice(option.quantity(), product.getPrice()));
+                    return OrderItem.of(option, countPrice(option.quantity(), product.getPrice()), order, product);
                 })
                 .toList();
         orderItemRepository.saveAll(orderItems);
