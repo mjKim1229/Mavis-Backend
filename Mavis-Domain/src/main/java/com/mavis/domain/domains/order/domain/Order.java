@@ -4,11 +4,9 @@ import com.mavis.domain.domains.common.jpa.BaseEntity;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.user.domain.User;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+@Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "orders")
@@ -30,6 +28,8 @@ public class Order extends BaseEntity {
     private int quantity;
 
     private int price;
+
+    private String color;
 
     @Builder.Default
     private boolean isDeleted = false;
