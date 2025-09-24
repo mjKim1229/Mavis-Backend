@@ -22,7 +22,7 @@ public class Review extends BaseEntity {
     private String content;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_item_id")
     private OrderItem orderItem;
 
     @ManyToOne
