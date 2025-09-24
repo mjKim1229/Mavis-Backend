@@ -33,7 +33,7 @@ public class ReviewService {
     @Transactional
     public void createReview(CreateReviewRequest request, List<MultipartFile> images) {
         User user = userReader.getCurrentUser();
-        OrderItem orderItem = orderReader.findById(request.orderId());
+        OrderItem orderItem = orderReader.findById(request.orderItemId());
         Review review = request.toEntity(orderItem, user);
         Review savedReview = reviewRepository.save(review);
         reviewImageUploader.saveReviewImages(images, savedReview);
