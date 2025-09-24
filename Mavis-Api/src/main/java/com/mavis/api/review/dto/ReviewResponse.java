@@ -12,6 +12,7 @@ public record ReviewResponse(
         int score,
         LocalDateTime createdAt,
         int quantity,
+        String content,
         List<String> imageUrls
 ) {
     public static ReviewResponse of(Review review, List<String> imageUrls) {
@@ -20,6 +21,7 @@ public record ReviewResponse(
                 .score(review.getScore())
                 .createdAt(review.getCreatedAt())
                 .imageUrls(imageUrls)
+                .content(review.getContentForPublic())
                 .build();
     }
 }

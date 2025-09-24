@@ -7,7 +7,8 @@ import com.mavis.domain.domains.user.domain.User;
 public record CreateReviewRequest(
         int score,
         String content,
-        Long orderId
+        Long orderId,
+        boolean isPrivate
 ) {
     public Review toEntity(Order order, User user) {
         return Review.builder()

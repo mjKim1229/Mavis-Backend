@@ -26,6 +26,18 @@ public class Review extends BaseEntity {
     @ManyToOne
     private User user;
 
+    private boolean isPrivate;
+
     @OneToMany(mappedBy = "review")
     private List<ReviewImage> images;
+
+    @Builder.Default
+    private final boolean isDeleted = false;
+
+    public String getContentForPublic() {
+        if (isPrivate) {
+            return null;
+        }
+        return content;
+    }
 }
