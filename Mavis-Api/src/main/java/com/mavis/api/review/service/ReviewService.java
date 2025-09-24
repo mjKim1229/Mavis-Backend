@@ -52,7 +52,7 @@ public class ReviewService {
                             .stream()
                             .map(ReviewImage::getImageUrl)
                             .toList();
-                    return ReviewResponse.of(review, reviewImages);
+                    return ReviewResponse.of(review, review.getUser(), reviewImages);
                 });
 
         return PageResponse.of(reviewPages);
