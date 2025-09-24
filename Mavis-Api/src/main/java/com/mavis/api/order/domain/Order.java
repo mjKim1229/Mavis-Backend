@@ -1,6 +1,8 @@
 package com.mavis.api.order.domain;
 
 import com.mavis.api.common.jpa.BaseEntity;
+import com.mavis.domain.domains.product.domain.Product;
+import com.mavis.domain.domains.user.domain.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -17,9 +19,13 @@ public class Order extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long productId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product;
 
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     private int quantity;
 
