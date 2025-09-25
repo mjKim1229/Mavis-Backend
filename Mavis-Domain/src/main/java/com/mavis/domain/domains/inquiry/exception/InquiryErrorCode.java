@@ -1,13 +1,12 @@
-package com.mavis.admin.domains.admin.exception;
+package com.mavis.domain.domains.inquiry.exception;
 
 import com.mavis.common.dto.ErrorReason;
 import com.mavis.common.exception.BaseErrorCode;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public enum AdminErrorCode implements BaseErrorCode {
-    ADMIN_LOGIN(401, "아이디, 비밀번호를 확인해주세요", "ADMIN_401_1");
-
+public enum InquiryErrorCode implements BaseErrorCode {
+    INQUIRY_NOT_FOUND(404, "존재하지 않는 문의사항입니다.", "INQUIRY_404_1");
     private final Integer status;
     private final String message;
     private final String code;

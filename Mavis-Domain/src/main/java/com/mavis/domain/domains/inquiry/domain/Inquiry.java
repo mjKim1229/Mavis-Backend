@@ -2,6 +2,7 @@ package com.mavis.domain.domains.inquiry.domain;
 
 import com.mavis.domain.domains.common.jpa.BaseEntity;
 import com.mavis.domain.domains.product.domain.Product;
+import com.mavis.domain.domains.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,16 +20,21 @@ public class Inquiry extends BaseEntity {
     Long id;
 
     private String question;
-    private String answer;
-    private Long answerAdminId;
-    private Long questionUserId;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
 
     private boolean isPrivate;
-    private LocalDateTime answeredDatetime;
+
+    @OneToOne(mappedBy = "inquiry")
+    private InquiryAnswer inquiryAnswer;
+
     @Builder.Default
     private boolean isDeleted = false;
+
 }

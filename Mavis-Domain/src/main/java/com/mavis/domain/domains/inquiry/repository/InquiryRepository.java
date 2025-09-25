@@ -4,7 +4,10 @@ import com.mavis.domain.domains.inquiry.domain.Inquiry;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface InquiryRepository extends JpaRepository<Inquiry, Long> {
+public interface InquiryRepository extends JpaRepository<Inquiry, Long>, InquiryCustomRepository {
     List<Inquiry> findAllByProductIdAndIsDeletedFalse(Long ProductId);
+
+    Optional<Inquiry> findByIdAndIsDeletedFalse(Long id);
 }

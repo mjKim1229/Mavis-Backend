@@ -13,7 +13,6 @@ public record CreateInquiryRequest(
                 .product(product)
                 .question(question)
                 .isPrivate(isPrivate)
-                .questionUserId(userId)
                 .build();
     }
 }
