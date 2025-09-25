@@ -1,6 +1,6 @@
-package com.mavis.admin.domains.admin.repository;
+package com.mavis.domain.domains.admin.repository;
 
-import com.mavis.domain.domains.domain.Admin;
+import com.mavis.domain.domains.admin.domain.Admin;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

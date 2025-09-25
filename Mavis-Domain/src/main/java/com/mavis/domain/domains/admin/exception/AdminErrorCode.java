@@ -1,4 +1,4 @@
-package com.mavis.admin.domains.admin.exception;
+package com.mavis.domain.domains.admin.exception;
 
 import com.mavis.common.dto.ErrorReason;
 import com.mavis.common.exception.BaseErrorCode;
