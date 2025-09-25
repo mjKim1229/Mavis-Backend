@@ -1,6 +1,7 @@
 package com.mavis.api.inquiry.service;
 
 import com.mavis.api.auth.implement.UserReader;
+import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.inquiry.dto.CreateInquiryRequest;
 import com.mavis.api.inquiry.dto.GetProductInquiryResponse;
 import com.mavis.api.inquiry.implement.InquiryReader;
@@ -10,10 +11,9 @@ import com.mavis.domain.domains.inquiry.repository.InquiryRepository;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.user.domain.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -25,9 +25,9 @@ public class InquiryService {
     private final InquiryRepository inquiryRepository;
 
     @Transactional(readOnly = true)
-    public List<GetProductInquiryResponse> getProductInquiries(Long productId) {
+    public PageResponse<GetProductInquiryResponse> getProductInquiries(Long productId, Pageable pageable) {
         Product product = productReader.readById(productId);
-        return inquiryReader.readProductInquiries(product.getId());
+        return inquiryReader.readProductInquiries(product.getId(), pageable);
     }
 
     @Transactional
