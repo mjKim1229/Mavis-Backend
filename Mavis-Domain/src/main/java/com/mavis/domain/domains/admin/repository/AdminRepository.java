@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface AdminRepository extends JpaRepository<Admin, Long> {
 
     Optional<Admin> findByUsernameAndIsDeletedFalse(String username);
+    Optional<Admin> findByIdAndIsDeletedFalse(Long id);
 }
