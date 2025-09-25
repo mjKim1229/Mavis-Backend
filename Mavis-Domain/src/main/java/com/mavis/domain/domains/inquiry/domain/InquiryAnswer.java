@@ -1,6 +1,7 @@
 package com.mavis.domain.domains.inquiry.domain;
 
 import com.mavis.domain.domains.common.jpa.BaseEntity;
+import com.mavis.domain.domains.domain.Admin;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,6 +21,10 @@ public class InquiryAnswer extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "inquiry_id")
     private Inquiry inquiry;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "admin_id")
+    private Admin admin;
 
     @Builder.Default
     private boolean isDeleted = false;
