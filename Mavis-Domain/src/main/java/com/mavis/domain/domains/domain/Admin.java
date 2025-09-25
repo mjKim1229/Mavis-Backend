@@ -1,4 +1,4 @@
-package com.mavis.admin.domains.admin.domain;
+package com.mavis.domain.domains.domain;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
