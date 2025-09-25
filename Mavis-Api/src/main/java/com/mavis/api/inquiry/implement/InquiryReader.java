@@ -1,15 +1,16 @@
 package com.mavis.api.inquiry.implement;
 
+import com.mavis.api.common.page.PageResponse;
+import com.mavis.api.inquiry.dto.GetProductInquiryResponse;
 import com.mavis.api.inquiry.dto.InquiryAnswerResponse;
 import com.mavis.api.inquiry.dto.InquiryResponse;
 import com.mavis.domain.domains.inquiry.domain.Inquiry;
-import com.mavis.api.inquiry.dto.GetProductInquiryResponse;
 import com.mavis.domain.domains.inquiry.exception.InquiryNotFoundException;
 import com.mavis.domain.domains.inquiry.repository.InquiryRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -22,12 +23,10 @@ public class InquiryReader {
                 .orElseThrow(() -> InquiryNotFoundException.EXCEPTION);
     }
 
-    public List<GetProductInquiryResponse> readProductInquiries(Long productId) {
-        List<Inquiry> inquiries = inquiryRepository.findInquiryByProductId(productId);
-
-        return inquiries.stream()
-                .map(this::toProductInquiryResponse)
-                .toList();
+    public PageResponse<GetProductInquiryResponse> readProductInquiries(Long productId, Pageable pageable) {
+        Page<Inquiry> inquiries = inquiryRepository.findInquiryByProductId(productId, pageable);
+        Page<GetProductInquiryResponse> inquiryPages = inquiries.map(this::toProductInquiryResponse);
+        return PageResponse.of(inquiryPages);
     }
 
     private GetProductInquiryResponse toProductInquiryResponse(Inquiry inquiry) {

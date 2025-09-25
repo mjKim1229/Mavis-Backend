@@ -1,7 +1,7 @@
 package com.mavis.domain.domains.inquiry.domain;
 
-import com.mavis.domain.domains.common.jpa.BaseEntity;
 import com.mavis.domain.domains.admin.domain.Admin;
+import com.mavis.domain.domains.common.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
