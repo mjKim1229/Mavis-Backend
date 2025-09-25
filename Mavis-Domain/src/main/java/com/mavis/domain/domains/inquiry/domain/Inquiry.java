@@ -31,6 +31,10 @@ public class Inquiry extends BaseEntity {
 
     private boolean isPrivate;
 
+    @OneToOne(mappedBy = "inquiry")
+    private InquiryAnswer inquiryAnswer;
+
     @Builder.Default
     private boolean isDeleted = false;
+
 }

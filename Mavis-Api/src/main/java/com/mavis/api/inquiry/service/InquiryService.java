@@ -26,7 +26,8 @@ public class InquiryService {
 
     @Transactional(readOnly = true)
     public List<GetProductInquiryResponse> getProductInquiries(Long productId) {
-        return inquiryReader.readProductInquiries(productId);
+        Product product = productReader.readById(productId);
+        return inquiryReader.readProductInquiries(product.getId());
     }
 
     @Transactional
