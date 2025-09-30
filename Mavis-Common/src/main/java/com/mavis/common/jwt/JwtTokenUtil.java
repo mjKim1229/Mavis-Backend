@@ -20,7 +20,7 @@ import static com.mavis.common.consts.MavisStatic.*;
 
 @Component
 @RequiredArgsConstructor
-public class JwtTokenProvider {
+public class JwtTokenUtil {
 
     private final JwtProperties jwtProperties;
 

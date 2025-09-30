@@ -3,7 +3,7 @@ package com.mavis.api.auth.service;
 import com.mavis.api.auth.dto.UserLoginRequest;
 import com.mavis.api.auth.dto.UserOauthResponse;
 import com.mavis.common.dto.JwtPair;
-import com.mavis.common.jwt.JwtTokenProvider;
+import com.mavis.common.jwt.JwtTokenUtil;
 import com.mavis.domain.domains.user.domain.SnsType;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.domain.domains.user.exception.UserNotFoundException;
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenUtil jwtTokenUtil;
 
     public Long saveNaverUser(NaverProfile profile) {
         User user = User.builder()
@@ -38,8 +38,8 @@ public class UserService {
         if (!user.getPassword().equals(request.password())) {
             throw UserNotFoundException.EXCEPTION;
         }
-        String accessToken = jwtTokenProvider.generateAccessToken(user.getId());
-        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
+        String accessToken = jwtTokenUtil.generateAccessToken(user.getId());
+        String refreshToken = jwtTokenUtil.generateRefreshToken(user.getId());
         return new UserOauthResponse(
                 user.getId(),
                 new JwtPair(accessToken, refreshToken)
