@@ -1,6 +1,6 @@
 package com.mavis.admin.global.security;
 
-import com.mavis.common.jwt.JwtTokenProvider;
+import com.mavis.common.jwt.JwtTokenUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -22,7 +22,7 @@ import static com.mavis.common.consts.MavisStatic.BEARER;
 @RequiredArgsConstructor
 public class JwtTokenFilter extends OncePerRequestFilter {
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenUtil jwtTokenUtil;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -53,7 +53,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     }
 
     private Authentication getAuthentication(String token) {
-        Long id = jwtTokenProvider.parseAccessToken(token);
+        Long id = jwtTokenUtil.parseAccessToken(token);
 
         UserDetails userDetails = new AuthDetails(id.toString(), "USER");
 
