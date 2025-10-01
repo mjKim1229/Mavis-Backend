@@ -1,10 +1,13 @@
 package com.mavis.api.cart.controller;
 
 import com.mavis.api.cart.dto.CreateCartRequest;
+import com.mavis.api.cart.dto.GetCartResponse;
 import com.mavis.api.cart.dto.UpdateCartRequest;
 import com.mavis.api.cart.service.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequestMapping("/v1/api/cart")
 @RestController
@@ -26,5 +29,10 @@ public class CartController {
     @PostMapping("/{id}")
     public void deleteCartItem(@PathVariable Long id) {
         cartService.delete(id);
+    }
+
+    @GetMapping
+    public List<GetCartResponse> getCartResponses() {
+        return cartService.getCartResponses();
     }
 }

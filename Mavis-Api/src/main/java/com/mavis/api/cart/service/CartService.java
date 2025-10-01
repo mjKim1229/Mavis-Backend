@@ -2,6 +2,7 @@ package com.mavis.api.cart.service;
 
 import com.mavis.api.auth.implement.UserReader;
 import com.mavis.api.cart.dto.CreateCartRequest;
+import com.mavis.api.cart.dto.GetCartResponse;
 import com.mavis.api.cart.dto.UpdateCartRequest;
 import com.mavis.api.cart.implement.CartReader;
 import com.mavis.api.product.implement.ProductReader;
@@ -12,6 +13,8 @@ import com.mavis.domain.domains.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -46,5 +49,14 @@ public class CartService {
     public void delete(Long id) {
         CartItem cartItem = cartReader.findById(id);
         cartItem.delete();
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetCartResponse> getCartResponses() {
+        User user = userReader.getCurrentUser();
+        List<CartItem> cartItems = cartItemRepository.findUserCartItem(user);
+        return cartItems.stream()
+                .map(cartItem -> GetCartResponse.from(cartItem, cartItem.getProduct()))
+                .toList();
     }
 }
