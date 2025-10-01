@@ -31,6 +31,7 @@ public class CartService {
                 .product(product)
                 .color(request.color())
                 .quantity(request.quantity())
+                .totalPrice(product.getPrice() * request.quantity())
                 .build();
         cartItemRepository.save(cartItem);
     }
