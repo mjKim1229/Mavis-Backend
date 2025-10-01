@@ -6,6 +6,7 @@ import lombok.Builder;
 
 @Builder
 public record GetCartResponse(
+        Long cartItemId,
         String productName,
         String productImageUrl,
         String color,
@@ -14,6 +15,7 @@ public record GetCartResponse(
 ) {
     public static GetCartResponse from(CartItem cartItem, Product product) {
         return GetCartResponse.builder()
+                .cartItemId(cartItem.getId())
                 .productName(product.getName())
                 //TODO 이미지
                 .productImageUrl("imageUrl")

@@ -8,7 +8,6 @@ import lombok.*;
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "orders")
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CartItem {
