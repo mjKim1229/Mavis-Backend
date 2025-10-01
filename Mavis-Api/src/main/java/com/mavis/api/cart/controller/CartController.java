@@ -26,7 +26,7 @@ public class CartController {
         cartService.updateCartItem(id, request);
     }
 
-    @PostMapping("/{id}")
+    @DeleteMapping("/{id}")
     public void deleteCartItem(@PathVariable Long id) {
         cartService.delete(id);
     }
