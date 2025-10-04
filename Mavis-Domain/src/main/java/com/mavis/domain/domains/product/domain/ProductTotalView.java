@@ -25,4 +25,11 @@ public class ProductTotalView {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
+
+    @Builder.Default
+    private boolean isDeleted = false;
+
+    public void increaseView() {
+        totalViews++;
+    }
 }
