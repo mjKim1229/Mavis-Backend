@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+@Builder
 @Getter
 @Entity
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -25,5 +26,5 @@ public class ProductImage extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ProductImageType imageType;
 
-    private int order;
+    private int orderNum;
 }

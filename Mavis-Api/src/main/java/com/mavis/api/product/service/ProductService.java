@@ -78,7 +78,7 @@ public class ProductService {
 
     private static String getPreviewImage(Product product) {
         return product.getImages().stream()
-                .filter(image -> image.getOrder() == 1)
+                .filter(image -> image.getOrderNum() == 1)
                 .map(ProductImage::getImageUrl)
                 .findFirst()
                 .orElse(null);
