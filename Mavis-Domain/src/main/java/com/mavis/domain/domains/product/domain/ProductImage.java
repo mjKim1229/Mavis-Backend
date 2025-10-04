@@ -24,4 +24,6 @@ public class ProductImage extends BaseEntity {
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Enumerated(EnumType.STRING)
     private ProductImageType imageType;
+
+    private int order;
 }
