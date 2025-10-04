@@ -1,30 +1,28 @@
 package com.mavis.domain.domains.product.domain;
 
-import com.mavis.domain.domains.common.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
-@Builder
+import java.time.LocalDate;
+
 @Getter
 @Entity
+@Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ProductImage extends BaseEntity {
+public class ProductTotalView {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String imageUrl;
+    private LocalDate weekStart;
+
+    private LocalDate weekEnd;
+
+    @Builder.Default
+    private long totalViews = 0L;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
-
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Enumerated(EnumType.STRING)
-    private ProductImageType imageType;
-
-    private int orderNum;
 }

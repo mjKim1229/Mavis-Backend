@@ -1,7 +1,10 @@
 package com.mavis.api.product.service;
 
+import com.mavis.api.product.dto.GetProductPreviewResponse;
 import com.mavis.domain.domains.product.domain.Product;
+import com.mavis.domain.domains.product.domain.ProductColor;
 import com.mavis.domain.domains.product.domain.ProductImage;
+import com.mavis.domain.domains.product.repository.ProductRepository;
 import com.mavis.domain.domains.product.vo.ColorVO;
 import com.mavis.api.product.dto.GetProductResponse;
 import com.mavis.domain.domains.product.vo.ProductNoticeResponse;
@@ -13,6 +16,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Arrays;
 import java.util.List;
 
@@ -23,6 +29,7 @@ public class ProductService {
 
     private final EnumMapper enumMapper;
     private final ProductReader productReader;
+    private final ProductRepository productRepository;
 
     public GetProductResponse getProductById(Long id) {
         Product product = productReader.readById(id);
@@ -46,5 +53,34 @@ public class ProductService {
 
     public ProductNoticeResponse getProductNotice(Long productId) {
         return productReader.readProductNotice(productId);
+    }
+
+    public List<GetProductPreviewResponse> getThisWeekPopularProducts() {
+        LocalDate today = LocalDate.now();
+        LocalDate weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate weekEnd = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+        List<Product> products = productRepository.getWeeklyBestProducts(weekStart, weekEnd);
+
+        return products.stream()
+                .map(product -> {
+                            String previewImage = getPreviewImage(product);
+                            List<String> colors = extractColors(product);
+                            return GetProductPreviewResponse.from(product, colors, previewImage);
+                        }
+                ).toList();
+    }
+
+    private static List<String> extractColors(Product product) {
+        return product.getColors().stream()
+                .map(ProductColor::getColor)
+                .toList();
+    }
+
+    private static String getPreviewImage(Product product) {
+        return product.getImages().stream()
+                .filter(image -> image.getOrderNum() == 1)
+                .map(ProductImage::getImageUrl)
+                .findFirst()
+                .orElse(null);
     }
 }
