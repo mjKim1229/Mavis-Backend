@@ -1,9 +1,11 @@
 package com.mavis.api.product.service;
 
 import com.mavis.api.product.dto.GetProductPreviewResponse;
+import com.mavis.api.product.implement.ProductTotalViewManager;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.product.domain.ProductColor;
 import com.mavis.domain.domains.product.domain.ProductImage;
+import com.mavis.domain.domains.product.domain.ProductTotalView;
 import com.mavis.domain.domains.product.repository.ProductRepository;
 import com.mavis.domain.domains.product.vo.ColorVO;
 import com.mavis.api.product.dto.GetProductResponse;
@@ -30,15 +32,22 @@ public class ProductService {
     private final EnumMapper enumMapper;
     private final ProductReader productReader;
     private final ProductRepository productRepository;
+    private final ProductTotalViewManager productTotalViewManager;
 
+    @Transactional
     public GetProductResponse getProductById(Long id) {
         Product product = productReader.readById(id);
         List<ColorVO> colors = productReader.readProductColors(product.getId());
-        List<String> imageUrls = product.getImages()
+        List<String> imageUrls = extractImageUrl(product);
+        productTotalViewManager.increaseTotalView(product);
+        return GetProductResponse.from(product, colors, imageUrls);
+    }
+
+    private static List<String> extractImageUrl(Product product) {
+        return product.getImages()
                 .stream()
                 .map(ProductImage::getImageUrl)
                 .toList();
-        return GetProductResponse.from(product, colors, imageUrls);
     }
 
     public List<SubCategoryVO> getProductTotalCategory() {
