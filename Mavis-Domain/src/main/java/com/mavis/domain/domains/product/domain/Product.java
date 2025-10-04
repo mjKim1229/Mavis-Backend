@@ -27,11 +27,14 @@ public class Product extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ProductSubCategory subCategory;
 
-    @OneToMany
+    @OneToMany(mappedBy = "product")
     private List<ProductImage> images;
 
-    @Builder.Default
-    private Long totalViews = 0L;
+    @OneToMany(mappedBy = "product")
+    private List<ProductColor> colors;
+
+    @OneToMany(mappedBy = "product")
+    private List<ProductTotalView> totalViews;
 
     @Builder.Default
     private boolean isDeleted = false;

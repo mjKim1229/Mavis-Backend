@@ -1,6 +1,6 @@
 package com.mavis.domain.domains.product.repository;
 
-import com.mavis.domain.domains.product.domain.QProductNotice;
+import com.mavis.domain.domains.product.domain.*;
 import com.mavis.domain.domains.product.vo.ColorVO;
 import com.mavis.domain.domains.product.vo.ProductNoticeResponse;
 import com.querydsl.core.types.Projections;
@@ -8,10 +8,14 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import static com.mavis.domain.domains.product.domain.QProduct.*;
 import static com.mavis.domain.domains.product.domain.QProductColor.productColor;
+import static com.mavis.domain.domains.product.domain.QProductImage.*;
+import static com.mavis.domain.domains.product.domain.QProductTotalView.*;
 
 
 @RequiredArgsConstructor
@@ -45,5 +49,25 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
                 .fetchOne();
 
         return Optional.ofNullable(productNotice);
+    }
+
+    public List<Product> getWeeklyBestProducts(LocalDate startAt, LocalDate endAt) {
+        List<Long> popularProductIds = queryFactory
+                .select(productTotalView.product.id)
+                .from(productTotalView)
+                .where(productTotalView.weekStart.eq(startAt)
+                        .and(productTotalView.weekEnd.eq(endAt)))
+                .orderBy(productTotalView.totalViews.desc())
+                .limit(5)
+                .fetch();
+
+        return queryFactory
+                .selectDistinct(product)
+                .from(product)
+                .leftJoin(product.colors, productColor).fetchJoin()
+                .leftJoin(product.images, productImage).fetchJoin()
+                .where(product.id.in(popularProductIds)
+                        .and(product.isDeleted.eq(false)))
+                .fetch();
     }
 }

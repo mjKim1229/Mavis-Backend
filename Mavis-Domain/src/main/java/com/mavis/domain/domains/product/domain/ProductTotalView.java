@@ -19,6 +19,9 @@ public class ProductTotalView {
 
     private LocalDate weekEnd;
 
+    @Builder.Default
+    private long totalViews = 0L;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;

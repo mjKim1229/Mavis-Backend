@@ -1,5 +1,6 @@
 package com.mavis.api.product.controller;
 
+import com.mavis.api.product.dto.GetProductPreviewResponse;
 import com.mavis.api.product.dto.GetProductResponse;
 import com.mavis.domain.domains.product.vo.ProductNoticeResponse;
 import com.mavis.api.product.dto.SubCategoryVO;
@@ -32,5 +33,10 @@ public class ProductController {
     @GetMapping("/{id}/notice")
     public ProductNoticeResponse getProductNotice(@PathVariable Long id) {
         return productService.getProductNotice(id);
+    }
+
+    @GetMapping("/popular")
+    public List<GetProductPreviewResponse> getWeeklyPopularProduct() {
+        return productService.getThisWeekPopularProducts();
     }
 }
