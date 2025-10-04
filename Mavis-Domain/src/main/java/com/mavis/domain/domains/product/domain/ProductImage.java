@@ -3,6 +3,8 @@ package com.mavis.domain.domains.product.domain;
 import com.mavis.domain.domains.common.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Getter
 @Entity
@@ -18,4 +20,8 @@ public class ProductImage extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
+
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Enumerated(EnumType.STRING)
+    private ProductImageType imageType;
 }
