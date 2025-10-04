@@ -31,5 +31,8 @@ public class Product extends BaseEntity {
     private List<ProductImage> images;
 
     @Builder.Default
+    private Long totalViews = 0L;
+
+    @Builder.Default
     private boolean isDeleted = false;
 }
