@@ -1,5 +1,6 @@
 package com.mavis.api.auth.dto;
 
+import com.mavis.domain.domains.user.domain.Gender;
 import com.mavis.domain.domains.user.domain.User;
 
 public record UserSignUpRequest(
@@ -7,6 +8,7 @@ public record UserSignUpRequest(
         String password,
         String nickname,
         String name,
+        Gender gender,
         String birthDay,
         String phoneNumber,
         String email
