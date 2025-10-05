@@ -34,7 +34,7 @@ public class UserService {
                 .nickname(profile.nickname())
                 .email(profile.email())
                 .gender(profile.gender())
-                .birthDay(toLocalDate(profile.birthYear(), profile.birthday()))
+                .birthDay(toLocalDate(profile.birthyear(), profile.birthday()))
                 .snsType(SnsType.NAVER)
                 .build();
         return userRepository.save(user).getId();

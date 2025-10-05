@@ -13,7 +13,7 @@ public record NaverProfile(
         String age,
         String birthday,
         String profileImage,
-        String birthYear,
+        String birthyear,
         String mobile
 ) {
 }
