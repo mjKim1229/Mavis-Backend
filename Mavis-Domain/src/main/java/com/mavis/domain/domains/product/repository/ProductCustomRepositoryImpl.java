@@ -58,7 +58,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
                 .where(productTotalView.weekStart.eq(startAt)
                         .and(productTotalView.weekEnd.eq(endAt)))
                 .orderBy(productTotalView.totalViews.desc())
-                .limit(5)
+                .limit(4)
                 .fetch();
 
         return queryFactory
@@ -68,6 +68,16 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
                 .leftJoin(product.images, productImage)
                 .where(product.id.in(popularProductIds)
                         .and(product.isDeleted.eq(false)))
+                .fetch();
+    }
+
+    public List<Product> getRecentCreatedProducts() {
+        return queryFactory.selectFrom(product)
+                .leftJoin(product.colors, productColor)
+                .leftJoin(product.images, productImage)
+                .where(product.isDeleted.eq(false))
+                .orderBy(product.createdAt.desc())
+                .limit(8)
                 .fetch();
     }
 }

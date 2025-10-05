@@ -39,4 +39,9 @@ public class ProductController {
     public List<GetProductPreviewResponse> getWeeklyPopularProduct() {
         return productService.getThisWeekPopularProducts();
     }
+
+    @GetMapping("/recent")
+    public List<GetProductPreviewResponse> getRecentCreatedProduct() {
+        return productService.getRecentCreatedProducts();
+    }
 }

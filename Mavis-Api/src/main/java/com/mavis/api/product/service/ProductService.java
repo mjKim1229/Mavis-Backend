@@ -92,4 +92,14 @@ public class ProductService {
                 .findFirst()
                 .orElse(null);
     }
+
+    public List<GetProductPreviewResponse> getRecentCreatedProducts() {
+        List<Product> products = productRepository.getRecentCreatedProducts();
+        return products.stream()
+                .map(product -> {
+                    List<String> colors = extractColors(product);
+                    String previewImage = getPreviewImage(product);
+                    return GetProductPreviewResponse.from(product, colors, previewImage);
+                }).toList();
+    }
 }
