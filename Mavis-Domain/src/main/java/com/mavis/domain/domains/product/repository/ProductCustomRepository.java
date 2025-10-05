@@ -12,4 +12,5 @@ public interface ProductCustomRepository {
     List<ColorVO> getProductColors(Long productId);
     Optional<ProductNoticeResponse> getProductNoticeByProductId(Long productId);
     List<Product> getWeeklyBestProducts(LocalDate startAt, LocalDate endAt);
+    List<Product> getRecentCreatedProducts();
 }

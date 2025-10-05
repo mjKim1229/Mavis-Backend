@@ -70,4 +70,14 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
                         .and(product.isDeleted.eq(false)))
                 .fetch();
     }
+
+    public List<Product> getRecentCreatedProducts() {
+        return queryFactory.selectFrom(product)
+                .leftJoin(product.colors, productColor)
+                .leftJoin(product.images, productImage)
+                .where(product.isDeleted.eq(false))
+                .orderBy(product.createdAt.desc())
+                .limit(8)
+                .fetch();
+    }
 }
