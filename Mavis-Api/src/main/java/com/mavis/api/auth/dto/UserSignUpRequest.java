@@ -4,13 +4,15 @@ import com.mavis.domain.domains.user.domain.Gender;
 import com.mavis.domain.domains.user.domain.SnsType;
 import com.mavis.domain.domains.user.domain.User;
 
+import java.time.LocalDate;
+
 public record UserSignUpRequest(
         String username,
         String password,
         String nickname,
         String name,
         Gender gender,
-        String birthDay,
+        LocalDate birthDay,
         String phoneNumber,
         String email
 ) {

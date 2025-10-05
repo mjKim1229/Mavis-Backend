@@ -14,12 +14,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 @Component
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final JwtTokenUtil jwtTokenUtil;
+
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Transactional
     public Long saveNaverUser(NaverProfile profile) {
@@ -29,10 +34,15 @@ public class UserService {
                 .nickname(profile.nickname())
                 .email(profile.email())
                 .gender(profile.gender())
-                .birthDay(profile.birthYear() + "-" + profile.birthday())
+                .birthDay(toLocalDate(profile.birthYear(), profile.birthday()))
                 .snsType(SnsType.NAVER)
                 .build();
         return userRepository.save(user).getId();
+    }
+
+    private static LocalDate toLocalDate(String birthYear, String birthday) {
+        String fullDate = birthYear + "-" + birthday;
+        return LocalDate.parse(fullDate, DATE_TIME_FORMATTER);
     }
 
     @Transactional(readOnly = true)
