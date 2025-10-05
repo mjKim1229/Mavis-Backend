@@ -58,7 +58,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
                 .where(productTotalView.weekStart.eq(startAt)
                         .and(productTotalView.weekEnd.eq(endAt)))
                 .orderBy(productTotalView.totalViews.desc())
-                .limit(5)
+                .limit(4)
                 .fetch();
 
         return queryFactory
