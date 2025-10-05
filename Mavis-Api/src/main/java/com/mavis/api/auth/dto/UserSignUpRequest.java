@@ -1,0 +1,25 @@
+package com.mavis.api.auth.dto;
+
+import com.mavis.domain.domains.user.domain.User;
+
+public record UserSignUpRequest(
+        String username,
+        String password,
+        String nickname,
+        String name,
+        String birthDay,
+        String phoneNumber,
+        String email
+) {
+    public User toEntity() {
+        return User.builder()
+                .username(username)
+                .password(password)
+                .nickname(nickname)
+                .name(name)
+                .birthDay(birthDay)
+                .phoneNumber(phoneNumber)
+                .email(email)
+                .build();
+    }
+}

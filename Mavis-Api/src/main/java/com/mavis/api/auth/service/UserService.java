@@ -2,6 +2,7 @@ package com.mavis.api.auth.service;
 
 import com.mavis.api.auth.dto.UserLoginRequest;
 import com.mavis.api.auth.dto.UserOauthResponse;
+import com.mavis.api.auth.dto.UserSignUpRequest;
 import com.mavis.common.dto.JwtPair;
 import com.mavis.common.jwt.JwtTokenUtil;
 import com.mavis.domain.domains.user.domain.SnsType;
@@ -11,6 +12,7 @@ import com.mavis.domain.domains.user.repository.UserRepository;
 import com.mavis.infrastructure.outer.api.oauth.dto.NaverProfile;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -19,6 +21,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final JwtTokenUtil jwtTokenUtil;
 
+    @Transactional
     public Long saveNaverUser(NaverProfile profile) {
         User user = User.builder()
                 .snsId(profile.id())
@@ -26,12 +29,13 @@ public class UserService {
                 .nickname(profile.nickname())
                 .email(profile.email())
                 .gender(profile.gender())
-                .birthDay(profile.birthyear() + "-" + profile.birthday())
+                .birthDay(profile.birthYear() + "-" + profile.birthday())
                 .snsType(SnsType.NAVER)
                 .build();
         return userRepository.save(user).getId();
     }
 
+    @Transactional(readOnly = true)
     public UserOauthResponse login(UserLoginRequest request) {
         User user = userRepository.findByUsernameAndIsDeletedFalse(request.username())
                 .orElseThrow(() -> UserNotFoundException.EXCEPTION);
@@ -44,5 +48,11 @@ public class UserService {
                 user.getId(),
                 new JwtPair(accessToken, refreshToken)
         );
+    }
+
+    @Transactional
+    public void signUp(UserSignUpRequest request) {
+        User user = request.toEntity();
+        userRepository.save(user);
     }
 }

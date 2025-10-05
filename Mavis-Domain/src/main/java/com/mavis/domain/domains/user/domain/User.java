@@ -28,6 +28,8 @@ public class User {
 
     private String birthDay;
 
+    private String phoneNumber;
+
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Enumerated(EnumType.STRING)
     private SnsType snsType;
