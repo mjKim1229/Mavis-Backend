@@ -1,6 +1,7 @@
 package com.mavis.api.auth.dto;
 
 import com.mavis.domain.domains.user.domain.Gender;
+import com.mavis.domain.domains.user.domain.SnsType;
 import com.mavis.domain.domains.user.domain.User;
 
 public record UserSignUpRequest(
@@ -22,6 +23,7 @@ public record UserSignUpRequest(
                 .birthDay(birthDay)
                 .phoneNumber(phoneNumber)
                 .email(email)
+                .snsType(SnsType.MANUAL)
                 .build();
     }
 }
