@@ -1,8 +1,6 @@
 package com.mavis.domain.domains.inquiry.repository;
 
 import com.mavis.domain.domains.inquiry.domain.Inquiry;
-import com.mavis.domain.domains.inquiry.domain.QInquiry;
-import com.mavis.domain.domains.inquiry.domain.QInquiryAnswer;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +10,7 @@ import org.springframework.data.support.PageableExecutionUtils;
 
 import java.util.List;
 
-import static com.mavis.domain.domains.inquiry.domain.QInquiry.*;
-import static com.mavis.domain.domains.inquiry.domain.QInquiryAnswer.*;
+import static com.mavis.domain.domains.inquiry.domain.QInquiry.inquiry;
 
 @RequiredArgsConstructor
 public class InquiryCustomRepositoryImpl implements InquiryCustomRepository {
@@ -24,7 +21,6 @@ public class InquiryCustomRepositoryImpl implements InquiryCustomRepository {
     public Page<Inquiry> findInquiryByProductId(Long productId, Pageable pageable) {
         List<Inquiry> inquiryList = queryFactory.select(inquiry)
                 .from(inquiry)
-                .leftJoin(inquiryAnswer).on(inquiryAnswer.inquiry.id.eq(inquiry.id))
                 .where(inquiry.product.id.eq(productId)
                         .and(inquiry.isDeleted.eq(false))
                 )
@@ -34,7 +30,6 @@ public class InquiryCustomRepositoryImpl implements InquiryCustomRepository {
 
         JPAQuery<Long> countQuery = queryFactory.select(inquiry.count())
                 .from(inquiry)
-                .leftJoin(inquiryAnswer).on(inquiryAnswer.inquiry.id.eq(inquiry.id))
                 .where(inquiry.product.id.eq(productId)
                         .and(inquiry.isDeleted.eq(false))
                 );
