@@ -85,9 +85,9 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
     public List<Product> getRecentCreatedProducts() {
         return queryFactory.selectFrom(product)
                 .leftJoin(product.images, productImage)
-                .where(product.isDeleted.eq(false)
-                        .and(productImage.imageType.eq(ProductImageType.MAIN))
+                .on(productImage.imageType.eq(ProductImageType.MAIN)
                         .and(productImage.orderNum.eq(1)))
+                .where(product.isDeleted.eq(false))
                 .orderBy(product.createdAt.desc())
                 .limit(8)
                 .fetch();

@@ -7,6 +7,7 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -28,13 +29,16 @@ public class Product extends BaseEntity {
     private ProductSubCategory subCategory;
 
     @OneToMany(mappedBy = "product")
+    @Builder.Default
     private List<ProductImage> images;
 
     @OneToMany(mappedBy = "product")
-    private List<ProductColor> colors;
+    @Builder.Default
+    private List<ProductColor> colors = new ArrayList<>();
 
     @OneToMany(mappedBy = "product")
-    private List<ProductTotalView> totalViews;
+    @Builder.Default
+    private List<ProductTotalView> totalViews = new ArrayList<>();
 
     @Builder.Default
     private boolean isDeleted = false;
