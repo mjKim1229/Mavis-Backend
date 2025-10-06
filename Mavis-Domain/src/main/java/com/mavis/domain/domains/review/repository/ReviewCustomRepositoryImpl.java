@@ -46,10 +46,8 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
     public Page<Review> queryProductReviews(Long productId, Pageable pageable) {
         JPAQuery<Review> query = queryFactory
                 .selectFrom(review)
-                .join(review.orderItem, orderItem)
-                .join(review.user, user)
-                .join(review.images, reviewImage)
-                .where(orderItem.product.id.eq(productId))
+                .where(orderItem.product.id.eq(productId)
+                        .and(review.isDeleted.eq(false)))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize());
 
@@ -65,7 +63,8 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
 
         JPAQuery<Long> countQuery = queryFactory.select(review.count())
                 .from(review)
-                .join(review.orderItem, orderItem)
+                .where(orderItem.product.id.eq(productId)
+                        .and(review.isDeleted.eq(false)))
                 .where(orderItem.product.id.eq(productId));
 
         return PageableExecutionUtils.getPage(reviews, pageable, countQuery::fetchOne);
