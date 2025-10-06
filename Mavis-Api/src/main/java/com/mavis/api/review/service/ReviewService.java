@@ -56,13 +56,17 @@ public class ReviewService {
         Product product = productReader.readById(productId);
         Page<ReviewResponse> reviewPages = reviewRepository.queryProductReviews(product.getId(), pageable)
                 .map(review -> {
-                    List<String> reviewImages = review.getImages()
-                            .stream()
-                            .map(ReviewImage::getImageUrl)
-                            .toList();
+                    List<String> reviewImages = extractReviewImages(review);
                     return ReviewResponse.of(review, review.getUser(), review.getOrderItem(), reviewImages);
                 });
 
         return PageResponse.of(reviewPages);
+    }
+
+    private static List<String> extractReviewImages(Review review) {
+        return review.getImages()
+                .stream()
+                .map(ReviewImage::getImageUrl)
+                .toList();
     }
 }
