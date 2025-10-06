@@ -30,7 +30,7 @@ public class Product extends BaseEntity {
 
     @OneToMany(mappedBy = "product")
     @Builder.Default
-    private List<ProductImage> images;
+    private List<ProductImage> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "product")
     @Builder.Default
