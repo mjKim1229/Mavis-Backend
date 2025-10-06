@@ -1,5 +1,6 @@
 package com.mavis.domain.domains.review.repository;
 
+import com.mavis.domain.domains.review.domain.QReviewImage;
 import com.mavis.domain.domains.review.domain.Review;
 import com.mavis.domain.domains.review.vo.ProductReviewTotal;
 import com.querydsl.core.types.Order;
@@ -19,6 +20,8 @@ import java.util.List;
 
 import static com.mavis.domain.domains.order.domain.QOrderItem.orderItem;
 import static com.mavis.domain.domains.review.domain.QReview.review;
+import static com.mavis.domain.domains.review.domain.QReviewImage.*;
+import static com.mavis.domain.domains.user.domain.QUser.user;
 
 @RequiredArgsConstructor
 public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
@@ -43,7 +46,9 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
     public Page<Review> queryProductReviews(Long productId, Pageable pageable) {
         JPAQuery<Review> query = queryFactory
                 .selectFrom(review)
-                .join(orderItem).on(review.orderItem.id.eq(orderItem.id)).fetchJoin()
+                .join(review.orderItem, orderItem)
+                .join(review.user, user)
+                .join(review.images, reviewImage)
                 .where(orderItem.product.id.eq(productId))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize());
@@ -60,7 +65,7 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
 
         JPAQuery<Long> countQuery = queryFactory.select(review.count())
                 .from(review)
-                .join(orderItem).on(review.orderItem.id.eq(orderItem.id))
+                .join(review.orderItem, orderItem)
                 .where(orderItem.product.id.eq(productId));
 
         return PageableExecutionUtils.getPage(reviews, pageable, countQuery::fetchOne);
