@@ -5,6 +5,7 @@ import com.mavis.api.inquiry.dto.CreateInquiryRequest;
 import com.mavis.api.inquiry.dto.GetProductInquiryResponse;
 import com.mavis.api.inquiry.service.InquiryService;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +17,7 @@ public class InquiryController {
     private final InquiryService inquiryService;
 
     @GetMapping("/product/{id}")
-    public PageResponse<GetProductInquiryResponse> getProductInquiries(@PathVariable Long id, Pageable pageable) {
+    public PageResponse<GetProductInquiryResponse> getProductInquiries(@PathVariable Long id, @ParameterObject Pageable pageable) {
         return inquiryService.getProductInquiries(id, pageable);
     }
 
