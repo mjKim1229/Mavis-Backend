@@ -64,8 +64,6 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
         return queryFactory
                 .select(product)
                 .from(product)
-                .leftJoin(product.images, productImage)
-                .leftJoin(product.colors, productColor)
                 .leftJoin(product.totalViews, productTotalView)
                 .on(productTotalView.weekStart.eq(startAt)
                         .and(productTotalView.weekEnd.eq(endAt)))
@@ -86,8 +84,6 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
     public List<Product> getRecentCreatedProducts() {
         return queryFactory.selectFrom(product)
-                .leftJoin(product.colors, productColor)
-                .leftJoin(product.images, productImage)
                 .where(product.isDeleted.eq(false)
                         .and(productImage.imageType.eq(ProductImageType.MAIN)))
                 .orderBy(product.createdAt.desc())

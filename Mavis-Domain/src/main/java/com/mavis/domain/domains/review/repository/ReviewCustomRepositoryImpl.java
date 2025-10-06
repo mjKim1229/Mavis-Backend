@@ -1,6 +1,5 @@
 package com.mavis.domain.domains.review.repository;
 
-import com.mavis.domain.domains.review.domain.QReviewImage;
 import com.mavis.domain.domains.review.domain.Review;
 import com.mavis.domain.domains.review.vo.ProductReviewTotal;
 import com.querydsl.core.types.Order;
@@ -20,8 +19,6 @@ import java.util.List;
 
 import static com.mavis.domain.domains.order.domain.QOrderItem.orderItem;
 import static com.mavis.domain.domains.review.domain.QReview.review;
-import static com.mavis.domain.domains.review.domain.QReviewImage.*;
-import static com.mavis.domain.domains.user.domain.QUser.user;
 
 @RequiredArgsConstructor
 public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
