@@ -75,7 +75,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
         return queryFactory.selectFrom(product)
                 .leftJoin(product.colors, productColor)
                 .leftJoin(product.images, productImage)
-                .where(product.isDeleted.eq(false))
+                .where(product.isDeleted.eq(false)
+                        .and(productImage.imageType.eq(ProductImageType.MAIN)))
                 .orderBy(product.createdAt.desc())
                 .limit(8)
                 .fetch();

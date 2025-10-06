@@ -33,7 +33,7 @@ public class ProductImageAppender {
     }
 
     private static List<ProductImage> mapProductImagesInOrder(List<String> uploadedImages, Product product, ProductImageType productImageType) {
-        return IntStream.range(0, uploadedImages.size())
+        return IntStream.range(1, uploadedImages.size())
                 .mapToObj(orderNum -> ProductImage.builder()
                         .product(product)
                         .imageType(productImageType)
