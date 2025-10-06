@@ -6,8 +6,8 @@ import com.mavis.domain.domains.product.domain.QProductNotice;
 import com.mavis.domain.domains.product.vo.ColorVO;
 import com.mavis.domain.domains.product.vo.ProductNoticeResponse;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
@@ -55,23 +55,31 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
     }
 
     public List<Product> getWeeklyBestProducts(LocalDate startAt, LocalDate endAt) {
+        NumberExpression<Long> totalViewsExpr = Expressions.numberTemplate(
+                Long.class,
+                "coalesce({0}, 0)",
+                productTotalView.totalViews
+        );
+
         return queryFactory
                 .select(product)
                 .from(product)
-                .leftJoin(product.colors, productColor)
                 .leftJoin(product.images, productImage)
+                .leftJoin(product.colors, productColor)
                 .leftJoin(product.totalViews, productTotalView)
-                .on(productTotalView.product.eq(product)
-                        .and(productTotalView.weekStart.eq(startAt))
+                .on(productTotalView.weekStart.eq(startAt)
                         .and(productTotalView.weekEnd.eq(endAt)))
                 .where(product.isDeleted.eq(false))
-                .orderBy(
-                        new CaseBuilder()
-                                .when(productTotalView.totalViews.isNotNull())
-                                .then(productTotalView.totalViews)
-                                .otherwise(0L)
-                                .desc()
+                .groupBy(
+                        product.id,
+                        product.name,
+                        product.price,
+                        product.subCategory,
+                        product.isDeleted,
+                        product.createdAt,
+                        product.updatedAt
                 )
+                .orderBy(totalViewsExpr.desc())
                 .limit(4)
                 .fetch();
     }
