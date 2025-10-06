@@ -1,9 +1,12 @@
 package com.mavis.domain.domains.product.repository;
 
-import com.mavis.domain.domains.product.domain.*;
+import com.mavis.domain.domains.product.domain.Product;
+import com.mavis.domain.domains.product.domain.ProductImageType;
+import com.mavis.domain.domains.product.domain.QProductNotice;
 import com.mavis.domain.domains.product.vo.ColorVO;
 import com.mavis.domain.domains.product.vo.ProductNoticeResponse;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -12,10 +15,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static com.mavis.domain.domains.product.domain.QProduct.*;
+import static com.mavis.domain.domains.product.domain.QProduct.product;
 import static com.mavis.domain.domains.product.domain.QProductColor.productColor;
-import static com.mavis.domain.domains.product.domain.QProductImage.*;
-import static com.mavis.domain.domains.product.domain.QProductTotalView.*;
+import static com.mavis.domain.domains.product.domain.QProductImage.productImage;
+import static com.mavis.domain.domains.product.domain.QProductTotalView.productTotalView;
 
 
 @RequiredArgsConstructor
@@ -52,22 +55,24 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
     }
 
     public List<Product> getWeeklyBestProducts(LocalDate startAt, LocalDate endAt) {
-        List<Long> popularProductIds = queryFactory
-                .select(productTotalView.product.id)
-                .from(productTotalView)
-                .where(productTotalView.weekStart.eq(startAt)
-                        .and(productTotalView.weekEnd.eq(endAt)))
-                .orderBy(productTotalView.totalViews.desc())
-                .limit(4)
-                .fetch();
-
         return queryFactory
-                .selectDistinct(product)
+                .select(product)
                 .from(product)
                 .leftJoin(product.colors, productColor)
                 .leftJoin(product.images, productImage)
-                .where(product.id.in(popularProductIds)
-                        .and(product.isDeleted.eq(false)))
+                .leftJoin(product.totalViews, productTotalView)
+                .on(productTotalView.product.eq(product)
+                        .and(productTotalView.weekStart.eq(startAt))
+                        .and(productTotalView.weekEnd.eq(endAt)))
+                .where(product.isDeleted.eq(false))
+                .orderBy(
+                        new CaseBuilder()
+                                .when(productTotalView.totalViews.isNotNull())
+                                .then(productTotalView.totalViews)
+                                .otherwise(0L)
+                                .desc()
+                )
+                .limit(4)
                 .fetch();
     }
 
