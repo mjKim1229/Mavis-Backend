@@ -6,7 +6,8 @@ import com.mavis.domain.domains.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -33,6 +34,10 @@ public class Inquiry extends BaseEntity {
 
     @OneToOne(mappedBy = "inquiry")
     private InquiryAnswer inquiryAnswer;
+
+    @OneToMany(mappedBy = "inquiry")
+    @Builder.Default
+    private List<InquiryImage> inquiryImages = new ArrayList<>();
 
     @Builder.Default
     private boolean isDeleted = false;

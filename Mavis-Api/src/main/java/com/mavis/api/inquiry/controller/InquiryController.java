@@ -8,6 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/v1/api/inquiry")
@@ -22,7 +25,7 @@ public class InquiryController {
     }
 
     @PostMapping("/product/{id}")
-    public void createProductInquiry(@RequestBody CreateInquiryRequest request) {
-        inquiryService.createInquiry(request);
+    public void createProductInquiry(@PathVariable Long id, @RequestPart CreateInquiryRequest request, @RequestPart List<MultipartFile> images) {
+        inquiryService.createInquiry(id, request, images);
     }
 }
