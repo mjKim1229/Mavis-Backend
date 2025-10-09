@@ -11,6 +11,5 @@ public record PaymentsCancels(
         Long easyPayDiscountAmount,
         ZonedDateTime canceledAt,
         String transactionKey
-
 ) {
 }

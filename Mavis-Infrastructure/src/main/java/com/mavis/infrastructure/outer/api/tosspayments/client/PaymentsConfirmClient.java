@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
         url = "https://api.tosspayments.com",
         configuration = FeignConfig.class
 )
-public interface PaymentConfirmClient {
+public interface PaymentsConfirmClient {
     @PostMapping("/v1/payments/confirm")
     PaymentsResponse confirmPayments(@RequestBody ConfirmPaymentRequest request);
 }
