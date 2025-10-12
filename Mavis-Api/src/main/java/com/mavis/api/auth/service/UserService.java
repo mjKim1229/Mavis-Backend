@@ -27,7 +27,12 @@ public class UserService {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Transactional
-    public Long saveNaverUser(NaverProfile profile) {
+    public Long upsertNaverUser(NaverProfile profile) {
+        return userRepository.findBySnsTypeAndSnsIdAndIsDeletedFalse(SnsType.NAVER, profile.id())
+                .orElseGet(() -> saveNaverUser(profile)).getId();
+    }
+
+    private User saveNaverUser(NaverProfile profile) {
         User user = User.builder()
                 .snsId(profile.id())
                 .name(profile.name())
@@ -37,7 +42,7 @@ public class UserService {
                 .birthDay(toLocalDate(profile.birthyear(), profile.birthday()))
                 .snsType(SnsType.NAVER)
                 .build();
-        return userRepository.save(user).getId();
+        return userRepository.save(user);
     }
 
     private static LocalDate toLocalDate(String birthYear, String birthday) {
