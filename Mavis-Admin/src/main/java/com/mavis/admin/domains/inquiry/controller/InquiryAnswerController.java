@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 public class InquiryAnswerController {
 
     private final InquiryAnswerService inquiryAnswerService;
-
+    
     @PostMapping("/{inquiryId}")
     public void createInquiryAnswer(@PathVariable Long inquiryId, @RequestBody CreateInquiryAnswerRequest request) {
         inquiryAnswerService.createInquiryAnswer(inquiryId, request.answer());
