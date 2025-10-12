@@ -38,7 +38,6 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
 		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 		response.setStatus(errorResponse.getStatus());
 		response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
-		response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
 	}
 
 	private ErrorResponse getErrorResponse(MavisCodeException e, String path) {
