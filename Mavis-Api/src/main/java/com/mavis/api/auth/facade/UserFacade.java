@@ -56,8 +56,7 @@ public class UserFacade {
         NaverTokenResponse naverTokenResponse = naverOAuthClient.naverAuth(naverOAuthRequest);
         String bearerAccessToken = BEARER + naverTokenResponse.accessToken();
         NaverUserInfoResponse userInfo = naverInfoClient.getUserInfo(bearerAccessToken);
-        Long userId = userService.saveNaverUser(userInfo.response());
-
+        Long userId = userService.upsertNaverUser(userInfo.response());
         JwtPair jwtPair = userJwtGenerator.getJwtPair(userId);
         return new UserOauthResponse(userId, jwtPair);
     }
