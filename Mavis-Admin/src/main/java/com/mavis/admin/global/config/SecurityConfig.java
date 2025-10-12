@@ -2,8 +2,6 @@ package com.mavis.admin.global.config;
 
 import com.mavis.admin.global.security.CustomAuthenticationEntryPoint;
 import com.mavis.admin.global.security.FilterConfig;
-import com.mavis.admin.global.security.JwtTokenFilter;
-import com.mavis.common.jwt.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,12 +10,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final JwtTokenUtil jwtTokenUtil;
     private final FilterConfig filterConfig;
     private final CustomAuthenticationEntryPoint entryPoint;
 
@@ -38,8 +34,7 @@ public class SecurityConfig {
                                 .permitAll()
                                 .anyRequest()
                                 .hasRole("USER")
-                )
-                .addFilterBefore(new JwtTokenFilter(jwtTokenUtil), UsernamePasswordAuthenticationFilter.class);
+                );
 
         return http.build();
     }
