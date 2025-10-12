@@ -27,6 +27,7 @@ public class SuccessResponseAdvice implements ResponseBodyAdvice {
         HttpServletResponse servletResponse =
                 ((ServletServerHttpResponse) response).getServletResponse();
         int status = servletResponse.getStatus();
+        servletResponse.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
         HttpStatus resolve = HttpStatus.resolve(status);
 
         if (resolve.is2xxSuccessful()) {
