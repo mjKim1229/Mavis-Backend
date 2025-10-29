@@ -33,4 +33,3 @@ public class InquiryAnswerService {
         inquiryAnswerRepository.save(inquiryAnswer);
     }
 }
-}
