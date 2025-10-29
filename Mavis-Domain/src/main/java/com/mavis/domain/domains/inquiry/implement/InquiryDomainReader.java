@@ -1,6 +1,7 @@
 package com.mavis.domain.domains.inquiry.implement;
 
 import com.mavis.domain.domains.inquiry.domain.Inquiry;
+import com.mavis.domain.domains.inquiry.domain.InquiryAnswer;
 import com.mavis.domain.domains.inquiry.exception.InquiryNotFoundException;
 import com.mavis.domain.domains.inquiry.repository.InquiryAnswerRepository;
 import com.mavis.domain.domains.inquiry.repository.InquiryRepository;
