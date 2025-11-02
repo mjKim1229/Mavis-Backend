@@ -42,4 +42,8 @@ public class Product extends BaseEntity {
 
     @Builder.Default
     private boolean isDeleted = false;
+
+    public void delete() {
+        isDeleted = true;
+    }
 }

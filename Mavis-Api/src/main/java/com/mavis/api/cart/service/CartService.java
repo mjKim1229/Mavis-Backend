@@ -5,7 +5,7 @@ import com.mavis.api.cart.dto.CreateCartRequest;
 import com.mavis.api.cart.dto.GetCartResponse;
 import com.mavis.api.cart.dto.UpdateCartRequest;
 import com.mavis.api.cart.implement.CartReader;
-import com.mavis.api.product.implement.ProductReader;
+import com.mavis.domain.domains.product.implement.ProductReader;
 import com.mavis.domain.domains.cart.domain.CartItem;
 import com.mavis.domain.domains.cart.repository.CartItemRepository;
 import com.mavis.domain.domains.product.domain.Product;

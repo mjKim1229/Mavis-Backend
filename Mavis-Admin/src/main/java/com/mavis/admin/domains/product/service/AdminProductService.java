@@ -1,11 +1,12 @@
 package com.mavis.admin.domains.product.service;
 
 import com.mavis.admin.domains.product.dto.CreateProductRequest;
+import com.mavis.admin.domains.product.dto.CreateProductResponse;
 import com.mavis.admin.domains.product.implement.ProductColorAppender;
 import com.mavis.admin.domains.product.implement.ProductImageAppender;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.product.domain.ProductNotice;
-import com.mavis.domain.domains.product.repository.ProductImageRepository;
+import com.mavis.domain.domains.product.implement.ProductReader;
 import com.mavis.domain.domains.product.repository.ProductNoticeRepository;
 import com.mavis.domain.domains.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,9 +24,10 @@ public class AdminProductService {
     private final ProductRepository productRepository;
     private final ProductNoticeRepository productNoticeRepository;
     private final ProductImageAppender productImageAppender;
+    private final ProductReader productReader;
 
     @Transactional
-    public void createProduct(CreateProductRequest request, List<MultipartFile> mainImages, List<MultipartFile> detailImages) {
+    public CreateProductResponse createProduct(CreateProductRequest request, List<MultipartFile> mainImages, List<MultipartFile> detailImages) {
         Product product = request.toProduct();
         Product savedProduct = productRepository.save(product);
 
@@ -34,5 +36,12 @@ public class AdminProductService {
 
         productColorAppender.saveProductColors(request.colors(), savedProduct);
         productImageAppender.saveImages(mainImages, detailImages, savedProduct);
+        return new CreateProductResponse(product.getId());
+    }
+
+    @Transactional
+    public void deleteProduct(Long productId) {
+        Product product = productReader.readById(productId);
+        product.delete();
     }
 }

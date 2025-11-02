@@ -6,7 +6,7 @@ import com.mavis.api.inquiry.dto.CreateInquiryRequest;
 import com.mavis.api.inquiry.dto.GetProductInquiryResponse;
 import com.mavis.api.inquiry.implement.InquiryImageAppender;
 import com.mavis.api.inquiry.implement.InquiryReader;
-import com.mavis.api.product.implement.ProductReader;
+import com.mavis.domain.domains.product.implement.ProductReader;
 import com.mavis.domain.domains.inquiry.domain.Inquiry;
 import com.mavis.domain.domains.inquiry.repository.InquiryRepository;
 import com.mavis.domain.domains.product.domain.Product;
