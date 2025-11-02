@@ -1,4 +1,4 @@
-package com.mavis.api.product.implement;
+package com.mavis.domain.domains.product.implement;
 
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.product.vo.ColorVO;

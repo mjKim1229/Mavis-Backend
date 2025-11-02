@@ -1,7 +1,7 @@
 package com.mavis.api.order.implement;
 
 import com.mavis.api.order.dto.CreateOrderRequest;
-import com.mavis.api.product.implement.ProductReader;
+import com.mavis.domain.domains.product.implement.ProductReader;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.domain.OrderOption;

@@ -2,7 +2,7 @@ package com.mavis.api.review.service;
 
 import com.mavis.api.auth.implement.UserReader;
 import com.mavis.api.common.page.PageResponse;
-import com.mavis.api.product.implement.ProductReader;
+import com.mavis.domain.domains.product.implement.ProductReader;
 import com.mavis.api.review.dto.CreateReviewRequest;
 import com.mavis.api.review.dto.ReviewResponse;
 import com.mavis.api.review.implement.ReviewImageUploader;

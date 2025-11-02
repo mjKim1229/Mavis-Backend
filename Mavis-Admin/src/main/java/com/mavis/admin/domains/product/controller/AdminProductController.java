@@ -4,10 +4,7 @@ import com.mavis.admin.domains.product.dto.CreateProductRequest;
 import com.mavis.admin.domains.product.dto.CreateProductResponse;
 import com.mavis.admin.domains.product.service.AdminProductService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -24,5 +21,10 @@ public class AdminProductController {
                                                @RequestPart List<MultipartFile> mainImages,
                                                @RequestPart List<MultipartFile> detailImages) {
         return adminProductService.createProduct(request, mainImages, detailImages);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteProduct(@PathVariable Long id) {
+        adminProductService.deleteProduct(id);
     }
 }
