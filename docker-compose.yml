@@ -18,3 +18,14 @@ services:
       - ./logs:/logs
     ports:
       - "8081:8081"
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - backend
+    restart: always
