@@ -25,9 +25,9 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./nginx/www:/var/www/certbot
-      - ./nginx/certs:/etc/letsencrypt:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
     depends_on:
       - backend
     restart: always
@@ -36,5 +36,5 @@ services:
     container_name: certbot
     image: certbot/certbot
     volumes:
-      - ./nginx/www:/var/www/certbot
-      - ./nginx/certs:/etc/letsencrypt
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
