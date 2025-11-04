@@ -31,3 +31,10 @@ services:
     depends_on:
       - backend
     restart: always
+
+  certbot:
+    container_name: certbot
+    image: certbot/certbot
+    volumes:
+      - ./nginx/www:/var/www/certbot
+      - ./nginx/certs:/etc/letsencrypt
