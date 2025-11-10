@@ -30,6 +30,7 @@ services:
       - ./data/certbot/www:/var/www/certbot
     depends_on:
       - backend
+      - admin
     restart: always
 
   certbot:
