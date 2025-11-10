@@ -26,7 +26,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
-      - /etc/letsencrypt:/etc/letsencrypt
+      - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
     depends_on:
       - backend
@@ -37,5 +37,5 @@ services:
     container_name: certbot
     image: certbot/certbot
     volumes:
-      - /etc/letsencrypt:/etc/letsencrypt
+      - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
