@@ -18,18 +18,27 @@ public class ProductImageAppender {
     private final ProductImageRepository productImageRepository;
     private final S3FileUploader s3FileUploader;
 
-    public void saveImages(List<MultipartFile> mainImages, List<MultipartFile> detailImages, Product product) {
+    public void saveImages(List<MultipartFile> mainImages, List<MultipartFile> productImages, List<MultipartFile> detailImages, Product product) {
+        //메인
         List<String> uploadedMainImages = mainImages.stream()
                 .map(s3FileUploader::uploadImageToS3)
                 .toList();
         List<ProductImage> mainProductImages = mapProductImagesInOrder(uploadedMainImages, product, ProductImageType.MAIN);
         productImageRepository.saveAll(mainProductImages);
 
-        List<String> uploadedDetailImages = detailImages.stream()
+        //상품
+        List<String> uploadedProductImages = productImages.stream()
                 .map(s3FileUploader::uploadImageToS3)
                 .toList();
-        List<ProductImage> detailProductImages = mapProductImagesInOrder(uploadedDetailImages, product, ProductImageType.DETAIL);
-        productImageRepository.saveAll(detailProductImages);
+        List<ProductImage> productImageEntities = mapProductImagesInOrder(uploadedProductImages, product, ProductImageType.PRODUCT);
+        productImageRepository.saveAll(productImageEntities);
+
+        //상품 상세
+        List<String> detailProductImageUrls = detailImages.stream()
+                .map(s3FileUploader::uploadImageToS3)
+                .toList();
+        List<ProductImage> productDetailImages = mapProductImagesInOrder(detailProductImageUrls, product, ProductImageType.DETAIL);
+        productImageRepository.saveAll(productDetailImages);
     }
 
     private static List<ProductImage> mapProductImagesInOrder(List<String> uploadedImages, Product product, ProductImageType productImageType) {
