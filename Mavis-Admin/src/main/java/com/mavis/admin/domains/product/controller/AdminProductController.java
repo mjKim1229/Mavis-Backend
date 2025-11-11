@@ -19,8 +19,9 @@ public class AdminProductController {
     @PostMapping
     public CreateProductResponse createProduct(@RequestPart CreateProductRequest request,
                                                @RequestPart List<MultipartFile> mainImages,
+                                               @RequestPart List<MultipartFile> productImages,
                                                @RequestPart List<MultipartFile> detailImages) {
-        return adminProductService.createProduct(request, mainImages, detailImages);
+        return adminProductService.createProduct(request, mainImages, productImages, detailImages);
     }
 
     @DeleteMapping("/{id}")

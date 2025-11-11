@@ -27,7 +27,7 @@ public class AdminProductService {
     private final ProductReader productReader;
 
     @Transactional
-    public CreateProductResponse createProduct(CreateProductRequest request, List<MultipartFile> mainImages, List<MultipartFile> detailImages) {
+    public CreateProductResponse createProduct(CreateProductRequest request, List<MultipartFile> mainImages, List<MultipartFile> productImages, List<MultipartFile> detailImages) {
         Product product = request.toProduct();
         Product savedProduct = productRepository.save(product);
 
@@ -35,7 +35,7 @@ public class AdminProductService {
         productNoticeRepository.save(productNotice);
 
         productColorAppender.saveProductColors(request.colors(), savedProduct);
-        productImageAppender.saveImages(mainImages, detailImages, savedProduct);
+        productImageAppender.saveImages(mainImages, productImages, detailImages, savedProduct);
         return new CreateProductResponse(product.getId());
     }
 
