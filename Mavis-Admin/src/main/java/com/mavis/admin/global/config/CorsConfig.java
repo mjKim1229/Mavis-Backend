@@ -16,7 +16,7 @@ public class CorsConfig implements WebMvcConfigurer {
 
         allowedOriginPatterns.add("http://localhost:3000");
         allowedOriginPatterns.add("http://localhost:3001");
-        allowedOriginPatterns.add("https://garam-three.vercel.app");
+        allowedOriginPatterns.add("https://www.garamall.com");
 
         String[] patterns = allowedOriginPatterns.toArray(String[]::new);
 
