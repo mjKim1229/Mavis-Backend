@@ -1,15 +1,19 @@
 package com.mavis.domain.domains.product.repository;
 
+import com.mavis.common.enums.ProductCategory;
+import com.mavis.common.enums.ProductSubCategory;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.product.domain.ProductImageType;
 import com.mavis.domain.domains.product.domain.QProductNotice;
 import com.mavis.domain.domains.product.vo.ColorVO;
 import com.mavis.domain.domains.product.vo.ProductNoticeResponse;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -91,5 +95,27 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
                 .orderBy(product.createdAt.desc())
                 .limit(8)
                 .fetch();
+    }
+
+    @Override
+    public List<Product> getProductsByCategory(ProductCategory productCategory, ProductSubCategory subCategory, Pageable pageable) {
+        return queryFactory.selectFrom(product)
+                .leftJoin(product.images, productImage)
+                .on(productImage.imageType.eq(ProductImageType.MAIN)
+                        .and(productImage.orderNum.eq(1)))
+                .where(product.isDeleted.eq(false),
+                        eqProductCategory(productCategory, subCategory)
+                )
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .orderBy(product.createdAt.desc())
+                .fetch();
+    }
+
+    private BooleanExpression eqProductCategory(ProductCategory productCategory, ProductSubCategory productSubCategory) {
+        if (productSubCategory == null) {
+            return product.subCategory.in(productCategory.getSubCategories());
+        }
+        return product.subCategory.eq(productSubCategory);
     }
 }

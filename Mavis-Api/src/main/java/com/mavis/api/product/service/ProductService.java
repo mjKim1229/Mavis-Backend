@@ -3,6 +3,7 @@ package com.mavis.api.product.service;
 import com.mavis.api.product.dto.GetProductPreviewResponse;
 import com.mavis.api.product.dto.GetProductResponse;
 import com.mavis.api.product.dto.SubCategoryVO;
+import com.mavis.common.enums.ProductSubCategory;
 import com.mavis.domain.domains.product.implement.ProductReader;
 import com.mavis.api.product.implement.ProductTotalViewManager;
 import com.mavis.common.enums.EnumMapper;
@@ -14,6 +15,7 @@ import com.mavis.domain.domains.product.repository.ProductRepository;
 import com.mavis.domain.domains.product.vo.ColorVO;
 import com.mavis.domain.domains.product.vo.ProductNoticeResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -93,6 +95,16 @@ public class ProductService {
 
     public List<GetProductPreviewResponse> getRecentCreatedProducts() {
         List<Product> products = productRepository.getRecentCreatedProducts();
+        return products.stream()
+                .map(product -> {
+                    List<String> colors = extractColors(product);
+                    String previewImage = getPreviewImage(product);
+                    return GetProductPreviewResponse.from(product, colors, previewImage);
+                }).toList();
+    }
+
+    public List<GetProductPreviewResponse> getProductPreviewResponseBySubCategory(ProductCategory productCategory, ProductSubCategory subCategory, Pageable pageable) {
+        List<Product> products = productRepository.getProductsByCategory(productCategory, subCategory, pageable);
         return products.stream()
                 .map(product -> {
                     List<String> colors = extractColors(product);
