@@ -36,13 +36,13 @@ public class ProductController {
     }
 
     @GetMapping("/popular")
-    public List<GetProductPreviewResponse> getWeeklyPopularProduct() {
-        return productService.getThisWeekPopularProducts();
+    public List<GetProductPreviewResponse> getWeeklyPopularProduct(Pageable pageable) {
+        return productService.getThisWeekPopularProducts(pageable);
     }
 
     @GetMapping("/recent")
-    public List<GetProductPreviewResponse> getRecentCreatedProduct() {
-        return productService.getRecentCreatedProducts();
+    public List<GetProductPreviewResponse> getRecentCreatedProduct(Pageable pageable) {
+        return productService.getRecentCreatedProducts(pageable);
     }
 
     @GetMapping("/category/products")

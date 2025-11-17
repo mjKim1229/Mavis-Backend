@@ -14,7 +14,7 @@ import java.util.Optional;
 public interface ProductCustomRepository {
     List<ColorVO> getProductColors(Long productId);
     Optional<ProductNoticeResponse> getProductNoticeByProductId(Long productId);
-    List<Product> getWeeklyBestProducts(LocalDate startAt, LocalDate endAt);
-    List<Product> getRecentCreatedProducts();
+    List<Product> getWeeklyBestProducts(LocalDate startAt, LocalDate endAt, Pageable pageable);
+    List<Product> getRecentCreatedProducts(Pageable pageable);
     List<Product> getProductsByCategory(ProductCategory productCategory, ProductSubCategory subCategory, Pageable pageable);
 }

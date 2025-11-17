@@ -58,7 +58,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
         return Optional.ofNullable(productNotice);
     }
 
-    public List<Product> getWeeklyBestProducts(LocalDate startAt, LocalDate endAt) {
+    public List<Product> getWeeklyBestProducts(LocalDate startAt, LocalDate endAt, Pageable pageable) {
         NumberExpression<Long> totalViewsExpr = Expressions.numberTemplate(
                 Long.class,
                 "coalesce({0}, 0)",
@@ -82,18 +82,20 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
                         product.updatedAt
                 )
                 .orderBy(totalViewsExpr.desc())
-                .limit(4)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
     }
 
-    public List<Product> getRecentCreatedProducts() {
+    public List<Product> getRecentCreatedProducts(Pageable pageable) {
         return queryFactory.selectFrom(product)
                 .leftJoin(product.images, productImage)
                 .on(productImage.imageType.eq(ProductImageType.MAIN)
                         .and(productImage.orderNum.eq(1)))
                 .where(product.isDeleted.eq(false))
                 .orderBy(product.createdAt.desc())
-                .limit(8)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
     }
 
