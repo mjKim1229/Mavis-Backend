@@ -1,8 +1,11 @@
 package com.mavis.domain.domains.product.repository;
 
+import com.mavis.common.enums.ProductCategory;
+import com.mavis.common.enums.ProductSubCategory;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.product.vo.ColorVO;
 import com.mavis.domain.domains.product.vo.ProductNoticeResponse;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -13,4 +16,5 @@ public interface ProductCustomRepository {
     Optional<ProductNoticeResponse> getProductNoticeByProductId(Long productId);
     List<Product> getWeeklyBestProducts(LocalDate startAt, LocalDate endAt);
     List<Product> getRecentCreatedProducts();
+    List<Product> getProductsByCategory(ProductCategory productCategory, ProductSubCategory subCategory, Pageable pageable);
 }

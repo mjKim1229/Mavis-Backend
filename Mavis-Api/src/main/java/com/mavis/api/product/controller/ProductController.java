@@ -2,14 +2,14 @@ package com.mavis.api.product.controller;
 
 import com.mavis.api.product.dto.GetProductPreviewResponse;
 import com.mavis.api.product.dto.GetProductResponse;
+import com.mavis.common.enums.ProductCategory;
+import com.mavis.common.enums.ProductSubCategory;
 import com.mavis.domain.domains.product.vo.ProductNoticeResponse;
 import com.mavis.api.product.dto.SubCategoryVO;
 import com.mavis.api.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -43,5 +43,13 @@ public class ProductController {
     @GetMapping("/recent")
     public List<GetProductPreviewResponse> getRecentCreatedProduct() {
         return productService.getRecentCreatedProducts();
+    }
+
+    @GetMapping("/category/products")
+    public List<GetProductPreviewResponse> getProductPreviewsByCategory(
+            @RequestParam ProductCategory productCategory,
+            @RequestParam(required = false) ProductSubCategory subCategory,
+            Pageable pageable) {
+        return productService.getProductPreviewResponseBySubCategory(productCategory, subCategory, pageable);
     }
 }
