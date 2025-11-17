@@ -65,11 +65,11 @@ public class ProductService {
         return productReader.readProductNotice(productId);
     }
 
-    public List<GetProductPreviewResponse> getThisWeekPopularProducts() {
+    public List<GetProductPreviewResponse> getThisWeekPopularProducts(Pageable pageable) {
         LocalDate today = LocalDate.now();
         LocalDate weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate weekEnd = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
-        List<Product> products = productRepository.getWeeklyBestProducts(weekStart, weekEnd);
+        List<Product> products = productRepository.getWeeklyBestProducts(weekStart, weekEnd, pageable);
 
         return products.stream()
                 .map(product -> {
@@ -93,8 +93,8 @@ public class ProductService {
                 .orElse(null);
     }
 
-    public List<GetProductPreviewResponse> getRecentCreatedProducts() {
-        List<Product> products = productRepository.getRecentCreatedProducts();
+    public List<GetProductPreviewResponse> getRecentCreatedProducts(Pageable pageable) {
+        List<Product> products = productRepository.getRecentCreatedProducts(pageable);
         return products.stream()
                 .map(product -> {
                     List<String> colors = extractColors(product);
