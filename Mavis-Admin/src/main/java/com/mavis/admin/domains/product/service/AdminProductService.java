@@ -2,18 +2,25 @@ package com.mavis.admin.domains.product.service;
 
 import com.mavis.admin.domains.product.dto.CreateProductRequest;
 import com.mavis.admin.domains.product.dto.CreateProductResponse;
+import com.mavis.admin.domains.product.dto.GetProductResponse;
 import com.mavis.admin.domains.product.implement.ProductColorAppender;
 import com.mavis.admin.domains.product.implement.ProductImageAppender;
 import com.mavis.domain.domains.product.domain.Product;
+import com.mavis.domain.domains.product.domain.ProductColor;
+import com.mavis.domain.domains.product.domain.ProductImage;
 import com.mavis.domain.domains.product.domain.ProductNotice;
 import com.mavis.domain.domains.product.implement.ProductReader;
 import com.mavis.domain.domains.product.repository.ProductNoticeRepository;
 import com.mavis.domain.domains.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 
 @Service
@@ -25,6 +32,32 @@ public class AdminProductService {
     private final ProductNoticeRepository productNoticeRepository;
     private final ProductImageAppender productImageAppender;
     private final ProductReader productReader;
+
+    @Transactional(readOnly = true)
+    public List<GetProductResponse> getProductList(Pageable pageable) {
+        List<Product> products = productRepository.findByIsDeletedFalseOrderByIdDesc(pageable);
+
+        return products.stream()
+                .map(product -> {
+                            String previewImage = getPreviewImage(product);
+                            List<String> colors = extractColors(product);
+                            return GetProductResponse.from(product, colors, previewImage);
+                        }
+                ).toList();
+    }
+
+    private static String getPreviewImage(Product product) {
+        return product.getImages().stream()
+                .map(ProductImage::getImageUrl)
+                .findFirst()
+                .orElse(null);
+    }
+
+    private static List<String> extractColors(Product product) {
+        return product.getColors().stream()
+                .map(ProductColor::getColor)
+                .toList();
+    }
 
     @Transactional
     public CreateProductResponse createProduct(CreateProductRequest request, List<MultipartFile> mainImages, List<MultipartFile> productImages, List<MultipartFile> detailImages) {
