@@ -4,6 +4,7 @@ import com.mavis.api.product.dto.GetProductPreviewResponse;
 import com.mavis.api.product.dto.GetProductResponse;
 import com.mavis.api.product.dto.SubCategoryVO;
 import com.mavis.common.enums.ProductSubCategory;
+import com.mavis.domain.domains.product.domain.ProductImageType;
 import com.mavis.domain.domains.product.implement.ProductReader;
 import com.mavis.api.product.implement.ProductTotalViewManager;
 import com.mavis.common.enums.EnumMapper;
@@ -39,14 +40,16 @@ public class ProductService {
     public GetProductResponse getProductById(Long id) {
         Product product = productReader.readById(id);
         List<ColorVO> colors = productReader.readProductColors(product.getId());
-        List<String> imageUrls = extractImageUrl(product);
+        List<String> mainImageUrls = extractImageUrl(product, ProductImageType.MAIN);
+        List<String> productImages = extractImageUrl(product, ProductImageType.PRODUCT);
+        List<String> detailImages = extractImageUrl(product, ProductImageType.DETAIL);
         productTotalViewManager.increaseTotalView(product);
-        return GetProductResponse.from(product, colors, imageUrls);
+        return GetProductResponse.from(product, colors, mainImageUrls, productImages, detailImages);
     }
 
-    private static List<String> extractImageUrl(Product product) {
-        return product.getImages()
-                .stream()
+    private static List<String> extractImageUrl(Product product, ProductImageType productImageType) {
+        return product.getImages().stream()
+                .filter(productImage -> productImage.getImageType() == productImageType)
                 .map(ProductImage::getImageUrl)
                 .toList();
     }

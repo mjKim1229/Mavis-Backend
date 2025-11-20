@@ -12,15 +12,19 @@ public record GetProductResponse(
         String name,
         Integer price,
         List<ColorVO> colors,
-        List<String> imageUrls
+        List<String> mainImages,
+        List<String> productImages,
+        List<String> detailImages
 ) {
-    public static GetProductResponse from(Product product, List<ColorVO> colors, List<String> imageUrls) {
+    public static GetProductResponse from(Product product, List<ColorVO> colors, List<String> mainImages, List<String> productImages, List<String> detailImages) {
         return GetProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
                 .price(product.getPrice())
                 .colors(colors)
-                .imageUrls(imageUrls)
+                .mainImages(mainImages)
+                .productImages(productImages)
+                .detailImages(detailImages)
                 .build();
     }
 }
