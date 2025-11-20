@@ -1,6 +1,7 @@
 package com.mavis.infrastructure.image;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,6 +14,7 @@ import java.io.InputStream;
 import java.util.Objects;
 import java.util.UUID;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class S3FileUploader {
@@ -38,6 +40,7 @@ public class S3FileUploader {
 
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, file.getSize()));
         } catch (Exception exception) {
+            exception.printStackTrace();
         }
 
         return s3Client.utilities().getUrl(url -> url.bucket(bucketName).key(s3FileName)).toString();
