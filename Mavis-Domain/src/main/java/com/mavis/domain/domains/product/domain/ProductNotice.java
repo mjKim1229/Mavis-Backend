@@ -25,4 +25,11 @@ public class ProductNotice extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
+
+    public void update(String precaution, String shippingInfo, String returnRequest, String returnProcess) {
+        this.precaution = precaution;
+        this.shippingInfo = shippingInfo;
+        this.returnRequest = returnRequest;
+        this.returnProcess = returnProcess;
+    }
 }

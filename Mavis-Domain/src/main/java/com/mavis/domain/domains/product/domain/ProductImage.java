@@ -27,4 +27,15 @@ public class ProductImage extends BaseEntity {
     private ProductImageType imageType;
 
     private int orderNum;
+
+    @Builder.Default
+    private boolean isDeleted = false;
+
+    public void update(int orderNum) {
+        this.orderNum = orderNum;
+    }
+
+    public void delete() {
+        this.isDeleted = true;
+    }
 }
