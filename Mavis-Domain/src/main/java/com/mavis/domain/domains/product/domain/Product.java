@@ -28,6 +28,9 @@ public class Product extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ProductSubCategory subCategory;
 
+    @OneToOne(mappedBy = "product")
+    private ProductNotice productNotice;
+
     @OneToMany(mappedBy = "product")
     @Builder.Default
     private List<ProductImage> images = new ArrayList<>();
@@ -42,6 +45,12 @@ public class Product extends BaseEntity {
 
     @Builder.Default
     private boolean isDeleted = false;
+
+    public void update(String name, Integer price, ProductSubCategory subCategory) {
+        this.name = name;
+        this.price = price;
+        this.subCategory = subCategory;
+    }
 
     public void delete() {
         isDeleted = true;

@@ -3,6 +3,7 @@ package com.mavis.admin.domains.product.controller;
 import com.mavis.admin.domains.product.dto.CreateProductRequest;
 import com.mavis.admin.domains.product.dto.CreateProductResponse;
 import com.mavis.admin.domains.product.dto.GetProductResponse;
+import com.mavis.admin.domains.product.dto.UpdateProductRequest;
 import com.mavis.admin.domains.product.service.AdminProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +30,11 @@ public class AdminProductController {
                                                @RequestPart List<MultipartFile> productImages,
                                                @RequestPart List<MultipartFile> detailImages) {
         return adminProductService.createProduct(request, mainImages, productImages, detailImages);
+    }
+
+    @PutMapping("{/id}")
+    public void updateProduct(@PathVariable Long id, @RequestBody UpdateProductRequest request) {
+        adminProductService.updateProduct(id, request);
     }
 
     @DeleteMapping("/{id}")

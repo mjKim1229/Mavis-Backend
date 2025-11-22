@@ -1,8 +1,6 @@
 package com.mavis.admin.domains.product.service;
 
-import com.mavis.admin.domains.product.dto.CreateProductRequest;
-import com.mavis.admin.domains.product.dto.CreateProductResponse;
-import com.mavis.admin.domains.product.dto.GetProductResponse;
+import com.mavis.admin.domains.product.dto.*;
 import com.mavis.admin.domains.product.implement.ProductColorAppender;
 import com.mavis.admin.domains.product.implement.ProductImageAppender;
 import com.mavis.domain.domains.product.domain.Product;
@@ -67,6 +65,16 @@ public class AdminProductService {
         productColorAppender.saveProductColors(request.colors(), savedProduct);
         productImageAppender.saveImages(mainImages, productImages, detailImages, savedProduct);
         return new CreateProductResponse(product.getId());
+    }
+
+    @Transactional
+    public void updateProduct(Long productId, UpdateProductRequest request) {
+        Product product = productReader.readById(productId);
+        product.update(request.name(), request.price(), request.subCategory());
+
+        ProductNotice productNotice = product.getProductNotice();
+        ProductNoticeVO notice = request.notice();
+        productNotice.update(notice.precaution(), notice.shippingInfo(), notice.returnRequest(), notice.returnProcess());
     }
 
     @Transactional
