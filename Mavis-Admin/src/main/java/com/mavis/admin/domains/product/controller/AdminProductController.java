@@ -32,7 +32,7 @@ public class AdminProductController {
         return adminProductService.createProduct(request, mainImages, productImages, detailImages);
     }
 
-    @PutMapping("{/id}")
+    @PutMapping("/{id}")
     public void updateProduct(@PathVariable Long id,
                               @RequestBody UpdateProductRequest request,
                               @RequestPart List<MultipartFile> mainImages,
