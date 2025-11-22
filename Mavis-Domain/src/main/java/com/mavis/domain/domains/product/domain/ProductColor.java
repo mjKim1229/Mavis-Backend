@@ -21,10 +21,17 @@ public class ProductColor extends BaseEntity {
 
     private String color;
 
+    @Builder.Default
+    private boolean isDeleted = false;
+
     public static ProductColor of(Product product, String color) {
         return ProductColor.builder()
                 .product(product)
                 .color(color)
                 .build();
+    }
+
+    public void delete() {
+        this.isDeleted = true;
     }
 }

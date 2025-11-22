@@ -9,6 +9,9 @@ public record UpdateProductRequest(
         Integer price,
         ProductSubCategory subCategory,
         List<String> colors,
+        List<ProductImageVO> mainImages,
+        List<ProductImageVO> productImages,
+        List<ProductImageVO> detailImages,
         ProductNoticeVO notice
 ) {
 }

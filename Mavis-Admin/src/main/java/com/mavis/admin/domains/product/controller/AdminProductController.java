@@ -20,7 +20,7 @@ public class AdminProductController {
     private final AdminProductService adminProductService;
 
     @GetMapping
-    public  List<GetProductResponse> getProducts(Pageable pageable) {
+    public List<GetProductResponse> getProducts(Pageable pageable) {
         return adminProductService.getProductList(pageable);
     }
 
@@ -33,8 +33,12 @@ public class AdminProductController {
     }
 
     @PutMapping("{/id}")
-    public void updateProduct(@PathVariable Long id, @RequestBody UpdateProductRequest request) {
-        adminProductService.updateProduct(id, request);
+    public void updateProduct(@PathVariable Long id,
+                              @RequestBody UpdateProductRequest request,
+                              @RequestPart List<MultipartFile> mainImages,
+                              @RequestPart List<MultipartFile> productImages,
+                              @RequestPart List<MultipartFile> detailImages) {
+        adminProductService.updateProduct(id, request, mainImages, productImages, detailImages);
     }
 
     @DeleteMapping("/{id}")
