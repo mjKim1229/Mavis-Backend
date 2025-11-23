@@ -2,11 +2,13 @@ package com.mavis.api.auth.facade;
 
 import com.mavis.api.auth.dto.UserOauthResponse;
 import com.mavis.api.auth.implement.UserJwtGenerator;
+import com.mavis.api.auth.implement.UserReader;
 import com.mavis.api.auth.mapper.UserMapper;
 import com.mavis.api.auth.service.UserService;
 import com.mavis.common.dto.JwtPair;
 import com.mavis.common.properties.KakaoProperties;
 import com.mavis.common.properties.NaverProperties;
+import com.mavis.domain.domains.user.domain.User;
 import com.mavis.infrastructure.outer.api.oauth.client.kakao.KakaoInfoClient;
 import com.mavis.infrastructure.outer.api.oauth.client.kakao.KakaoOAuthClient;
 import com.mavis.infrastructure.outer.api.oauth.client.naver.NaverInfoClient;
@@ -29,6 +31,7 @@ public class UserFacade {
     private final NaverInfoClient naverInfoClient;
     private final NaverProperties naverProperties;
     private final UserService userService;
+    private final UserReader userReader;
 
     public UserOauthResponse register(String code, String url) {
         KakaoOAuthRequest kakaoOAuthRequest = userMapper.fromCode(code, url);
@@ -43,6 +46,10 @@ public class UserFacade {
     }
 
     public void withDrawKakao() {
+        User user = userReader.getCurrentUser();
+        Long snsId = Long.valueOf(user.getSnsId());
+        unlinkKakao(snsId);
+        userService.deleteKakaoUser(user);
     }
 
     private void unlinkKakao(Long snsId) {

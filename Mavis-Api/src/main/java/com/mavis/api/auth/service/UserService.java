@@ -3,6 +3,7 @@ package com.mavis.api.auth.service;
 import com.mavis.api.auth.dto.UserLoginRequest;
 import com.mavis.api.auth.dto.UserOauthResponse;
 import com.mavis.api.auth.dto.UserSignUpRequest;
+import com.mavis.api.auth.implement.UserReader;
 import com.mavis.common.dto.JwtPair;
 import com.mavis.common.jwt.JwtTokenUtil;
 import com.mavis.domain.domains.user.domain.SnsType;
@@ -21,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 @RequiredArgsConstructor
 public class UserService {
 
+    private final UserReader userReader;
     private final UserRepository userRepository;
     private final JwtTokenUtil jwtTokenUtil;
 
@@ -50,6 +52,17 @@ public class UserService {
         return LocalDate.parse(fullDate, DATE_TIME_FORMATTER);
     }
 
+    @Transactional
+    public void deleteKakaoUser(User user) {
+        user.withDraw();
+    }
+
+    @Transactional
+    public void signUp(UserSignUpRequest request) {
+        User user = request.toEntity();
+        userRepository.save(user);
+    }
+
     @Transactional(readOnly = true)
     public UserOauthResponse login(UserLoginRequest request) {
         User user = userRepository.findByUsernameAndIsDeletedFalse(request.username())
@@ -66,8 +79,8 @@ public class UserService {
     }
 
     @Transactional
-    public void signUp(UserSignUpRequest request) {
-        User user = request.toEntity();
-        userRepository.save(user);
+    public void withDraw() {
+        User user = userReader.getCurrentUser();
+        user.withDraw();
     }
 }

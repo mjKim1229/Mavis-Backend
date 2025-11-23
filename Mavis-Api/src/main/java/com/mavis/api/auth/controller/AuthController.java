@@ -5,6 +5,7 @@ import com.mavis.api.auth.dto.UserOauthResponse;
 import com.mavis.api.auth.dto.UserSignUpRequest;
 import com.mavis.api.auth.facade.UserFacade;
 import com.mavis.api.auth.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +18,7 @@ public class AuthController {
     private final UserFacade userFacade;
     private final UserService userService;
 
+    @Operation(summary = "카카오 로그인 code 전송 후 로그인 처리", description = "code만 보내면 됩니다. (Host, Origin)은 안 보내도 됨")
     @GetMapping("/oauth/kakao")
     public UserOauthResponse register(@RequestParam String code,
                                       @RequestHeader(required = false, name = "Host") String host,
@@ -28,23 +30,34 @@ public class AuthController {
         }
     }
 
+    @Operation(summary = "카카오 탈퇴")
+    @DeleteMapping("/oauth/kakao/withdraw")
+    public void withDrawKakaoUser() {
+        userFacade.withDrawKakao();
+    }
+
+    @Operation(summary = "네이버 로그인")
     @GetMapping("/oauth/naver")
     public UserOauthResponse registerNaver(@RequestParam String code) {
         return userFacade.registerNaver(code);
     }
 
+
+    @Operation(summary = "일반 회원가입")
+    @PostMapping("/sign-up")
+    public void signUp(@RequestBody UserSignUpRequest request) {
+        userService.signUp(request);
+    }
+
+    @Operation(summary = "일반 로그인")
     @PostMapping("/login")
     public UserOauthResponse login(@RequestBody UserLoginRequest request) {
         return userService.login(request);
     }
 
-    @DeleteMapping("/withdraw")
-    public void withDrawKakaoUser() {
-
-    }
-
-    @PostMapping("/sign-up")
-    public void signUp(@RequestBody UserSignUpRequest request) {
-        userService.signUp(request);
+    @Operation(summary = "일반 회원탈퇴")
+    @PostMapping("/withdraw")
+    public void withDraw() {
+        userService.withDraw();
     }
 }
