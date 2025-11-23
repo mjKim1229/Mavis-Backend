@@ -4,8 +4,9 @@ import com.mavis.domain.domains.common.jpa.BaseEntity;
 import com.mavis.domain.domains.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
@@ -24,6 +25,10 @@ public class Order extends BaseEntity {
     private User user;
 
     private int totalPrice;
+
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Enumerated(EnumType.STRING)
+    private OrderStatus orderStatus;
 
     @Embedded
     private OrderAddress orderAddress;
