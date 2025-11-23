@@ -32,12 +32,12 @@ public class ReviewController {
         return reviewService.getUserReviews(pageable);
     }
 
-    @GetMapping("/{productId}/total")
+    @GetMapping("/product/{productId}/total")
     public ProductReviewTotal getProductReviewTotal(@PathVariable Long productId) {
         return reviewService.getProductReviewTotal(productId);
     }
 
-    @GetMapping("/{productId}")
+    @GetMapping("/product/{productId}")
     public PageResponse<ReviewResponse> getProductReviews(@PathVariable Long productId, @ParameterObject Pageable pageable) {
         return reviewService.getProductReviews(productId, pageable);
     }
