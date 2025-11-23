@@ -52,7 +52,7 @@ public class SecurityConfig {
                 .requestMatchers("/v1/api/products/**")
                 .requestMatchers("/v1/api/auths/**")
                 .requestMatchers(HttpMethod.GET, "/v1/api/inquiry/product/**")
-                .requestMatchers(HttpMethod.GET, "/v1/api/review/**");
+                .requestMatchers(HttpMethod.GET, "/v1/api/review/{productId}/**");
     }
 
     @Bean
