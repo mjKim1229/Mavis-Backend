@@ -18,8 +18,14 @@ public class AuthController {
     private final UserService userService;
 
     @GetMapping("/oauth/kakao")
-    public UserOauthResponse register(@RequestParam String code) {
-        return userFacade.register(code);
+    public UserOauthResponse register(@RequestParam String code,
+                                      @RequestHeader(required = false, name = "Host") String host,
+                                      @RequestHeader(required = false, name = "Referer") String referer) {
+        if (referer.contains(host)) {
+            return userFacade.register(code, "https://garamall.com");
+        }else {
+            return userFacade.register(code, "http://localhost:3000");
+        }
     }
 
     @GetMapping("/oauth/naver")

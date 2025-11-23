@@ -13,10 +13,10 @@ public class UserMapper {
     private final KakaoProperties kakaoProperties;
     private final NaverProperties naverProperties;
 
-    public KakaoOAuthRequest fromCode(String code) {
+    public KakaoOAuthRequest fromCode(String code, String url) {
         return KakaoOAuthRequest.builder()
                 .code(code)
-                .redirectUrl(kakaoProperties.redirectUrl())
+                .redirectUrl(url + kakaoProperties.redirectUrl())
                 .clientId(kakaoProperties.clientId())
                 .build();
     }
