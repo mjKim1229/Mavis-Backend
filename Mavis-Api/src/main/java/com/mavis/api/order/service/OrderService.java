@@ -1,6 +1,7 @@
 package com.mavis.api.order.service;
 
 import com.mavis.api.auth.implement.UserReader;
+import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.order.dto.CreateOrderRequest;
 import com.mavis.api.order.dto.OrderAddressRequest;
 import com.mavis.api.order.dto.UserOrderInfo;
@@ -11,11 +12,10 @@ import com.mavis.domain.domains.order.domain.OrderStatus;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.user.domain.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -39,19 +39,19 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserOrderInfo> getUserOrderList(Pageable pageable, OrderStatus orderStatus) {
+    public PageResponse<UserOrderInfo> getUserOrderList(Pageable pageable, OrderStatus orderStatus) {
         User user = userReader.getCurrentUser();
-        List<Order> orderLists = orderRepository.findOrderListByUser(pageable, orderStatus, user);
-        return orderLists.stream()
-                .map(order -> {
-                            OrderAddress orderAddress = order.getOrderAddress();
-                            return UserOrderInfo.builder()
-                                    .address(orderAddress.getAddress())
-                                    .addressInfo(orderAddress.getAddressMemo())
-                                    .totalPrice(order.getTotalPrice())
-                                    .userName(user.getName())
-                                    .build();
-                        }
-                ).toList();
+        Page<Order> orderPages = orderRepository.findOrderPagesByUser(pageable, orderStatus, user);
+        Page<UserOrderInfo> userOrderInfoPages = orderPages.map(order -> {
+                    OrderAddress orderAddress = order.getOrderAddress();
+                    return UserOrderInfo.builder()
+                            .address(orderAddress.getAddress())
+                            .addressInfo(orderAddress.getAddressMemo())
+                            .totalPrice(order.getTotalPrice())
+                            .userName(user.getName())
+                            .build();
+                }
+        );
+        return PageResponse.of(userOrderInfoPages);
     }
 }

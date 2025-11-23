@@ -1,5 +1,6 @@
 package com.mavis.admin.domains.order.controller;
 
+import com.mavis.admin.common.page.PageResponse;
 import com.mavis.admin.domains.order.dto.OrderInfo;
 import com.mavis.admin.domains.order.service.AdminOrderService;
 import com.mavis.domain.domains.order.domain.OrderStatus;
@@ -20,7 +21,7 @@ public class AdminOrderController {
     private final AdminOrderService adminOrderService;
 
     @GetMapping
-    public List<OrderInfo> getOrderInfoLists(Pageable pageable, @RequestParam OrderStatus orderStatus) {
+    public PageResponse<OrderInfo> getOrderInfoLists(Pageable pageable, @RequestParam OrderStatus orderStatus) {
         return adminOrderService.getOrderLists(pageable, orderStatus);
     }
 }

@@ -1,5 +1,6 @@
 package com.mavis.api.order.controller;
 
+import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.order.dto.CreateOrderRequest;
 import com.mavis.api.order.dto.UserOrderInfo;
 import com.mavis.api.order.service.OrderService;
@@ -23,7 +24,7 @@ public class OrderController {
     }
 
     @GetMapping
-    public List<UserOrderInfo> getUserOrderList(Pageable pageable, OrderStatus orderStatus) {
+    public PageResponse<UserOrderInfo> getUserOrderList(Pageable pageable, OrderStatus orderStatus) {
         return orderService.getUserOrderList(pageable, orderStatus);
     }
 }
