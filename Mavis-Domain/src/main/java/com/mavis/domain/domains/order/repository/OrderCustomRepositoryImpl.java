@@ -50,6 +50,7 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
                 .fetch();
 
         JPAQuery<Long> countQuery = queryFactory.select(order.count())
+                .from(order)
                 .where(order.isDeleted.eq(false)
                         .and(order.orderStatus.eq(orderStatus))
                         .and(order.user.eq(user)))
