@@ -15,7 +15,7 @@ import java.util.List;
 import static com.mavis.domain.domains.order.domain.QOrder.order;
 
 @RequiredArgsConstructor
-public class OrderCusomRepositoryImpl implements OrderCustomRepository {
+public class OrderCustomRepositoryImpl implements OrderCustomRepository {
 
     private final JPAQueryFactory queryFactory;
 
