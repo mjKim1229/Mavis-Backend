@@ -41,5 +41,16 @@ public class User {
     private String password;
 
     @Builder.Default
-    private final boolean isDeleted = false;
+    private boolean isDeleted = false;
+
+    public void withDraw() {
+        this.isDeleted = true;
+        this.snsId = null;
+        this.name = null;
+        this.nickname = null;
+        this.email = null;
+        this.gender = null;
+        this.birthDay = null;
+        this.phoneNumber = null;
+    }
 }

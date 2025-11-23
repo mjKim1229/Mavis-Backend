@@ -45,6 +45,11 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Transactional
+    public void deleteKakaoUser(User user) {
+        user.withDraw();
+    }
+
     private static LocalDate toLocalDate(String birthYear, String birthday) {
         String fullDate = birthYear + "-" + birthday;
         return LocalDate.parse(fullDate, DATE_TIME_FORMATTER);
