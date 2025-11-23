@@ -17,4 +17,6 @@ public class NaverTokenRevokeRequest {
     private String accessToken;
     @FormProperty("grant_type")
     private String grantType;
+    @FormProperty("service_provider")
+    private String serviceProvide;
 }

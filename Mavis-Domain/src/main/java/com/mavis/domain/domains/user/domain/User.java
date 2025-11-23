@@ -40,6 +40,8 @@ public class User {
 
     private String password;
 
+    private String naverRefreshToken;
+
     @Builder.Default
     private boolean isDeleted = false;
 
