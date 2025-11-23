@@ -32,13 +32,17 @@ public class SecurityConfig {
                 .exceptionHandling((exceptionConfig) ->
                         exceptionConfig.authenticationEntryPoint(entryPoint))
                 .authorizeHttpRequests((requests) ->
-                        requests.requestMatchers("/swagger-resources/**", "/swagger-ui/**", "/v3/api-docs/**",
-                                        "/v3/api-docs")
-                                .permitAll()
-                                .requestMatchers("/api/v1/**")
-                                .permitAll()
-                                .anyRequest()
-                                .hasRole("USER")
+                        requests
+                                .requestMatchers("/v1/api/review/user/**").hasRole("USER")
+                                .requestMatchers("/v1/api/inquiry/user/**").hasRole("USER")
+                                .requestMatchers("/v1/api/order/**").hasRole("USER")
+                                .requestMatchers("/v1/api/cart/**").hasRole("USER")
+                                .requestMatchers(
+                                        "/v1/api/auths/withdraw",
+                                        "/v1/api/auths/oauth/kakao/withdraw",
+                                        "/v1/api/auths/oauth/naver/withdraw"
+                                ).hasRole("USER")
+                                .anyRequest().permitAll()
                 );
 
         return http.build();
@@ -49,9 +53,12 @@ public class SecurityConfig {
         return (web) -> web.ignoring()
                 .requestMatchers("/swagger-resources/**", "/swagger-ui/**", "/v3/api-docs/**",
                         "/v3/api-docs")
+                .requestMatchers("/v1/api/auths/login")
+                .requestMatchers("/v1/api/auths/sign-up")
+                .requestMatchers("/v1/api/auths/oauth/kakao")
+                .requestMatchers("/v1/api/auths/oauth/naver")
                 .requestMatchers("/v1/api/products/**")
-                .requestMatchers("/v1/api/auths/**")
-                .requestMatchers(HttpMethod.GET, "/v1/api/inquiry/product/**")
+                .requestMatchers("/v1/api/inquiry/product/**")
                 .requestMatchers(HttpMethod.GET, "/v1/api/review/{productId}/**");
     }
 
