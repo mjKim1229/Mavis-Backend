@@ -1,12 +1,13 @@
 package com.mavis.api.order.controller;
 
+import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.order.dto.CreateOrderRequest;
+import com.mavis.api.order.dto.UserOrderInfo;
 import com.mavis.api.order.service.OrderService;
+import com.mavis.domain.domains.order.domain.OrderStatus;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -18,7 +19,12 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public void createOrder(@RequestBody List<CreateOrderRequest> request) {
+    public void createOrder(@RequestBody CreateOrderRequest request) {
         orderService.createOrder(request);
+    }
+
+    @GetMapping
+    public PageResponse<UserOrderInfo> getUserOrderList(Pageable pageable, OrderStatus orderStatus) {
+        return orderService.getUserOrderList(pageable, orderStatus);
     }
 }

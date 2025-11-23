@@ -4,6 +4,8 @@ import com.mavis.domain.domains.common.jpa.BaseEntity;
 import com.mavis.domain.domains.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.List;
 
@@ -22,15 +24,22 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
+    private int totalPrice;
+
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Enumerated(EnumType.STRING)
+    private OrderStatus orderStatus;
+
+    @Embedded
+    private OrderAddress orderAddress;
+
     @OneToMany(mappedBy = "order")
     private List<OrderItem> orderItems;
 
     @Builder.Default
     private boolean isDeleted = false;
 
-    public static Order of(User user) {
-        return Order.builder()
-                .user(user)
-                .build();
+    public void setTotalPrice(int totalPrice) {
+        this.totalPrice = totalPrice;
     }
 }

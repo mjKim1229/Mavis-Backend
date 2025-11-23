@@ -3,6 +3,7 @@ package com.mavis.api.inquiry.controller;
 import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.inquiry.dto.CreateInquiryRequest;
 import com.mavis.api.inquiry.dto.GetProductInquiryResponse;
+import com.mavis.api.inquiry.dto.GetUserInquiryResponse;
 import com.mavis.api.inquiry.service.InquiryService;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
@@ -27,5 +28,10 @@ public class InquiryController {
     @PostMapping("/product/{id}")
     public void createProductInquiry(@PathVariable Long id, @RequestPart CreateInquiryRequest request, @RequestPart List<MultipartFile> images) {
         inquiryService.createInquiry(id, request, images);
+    }
+
+    @GetMapping("/user")
+    public PageResponse<GetUserInquiryResponse> getUserInquiries(Pageable pageable) {
+        return inquiryService.getProductInquiriesByUser(pageable);
     }
 }
