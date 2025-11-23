@@ -24,6 +24,6 @@ public class OrderController {
 
     @GetMapping
     public List<UserOrderInfo> getUserOrderList(Pageable pageable, OrderStatus orderStatus) {
-        return orderService.getOrderList(pageable, orderStatus);
+        return orderService.getUserOrderList(pageable, orderStatus);
     }
 }

@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.w3c.dom.stylesheets.LinkStyle;
 
 import java.util.List;
 
@@ -39,13 +38,13 @@ public class OrderService {
         order.setTotalPrice(totalPrice);
     }
 
-    @Transactional
-    public List<UserOrderInfo> getOrderList(Pageable pageable, OrderStatus orderStatus) {
-        List<Order> orderLists = orderRepository.findOrderLists(pageable, orderStatus);
+    @Transactional(readOnly = true)
+    public List<UserOrderInfo> getUserOrderList(Pageable pageable, OrderStatus orderStatus) {
+        User user = userReader.getCurrentUser();
+        List<Order> orderLists = orderRepository.findOrderListByUser(pageable, orderStatus, user);
         return orderLists.stream()
                 .map(order -> {
                             OrderAddress orderAddress = order.getOrderAddress();
-                            User user = order.getUser();
                             return UserOrderInfo.builder()
                                     .address(orderAddress.getAddress())
                                     .addressInfo(orderAddress.getAddressMemo())
