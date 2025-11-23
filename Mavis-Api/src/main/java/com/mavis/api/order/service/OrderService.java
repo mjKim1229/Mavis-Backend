@@ -3,13 +3,20 @@ package com.mavis.api.order.service;
 import com.mavis.api.auth.implement.UserReader;
 import com.mavis.api.order.dto.CreateOrderRequest;
 import com.mavis.api.order.dto.OrderAddressRequest;
+import com.mavis.api.order.dto.UserOrderInfo;
 import com.mavis.api.order.implement.OrderItemAppender;
 import com.mavis.domain.domains.order.domain.Order;
+import com.mavis.domain.domains.order.domain.OrderAddress;
+import com.mavis.domain.domains.order.domain.OrderStatus;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.user.domain.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.w3c.dom.stylesheets.LinkStyle;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,5 +37,22 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
         int totalPrice = orderItemAppender.saveOrderItems(request.orderItems(), savedOrder);
         order.setTotalPrice(totalPrice);
+    }
+
+    @Transactional
+    public List<UserOrderInfo> getOrderList(Pageable pageable, OrderStatus orderStatus) {
+        List<Order> orderLists = orderRepository.findOrderLists(pageable, orderStatus);
+        return orderLists.stream()
+                .map(order -> {
+                            OrderAddress orderAddress = order.getOrderAddress();
+                            User user = order.getUser();
+                            return UserOrderInfo.builder()
+                                    .address(orderAddress.getAddress())
+                                    .addressInfo(orderAddress.getAddressMemo())
+                                    .totalPrice(order.getTotalPrice())
+                                    .userName(user.getName())
+                                    .build();
+                        }
+                ).toList();
     }
 }
