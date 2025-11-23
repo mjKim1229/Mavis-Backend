@@ -30,8 +30,8 @@ public class UserFacade {
     private final NaverProperties naverProperties;
     private final UserService userService;
 
-    public UserOauthResponse register(String code) {
-        KakaoOAuthRequest kakaoOAuthRequest = userMapper.fromCode(code);
+    public UserOauthResponse register(String code, String url) {
+        KakaoOAuthRequest kakaoOAuthRequest = userMapper.fromCode(code, url);
         KakaoTokenResponse kakaoTokenResponse = kakaoOAuthClient.kakaoAuth(kakaoOAuthRequest);
 
         String bearerAccessToken = BEARER + kakaoTokenResponse.accessToken();
