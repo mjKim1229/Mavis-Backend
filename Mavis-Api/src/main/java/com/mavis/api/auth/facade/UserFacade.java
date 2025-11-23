@@ -63,14 +63,31 @@ public class UserFacade {
         NaverTokenResponse naverTokenResponse = naverOAuthClient.naverAuth(naverOAuthRequest);
         String bearerAccessToken = BEARER + naverTokenResponse.accessToken();
         NaverUserInfoResponse userInfo = naverInfoClient.getUserInfo(bearerAccessToken);
-        Long userId = userService.upsertNaverUser(userInfo.response());
+        Long userId = userService.upsertNaverUser(userInfo.response(), naverTokenResponse.refreshToken());
         JwtPair jwtPair = userJwtGenerator.getJwtPair(userId);
         return new UserOauthResponse(userId, jwtPair);
     }
 
     public void withDrawNaver() {
-        NaverTokenRevokeRequest.builder()
+        User user = userReader.getCurrentUser();
+        String naverRefreshToken = user.getNaverRefreshToken();
+        NaverTokenRefreshRequest refreshRequest = NaverTokenRefreshRequest.builder()
                 .clientId(naverProperties.clientId())
-                .grantType("delete");
+                .clientSecret(naverProperties.clientSecret())
+                .refreshToken(naverRefreshToken)
+                .grantType("refresh_token")
+                .build();
+        NaverTokenResponse naverTokenResponse = naverOAuthClient.tokenRefresh(refreshRequest);
+
+        String naverAccessToken = naverTokenResponse.accessToken();
+        NaverTokenRevokeRequest deleteRequest = NaverTokenRevokeRequest.builder()
+                .clientId(naverProperties.clientId())
+                .clientSecret(naverProperties.clientSecret())
+                .accessToken(naverAccessToken)
+                .serviceProvide("NAVER")
+                .grantType("delete")
+                .build();
+        naverOAuthClient.tokenRevoke(deleteRequest);
+        userService.withDraw();
     }
 }

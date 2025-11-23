@@ -42,6 +42,11 @@ public class AuthController {
         return userFacade.registerNaver(code);
     }
 
+    @Operation(summary = "네이버 회원탈퇴")
+    @DeleteMapping("/oauth/naver/withdraw")
+    public void withDrawNaverUser() {
+        userFacade.withDrawNaver();
+    }
 
     @Operation(summary = "일반 회원가입")
     @PostMapping("/sign-up")

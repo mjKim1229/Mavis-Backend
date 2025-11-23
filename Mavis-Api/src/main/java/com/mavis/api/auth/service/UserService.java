@@ -29,12 +29,12 @@ public class UserService {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Transactional
-    public Long upsertNaverUser(NaverProfile profile) {
+    public Long upsertNaverUser(NaverProfile profile, String naverRefreshToken) {
         return userRepository.findBySnsTypeAndSnsIdAndIsDeletedFalse(SnsType.NAVER, profile.id())
-                .orElseGet(() -> saveNaverUser(profile)).getId();
+                .orElseGet(() -> saveNaverUser(profile, naverRefreshToken)).getId();
     }
 
-    private User saveNaverUser(NaverProfile profile) {
+    private User saveNaverUser(NaverProfile profile, String naverRefreshToken) {
         User user = User.builder()
                 .snsId(profile.id())
                 .name(profile.name())
@@ -43,6 +43,7 @@ public class UserService {
                 .gender(profile.gender())
                 .birthDay(toLocalDate(profile.birthyear(), profile.birthday()))
                 .snsType(SnsType.NAVER)
+                .naverRefreshToken(naverRefreshToken)
                 .build();
         return userRepository.save(user);
     }
