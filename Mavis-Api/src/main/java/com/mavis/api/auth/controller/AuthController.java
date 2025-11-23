@@ -31,7 +31,7 @@ public class AuthController {
     }
 
     @Operation(summary = "카카오 탈퇴")
-    @DeleteMapping("/withdraw")
+    @DeleteMapping("/oauth/kakao/withdraw")
     public void withDrawKakaoUser() {
         userFacade.withDrawKakao();
     }
@@ -53,5 +53,11 @@ public class AuthController {
     @PostMapping("/login")
     public UserOauthResponse login(@RequestBody UserLoginRequest request) {
         return userService.login(request);
+    }
+
+    @Operation(summary = "일반 회원탈퇴")
+    @PostMapping("/withdraw")
+    public void withDraw() {
+        userService.withDraw();
     }
 }
