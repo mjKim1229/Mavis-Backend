@@ -2,6 +2,7 @@ package com.mavis.domain.domains.review.repository;
 
 import com.mavis.domain.domains.review.domain.Review;
 import com.mavis.domain.domains.review.vo.ProductReviewTotal;
+import com.mavis.domain.domains.user.domain.User;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -63,6 +64,26 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                 .where(orderItem.product.id.eq(productId)
                         .and(review.isDeleted.eq(false)))
                 .where(orderItem.product.id.eq(productId));
+
+        return PageableExecutionUtils.getPage(reviews, pageable, countQuery::fetchOne);
+    }
+
+    @Override
+    public Page<Review> queryProductReviewsByUser(User user, Pageable pageable) {
+        List<Review> reviews = queryFactory
+                .selectFrom(review)
+                .where(review.user.eq(user)
+                        .and(review.isDeleted.eq(false)))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        JPAQuery<Long> countQuery = queryFactory
+                .select(review.count())
+                .where(review.user.eq(user)
+                        .and(review.isDeleted.eq(false)))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize());
 
         return PageableExecutionUtils.getPage(reviews, pageable, countQuery::fetchOne);
     }

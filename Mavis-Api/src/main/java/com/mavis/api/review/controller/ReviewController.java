@@ -2,6 +2,7 @@ package com.mavis.api.review.controller;
 
 import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.review.dto.CreateReviewRequest;
+import com.mavis.api.review.dto.UserReviewResponse;
 import com.mavis.domain.domains.review.vo.ProductReviewTotal;
 import com.mavis.api.review.dto.ReviewResponse;
 import com.mavis.api.review.service.ReviewService;
@@ -35,5 +36,10 @@ public class ReviewController {
     @GetMapping("/{productId}")
     public PageResponse<ReviewResponse> getProductReviews(@PathVariable Long productId, @ParameterObject Pageable pageable) {
         return reviewService.getProductReviews(productId, pageable);
+    }
+
+    @GetMapping("/user")
+    public PageResponse<UserReviewResponse> getUserReviewList(Pageable pageable) {
+        return reviewService.getUserReviews(pageable);
     }
 }

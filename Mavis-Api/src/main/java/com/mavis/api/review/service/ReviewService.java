@@ -2,6 +2,7 @@ package com.mavis.api.review.service;
 
 import com.mavis.api.auth.implement.UserReader;
 import com.mavis.api.common.page.PageResponse;
+import com.mavis.api.review.dto.UserReviewResponse;
 import com.mavis.domain.domains.product.implement.ProductReader;
 import com.mavis.api.review.dto.CreateReviewRequest;
 import com.mavis.api.review.dto.ReviewResponse;
@@ -60,6 +61,17 @@ public class ReviewService {
                     return ReviewResponse.of(review, review.getUser(), review.getOrderItem(), reviewImages);
                 });
 
+        return PageResponse.of(reviewPages);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<UserReviewResponse> getUserReviews(Pageable pageable) {
+        User user = userReader.getCurrentUser();
+        Page<UserReviewResponse> reviewPages = reviewRepository.queryProductReviewsByUser(user, pageable)
+                .map(review -> {
+                    List<String> imageUrls = extractReviewImages(review);
+                    return UserReviewResponse.of(review, review.getUser(), review.getOrderItem(), imageUrls);
+                });
         return PageResponse.of(reviewPages);
     }
 
