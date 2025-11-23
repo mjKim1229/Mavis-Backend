@@ -8,8 +8,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RequestMapping("/v1/api/order")
 @RequiredArgsConstructor
 @RestController
@@ -18,7 +16,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public void createOrder(@RequestBody List<CreateOrderRequest> request) {
+    public void createOrder(@RequestBody CreateOrderRequest request) {
         orderService.createOrder(request);
     }
 }

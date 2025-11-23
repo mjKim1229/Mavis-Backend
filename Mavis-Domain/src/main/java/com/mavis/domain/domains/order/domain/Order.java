@@ -5,6 +5,7 @@ import com.mavis.domain.domains.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
@@ -22,15 +23,18 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
+    private int totalPrice;
+
+    @Embedded
+    private OrderAddress orderAddress;
+
     @OneToMany(mappedBy = "order")
     private List<OrderItem> orderItems;
 
     @Builder.Default
     private boolean isDeleted = false;
 
-    public static Order of(User user) {
-        return Order.builder()
-                .user(user)
-                .build();
+    public void setTotalPrice(int totalPrice) {
+        this.totalPrice = totalPrice;
     }
 }
