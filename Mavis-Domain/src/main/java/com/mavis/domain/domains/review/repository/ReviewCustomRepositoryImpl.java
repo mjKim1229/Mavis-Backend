@@ -80,10 +80,9 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
 
         JPAQuery<Long> countQuery = queryFactory
                 .select(review.count())
+                .from(review)
                 .where(review.user.eq(user)
-                        .and(review.isDeleted.eq(false)))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize());
+                        .and(review.isDeleted.eq(false)));
 
         return PageableExecutionUtils.getPage(reviews, pageable, countQuery::fetchOne);
     }

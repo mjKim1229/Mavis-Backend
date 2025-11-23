@@ -31,9 +31,7 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
 
         JPAQuery<Long> countQuery = queryFactory.select(order.count())
                 .where(order.isDeleted.eq(false)
-                        .and(order.orderStatus.eq(orderStatus)))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize());
+                        .and(order.orderStatus.eq(orderStatus)));
 
         return PageableExecutionUtils.getPage(orders, pageable, countQuery::fetchOne);
     }
@@ -53,9 +51,7 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
                 .from(order)
                 .where(order.isDeleted.eq(false)
                         .and(order.orderStatus.eq(orderStatus))
-                        .and(order.user.eq(user)))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize());
+                        .and(order.user.eq(user)));
 
         return PageableExecutionUtils.getPage(orders, pageable, countQuery::fetchOne);
     }

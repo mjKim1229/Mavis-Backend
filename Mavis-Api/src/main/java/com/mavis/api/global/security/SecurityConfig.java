@@ -59,7 +59,7 @@ public class SecurityConfig {
                 .requestMatchers("/v1/api/auths/oauth/naver")
                 .requestMatchers("/v1/api/products/**")
                 .requestMatchers("/v1/api/inquiry/product/**")
-                .requestMatchers(HttpMethod.GET, "/v1/api/review/{productId}/**");
+                .requestMatchers(HttpMethod.GET, "/v1/api/review/product/**");
     }
 
     @Bean
