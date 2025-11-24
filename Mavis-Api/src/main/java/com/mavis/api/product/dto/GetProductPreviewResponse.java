@@ -10,6 +10,7 @@ public record GetProductPreviewResponse(
         Long id,
         String name,
         Integer price,
+        boolean isClearance,
         List<String> colors,
         String previewImage
 ) {
@@ -18,6 +19,7 @@ public record GetProductPreviewResponse(
                 .id(product.getId())
                 .name(product.getName())
                 .price(product.getPrice())
+                .isClearance(product.isClearance())
                 .colors(colors)
                 .previewImage(previewImage)
                 .build();
