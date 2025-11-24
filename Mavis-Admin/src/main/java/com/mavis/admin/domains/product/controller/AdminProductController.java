@@ -1,9 +1,6 @@
 package com.mavis.admin.domains.product.controller;
 
-import com.mavis.admin.domains.product.dto.CreateProductRequest;
-import com.mavis.admin.domains.product.dto.CreateProductResponse;
-import com.mavis.admin.domains.product.dto.GetProductResponse;
-import com.mavis.admin.domains.product.dto.UpdateProductRequest;
+import com.mavis.admin.domains.product.dto.*;
 import com.mavis.admin.domains.product.service.AdminProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -44,5 +41,10 @@ public class AdminProductController {
     @DeleteMapping("/{id}")
     public void deleteProduct(@PathVariable Long id) {
         adminProductService.deleteProduct(id);
+    }
+
+    @PatchMapping("/{id}/clearance")
+    public void updateProductClearance(@PathVariable Long id, @RequestBody UpdateProductClearanceRequest request) {
+        adminProductService.updateProductClearance(id, request);
     }
 }
