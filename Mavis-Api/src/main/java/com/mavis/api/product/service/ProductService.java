@@ -115,4 +115,14 @@ public class ProductService {
                     return GetProductPreviewResponse.from(product, colors, previewImage);
                 }).toList();
     }
+
+    public List<GetProductPreviewResponse> getClearanceProduct(Pageable pageable) {
+        List<Product> products = productRepository.getClearanceProduct(pageable);
+        return products.stream()
+                .map(product -> {
+                    List<String> colors = extractColors(product);
+                    String previewImage = getPreviewImage(product);
+                    return GetProductPreviewResponse.from(product, colors, previewImage);
+                }).toList();
+    }
 }

@@ -114,6 +114,17 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
                 .fetch();
     }
 
+    @Override
+    public List<Product> getClearanceProduct(Pageable pageable) {
+        return queryFactory.selectFrom(product)
+                .where(product.isDeleted.eq(false)
+                        .and(product.isClearance.eq(true)))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .orderBy(product.id.desc())
+                .fetch();
+    }
+
     private BooleanExpression eqProductCategory(ProductCategory productCategory, ProductSubCategory productSubCategory) {
         if (productSubCategory == null) {
             return product.subCategory.in(productCategory.getSubCategories());
