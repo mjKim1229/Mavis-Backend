@@ -46,10 +46,17 @@ public class Product extends BaseEntity {
     @Builder.Default
     private boolean isDeleted = false;
 
+    @Builder.Default
+    private boolean isClearance = false;
+
     public void update(String name, Integer price, ProductSubCategory subCategory) {
         this.name = name;
         this.price = price;
         this.subCategory = subCategory;
+    }
+
+    public void updateClearance(boolean isClearance) {
+        this.isClearance = isClearance;
     }
 
     public void delete() {

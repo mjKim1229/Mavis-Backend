@@ -12,6 +12,7 @@ public record GetProductResponse(
         String name,
         Integer price,
         List<ColorVO> colors,
+        boolean isClearance,
         List<String> mainImages,
         List<String> productImages,
         List<String> detailImages
@@ -22,6 +23,7 @@ public record GetProductResponse(
                 .name(product.getName())
                 .price(product.getPrice())
                 .colors(colors)
+                .isClearance(product.isClearance())
                 .mainImages(mainImages)
                 .productImages(productImages)
                 .detailImages(detailImages)

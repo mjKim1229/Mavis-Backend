@@ -5,6 +5,7 @@ import com.mavis.common.enums.ProductSubCategory;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.product.vo.ColorVO;
 import com.mavis.domain.domains.product.vo.ProductNoticeResponse;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
@@ -17,4 +18,5 @@ public interface ProductCustomRepository {
     List<Product> getWeeklyBestProducts(LocalDate startAt, LocalDate endAt, Pageable pageable);
     List<Product> getRecentCreatedProducts(Pageable pageable);
     List<Product> getProductsByCategory(ProductCategory productCategory, ProductSubCategory subCategory, Pageable pageable);
+    List<Product> getClearanceProduct(Pageable pageable);
 }

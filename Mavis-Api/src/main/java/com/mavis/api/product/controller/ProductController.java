@@ -45,6 +45,11 @@ public class ProductController {
         return productService.getRecentCreatedProducts(pageable);
     }
 
+    @GetMapping("/clearance")
+    public List<GetProductPreviewResponse> getClearanceProduct(Pageable pageable) {
+        return productService.getClearanceProduct(pageable);
+    }
+
     @GetMapping("/category/products")
     public List<GetProductPreviewResponse> getProductPreviewsByCategory(
             @RequestParam ProductCategory productCategory,

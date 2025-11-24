@@ -150,4 +150,10 @@ public class AdminProductService {
         Product product = productReader.readById(productId);
         product.delete();
     }
+
+    @Transactional
+    public void updateProductClearance(Long productId,UpdateProductClearanceRequest request) {
+        Product product = productReader.readById(productId);
+        product.updateClearance(request.isClearance());
+    }
 }
