@@ -11,6 +11,7 @@ public record CreateProductRequest(
         Integer price,
         ProductSubCategory subCategory,
         List<String> colors,
+        boolean isClearance,
         ProductNoticeVO notice
 ) {
     public ProductNotice toProductNotice(Product product) {
@@ -28,6 +29,7 @@ public record CreateProductRequest(
                 .name(name)
                 .price(price)
                 .subCategory(subCategory)
+                .isClearance(isClearance)
                 .build();
     }
 }
