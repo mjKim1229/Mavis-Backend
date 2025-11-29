@@ -113,9 +113,11 @@ public class AdminProductService {
                 .forEach(ProductColor::delete);
 
         Map<ProductImageType, List<ProductImage>> recentProductImageMap = product.getImages().stream()
+                .filter(image -> !image.isDeleted())
                 .collect(Collectors.groupingBy(ProductImage::getImageType));
 
         Map<String, ProductImage> recentProductImageUrlMap = product.getImages().stream()
+                .filter(image -> !image.isDeleted())
                 .collect(Collectors.toMap(
                         ProductImage::getImageUrl,
                         Function.identity(),

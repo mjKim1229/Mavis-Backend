@@ -5,6 +5,7 @@ import com.mavis.domain.domains.common.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.type.SqlTypes;
 
 import java.util.ArrayList;
@@ -33,10 +34,12 @@ public class Product extends BaseEntity {
 
     @OneToMany(mappedBy = "product")
     @Builder.Default
+    @SQLRestriction("is_deleted = false")
     private List<ProductImage> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "product")
     @Builder.Default
+    @SQLRestriction("is_deleted = false")
     private List<ProductColor> colors = new ArrayList<>();
 
     @OneToMany(mappedBy = "product")
