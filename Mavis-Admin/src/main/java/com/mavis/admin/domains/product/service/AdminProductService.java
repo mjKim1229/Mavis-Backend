@@ -41,7 +41,9 @@ public class AdminProductService {
         List<String> mainImageUrls = extractImageUrl(product, ProductImageType.MAIN);
         List<String> productImages = extractImageUrl(product, ProductImageType.PRODUCT);
         List<String> detailImages = extractImageUrl(product, ProductImageType.DETAIL);
-        return GetProductResponse.from(product, colors, mainImageUrls, productImages, detailImages);
+        ProductNotice productNotice = product.getProductNotice();
+        ProductNoticeVO productNoticeVO = new ProductNoticeVO(productNotice.getPrecaution(), productNotice.getShippingInfo(), productNotice.getReturnRequest(), productNotice.getReturnProcess());
+        return GetProductResponse.from(product, colors, mainImageUrls, productImages, detailImages, productNoticeVO);
     }
 
     @Transactional(readOnly = true)
