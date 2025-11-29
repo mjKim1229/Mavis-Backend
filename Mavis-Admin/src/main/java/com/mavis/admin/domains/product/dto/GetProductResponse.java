@@ -1,5 +1,6 @@
 package com.mavis.admin.domains.product.dto;
 
+import com.mavis.common.enums.ProductSubCategory;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.product.vo.ColorVO;
 import lombok.Builder;
@@ -13,6 +14,7 @@ public record GetProductResponse(
         Integer price,
         List<ColorVO> colors,
         boolean isClearance,
+        ProductSubCategory subCategory,
         List<String> mainImages,
         List<String> productImages,
         List<String> detailImages
@@ -24,6 +26,7 @@ public record GetProductResponse(
                 .price(product.getPrice())
                 .colors(colors)
                 .isClearance(product.isClearance())
+                .subCategory(product.getSubCategory())
                 .mainImages(mainImages)
                 .productImages(productImages)
                 .detailImages(detailImages)
