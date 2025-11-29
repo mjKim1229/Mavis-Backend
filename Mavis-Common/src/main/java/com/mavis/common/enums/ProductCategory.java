@@ -3,6 +3,7 @@ package com.mavis.common.enums;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Arrays;
 import java.util.EnumSet;
 
 import static com.mavis.common.enums.ProductSubCategory.*;
@@ -26,6 +27,13 @@ public enum ProductCategory implements EnumMapperType {
     @Override
     public String getTitle() {
         return title;
+    }
+
+    public static ProductCategory fromSubCategory(ProductSubCategory subCategory) {
+        return Arrays.stream(values())
+                .filter(productCategory -> productCategory.getSubCategories().contains(subCategory))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Category Not Found"));
     }
 
 }
