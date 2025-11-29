@@ -127,7 +127,8 @@ public class AdminProductService {
     }
 
     private void updateImageByType(Map<ProductImageType, List<ProductImage>> recentImageMap, ProductImageType productImageType, List<ProductImageVO> requestImages, List<MultipartFile> newImages, Map<String, ProductImage> recentProductImageUrlMap) {
-        List<ProductImage> recentProductImages = recentImageMap.get(productImageType);
+        List<ProductImage> recentProductImages = recentImageMap.getOrDefault(productImageType, List.of());
+
         List<String> requestImageUrls = requestImages.stream()
                 .map(ProductImageVO::imageUrl)
                 .toList();
@@ -136,23 +137,29 @@ public class AdminProductService {
                 .filter(image -> !requestImageUrls.contains(image.getImageUrl()))
                 .forEach(ProductImage::delete);
 
-        int index = 0;
         for (ProductImageVO requestImage : requestImages) {
-            if (requestImage.imageUrl() == null) {
-                MultipartFile multipartFile = newImages.get(index);
-                String uploadImageUrl = s3FileUploader.uploadImageToS3(multipartFile);
-                Integer order = requestImage.order();
-                ProductImage productImage = ProductImage.builder()
-                        .imageType(productImageType)
-                        .orderNum(order)
-                        .imageUrl(uploadImageUrl)
-                        .build();
-                productImageRepository.save(productImage);
-            } else {
-                ProductImage productImage = recentProductImageUrlMap.get(requestImage.imageUrl());
+            ProductImage productImage = recentProductImageUrlMap.get(requestImage.imageUrl());
+            if (productImage != null) {
                 productImage.update(requestImage.order());
             }
-            index++;
+        }
+
+        // 2. 새 파일 업로드 (기존 이미지 뒤에 순서 자동 부여)
+        int maxOrder = recentProductImages.stream()
+                .map(ProductImage::getOrderNum)
+                .max(Integer::compareTo)
+                .orElse(-1);
+
+        for (int i = 0; i < newImages.size(); i++) {
+            MultipartFile multipartFile = newImages.get(i);
+            String uploadImageUrl = s3FileUploader.uploadImageToS3(multipartFile);
+
+            ProductImage productImage = ProductImage.builder()
+                    .imageType(productImageType)
+                    .orderNum(maxOrder + 1 + i)
+                    .imageUrl(uploadImageUrl)
+                    .build();
+            productImageRepository.save(productImage);
         }
     }
 
