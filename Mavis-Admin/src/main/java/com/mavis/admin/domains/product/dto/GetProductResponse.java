@@ -1,6 +1,7 @@
 package com.mavis.admin.domains.product.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.mavis.common.enums.ProductSubCategory;
 import com.mavis.domain.domains.product.domain.Product;
 import lombok.Builder;
 
@@ -12,6 +13,7 @@ public record GetProductResponse(
         Long id,
         String name,
         Integer price,
+        ProductSubCategory subCategory,
         List<String> colors,
         String previewImage,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
@@ -22,6 +24,7 @@ public record GetProductResponse(
                 .id(product.getId())
                 .name(product.getName())
                 .price(product.getPrice())
+                .subCategory(product.getSubCategory())
                 .colors(colors)
                 .previewImage(previewImage)
                 .createdAt(product.getCreatedAt())
