@@ -5,7 +5,6 @@ import com.mavis.admin.domains.product.implement.ProductColorAppender;
 import com.mavis.admin.domains.product.implement.ProductImageAppender;
 import com.mavis.domain.domains.product.domain.*;
 import com.mavis.domain.domains.product.implement.ProductReader;
-import com.mavis.domain.domains.product.repository.ProductColorRepository;
 import com.mavis.domain.domains.product.repository.ProductImageRepository;
 import com.mavis.domain.domains.product.repository.ProductNoticeRepository;
 import com.mavis.domain.domains.product.repository.ProductRepository;
@@ -31,7 +30,6 @@ public class AdminProductService {
     private final ProductImageAppender productImageAppender;
     private final ProductImageRepository productImageRepository;
     private final ProductReader productReader;
-    private final ProductColorRepository productColorRepository;
     private final S3FileUploader s3FileUploader;
 
 

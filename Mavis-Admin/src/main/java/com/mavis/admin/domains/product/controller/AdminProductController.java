@@ -31,7 +31,7 @@ public class AdminProductController {
 
     @PutMapping("/{id}")
     public void updateProduct(@PathVariable Long id,
-                              @RequestBody UpdateProductRequest request,
+                              @RequestPart UpdateProductRequest request,
                               @RequestPart List<MultipartFile> mainImages,
                               @RequestPart List<MultipartFile> productImages,
                               @RequestPart List<MultipartFile> detailImages) {
