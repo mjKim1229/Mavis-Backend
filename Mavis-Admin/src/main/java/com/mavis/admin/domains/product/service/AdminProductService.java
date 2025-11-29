@@ -8,6 +8,7 @@ import com.mavis.domain.domains.product.implement.ProductReader;
 import com.mavis.domain.domains.product.repository.ProductImageRepository;
 import com.mavis.domain.domains.product.repository.ProductNoticeRepository;
 import com.mavis.domain.domains.product.repository.ProductRepository;
+import com.mavis.domain.domains.product.vo.ColorVO;
 import com.mavis.infrastructure.image.S3FileUploader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -33,15 +34,25 @@ public class AdminProductService {
     private final S3FileUploader s3FileUploader;
 
 
+    @Transactional
+    public GetProductResponse getProductById(Long id) {
+        Product product = productReader.readById(id);
+        List<ColorVO> colors = productReader.readProductColors(product.getId());
+        List<String> mainImageUrls = extractImageUrl(product, ProductImageType.MAIN);
+        List<String> productImages = extractImageUrl(product, ProductImageType.PRODUCT);
+        List<String> detailImages = extractImageUrl(product, ProductImageType.DETAIL);
+        return GetProductResponse.from(product, colors, mainImageUrls, productImages, detailImages);
+    }
+
     @Transactional(readOnly = true)
-    public List<GetProductResponse> getProductList(Pageable pageable) {
+    public List<GetProductPreviewResponse> getProductList(Pageable pageable) {
         List<Product> products = productRepository.findByIsDeletedFalseOrderByIdDesc(pageable);
 
         return products.stream()
                 .map(product -> {
                             String previewImage = getPreviewImage(product);
                             List<String> colors = extractColors(product);
-                            return GetProductResponse.from(product, colors, previewImage);
+                            return GetProductPreviewResponse.from(product, colors, previewImage);
                         }
                 ).toList();
     }
@@ -153,5 +164,12 @@ public class AdminProductService {
     public void updateProductClearance(Long productId,UpdateProductClearanceRequest request) {
         Product product = productReader.readById(productId);
         product.updateClearance(request.isClearance());
+    }
+
+    private List<String> extractImageUrl(Product product, ProductImageType imageType) {
+        return product.getImages().stream()
+                .filter(image -> image.getImageType().equals(imageType))
+                .map(ProductImage::getImageUrl)
+                .toList();
     }
 }
