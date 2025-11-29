@@ -144,6 +144,10 @@ public class AdminProductService {
             }
         }
 
+        if (newImages == null || newImages.isEmpty()) {
+            return;
+        }
+
         int maxOrder = recentProductImages.stream()
                 .map(ProductImage::getOrderNum)
                 .max(Integer::compareTo)
@@ -171,7 +175,7 @@ public class AdminProductService {
     }
 
     @Transactional
-    public void updateProductClearance(Long productId,UpdateProductClearanceRequest request) {
+    public void updateProductClearance(Long productId, UpdateProductClearanceRequest request) {
         Product product = productReader.readById(productId);
         product.updateClearance(request.isClearance());
     }
