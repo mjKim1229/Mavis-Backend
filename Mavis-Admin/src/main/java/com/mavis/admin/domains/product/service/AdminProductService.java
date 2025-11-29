@@ -11,6 +11,7 @@ import com.mavis.domain.domains.product.repository.ProductRepository;
 import com.mavis.domain.domains.product.vo.ColorVO;
 import com.mavis.infrastructure.image.S3FileUploader;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AdminProductService {
@@ -155,6 +157,9 @@ public class AdminProductService {
 
         for (int i = 0; i < newImages.size(); i++) {
             MultipartFile multipartFile = newImages.get(i);
+            if (multipartFile.isEmpty()) {
+                continue;
+            }
             String uploadImageUrl = s3FileUploader.uploadImageToS3(multipartFile);
 
             ProductImage productImage = ProductImage.builder()
