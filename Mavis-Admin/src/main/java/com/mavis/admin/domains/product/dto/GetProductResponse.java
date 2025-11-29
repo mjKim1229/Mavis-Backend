@@ -20,9 +20,10 @@ public record GetProductResponse(
         ProductSubCategory subCategory,
         List<String> mainImages,
         List<String> productImages,
-        List<String> detailImages
+        List<String> detailImages,
+        ProductNoticeVO productNoticeVO
 ) {
-    public static GetProductResponse from(Product product, List<ColorVO> colors, List<String> mainImages, List<String> productImages, List<String> detailImages) {
+    public static GetProductResponse from(Product product, List<ColorVO> colors, List<String> mainImages, List<String> productImages, List<String> detailImages, ProductNoticeVO productNoticeVO) {
         return GetProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
@@ -34,6 +35,7 @@ public record GetProductResponse(
                 .mainImages(mainImages)
                 .productImages(productImages)
                 .detailImages(detailImages)
+                .productNoticeVO(productNoticeVO)
                 .build();
     }
 }
