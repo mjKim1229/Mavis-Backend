@@ -120,13 +120,13 @@ public class AdminProductService {
                         (existing, replacement) -> existing // 중복 시 기존 값 유지
                 ));
 
-        updateImageByType(recentProductImageMap, ProductImageType.MAIN, request.mainImages(), mainImages, recentProductImageUrlMap);
-        updateImageByType(recentProductImageMap, ProductImageType.PRODUCT, request.productImages(), productImages, recentProductImageUrlMap);
-        updateImageByType(recentProductImageMap, ProductImageType.DETAIL, request.detailImages(), detailImages, recentProductImageUrlMap);
+        updateImageByType(recentProductImageMap, ProductImageType.MAIN, request.mainImages(), mainImages, recentProductImageUrlMap, product);
+        updateImageByType(recentProductImageMap, ProductImageType.PRODUCT, request.productImages(), productImages, recentProductImageUrlMap, product);
+        updateImageByType(recentProductImageMap, ProductImageType.DETAIL, request.detailImages(), detailImages, recentProductImageUrlMap, product);
 
     }
 
-    private void updateImageByType(Map<ProductImageType, List<ProductImage>> recentImageMap, ProductImageType productImageType, List<ProductImageVO> requestImages, List<MultipartFile> newImages, Map<String, ProductImage> recentProductImageUrlMap) {
+    private void updateImageByType(Map<ProductImageType, List<ProductImage>> recentImageMap, ProductImageType productImageType, List<ProductImageVO> requestImages, List<MultipartFile> newImages, Map<String, ProductImage> recentProductImageUrlMap, Product product) {
         List<ProductImage> recentProductImages = recentImageMap.getOrDefault(productImageType, List.of());
 
         List<String> requestImageUrls = requestImages.stream()
@@ -144,21 +144,22 @@ public class AdminProductService {
             }
         }
 
-        // 2. 새 파일 업로드 (기존 이미지 뒤에 순서 자동 부여)
         int maxOrder = recentProductImages.stream()
                 .map(ProductImage::getOrderNum)
                 .max(Integer::compareTo)
-                .orElse(-1);
+                .orElse(-1); // 기존 이미지 없으면 -1
 
         for (int i = 0; i < newImages.size(); i++) {
             MultipartFile multipartFile = newImages.get(i);
             String uploadImageUrl = s3FileUploader.uploadImageToS3(multipartFile);
 
             ProductImage productImage = ProductImage.builder()
+                    .product(product)
                     .imageType(productImageType)
                     .orderNum(maxOrder + 1 + i)
                     .imageUrl(uploadImageUrl)
                     .build();
+
             productImageRepository.save(productImage);
         }
     }
