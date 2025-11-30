@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -159,7 +161,7 @@ public class AdminProductService {
 
         for (int i = 0; i < newImages.size(); i++) {
             MultipartFile multipartFile = newImages.get(i);
-            if ("application/json".equals(multipartFile.getContentType())) {
+            if (multipartFile == null || multipartFile.isEmpty()) {
                 continue;
             }
             String uploadImageUrl = s3FileUploader.uploadImageToS3(multipartFile);
