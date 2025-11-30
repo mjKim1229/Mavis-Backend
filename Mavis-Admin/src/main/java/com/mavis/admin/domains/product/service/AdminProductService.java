@@ -159,7 +159,7 @@ public class AdminProductService {
 
         for (int i = 0; i < newImages.size(); i++) {
             MultipartFile multipartFile = newImages.get(i);
-            if (multipartFile.isEmpty()) {
+            if ("application/json".equals(multipartFile.getContentType())) {
                 continue;
             }
             String uploadImageUrl = s3FileUploader.uploadImageToS3(multipartFile);
