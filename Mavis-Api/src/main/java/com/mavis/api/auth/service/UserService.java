@@ -10,6 +10,7 @@ import com.mavis.domain.domains.user.domain.SnsType;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.domain.domains.user.exception.UserNotFoundException;
 import com.mavis.domain.domains.user.repository.UserRepository;
+import com.mavis.infrastructure.outer.api.oauth.dto.KakaoUserInfoResponse;
 import com.mavis.infrastructure.outer.api.oauth.dto.NaverProfile;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -31,7 +32,8 @@ public class UserService {
     @Transactional
     public Long upsertNaverUser(NaverProfile profile, String naverRefreshToken) {
         return userRepository.findBySnsTypeAndSnsIdAndIsDeletedFalse(SnsType.NAVER, profile.id())
-                .orElseGet(() -> saveNaverUser(profile, naverRefreshToken)).getId();
+                .orElseGet(() -> saveNaverUser(profile, naverRefreshToken))
+                .getId();
     }
 
     private User saveNaverUser(NaverProfile profile, String naverRefreshToken) {
@@ -44,6 +46,24 @@ public class UserService {
                 .birthDay(toLocalDate(profile.birthyear(), profile.birthday()))
                 .snsType(SnsType.NAVER)
                 .naverRefreshToken(naverRefreshToken)
+                .build();
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public Long upsertKakaouser(KakaoUserInfoResponse kakaoUserInfoResponse) {
+        String kakaoSnsId = String.valueOf(kakaoUserInfoResponse.id());
+        return userRepository.findBySnsTypeAndSnsIdAndIsDeletedFalse(SnsType.KAKAO, kakaoSnsId)
+                .orElseGet(() -> saveKakaoUser(kakaoUserInfoResponse))
+                .getId();
+    }
+
+    public User saveKakaoUser(KakaoUserInfoResponse kakaoUserInfoResponse) {
+        String snsId = String.valueOf(kakaoUserInfoResponse.id());
+        User user = User.builder()
+                .snsType(SnsType.KAKAO)
+                .snsId(snsId)
+                .email(kakaoUserInfoResponse.getEmail())
                 .build();
         return userRepository.save(user);
     }

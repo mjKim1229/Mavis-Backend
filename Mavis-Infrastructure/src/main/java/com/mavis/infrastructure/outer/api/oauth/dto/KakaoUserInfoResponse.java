@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(SnakeCaseStrategy.class)
 public record KakaoUserInfoResponse(long id, KakaoAccount kakaoAccount) {
 
-	private String getEmail() {
+	public String getEmail() {
 		return kakaoAccount.email();
 	}
 
