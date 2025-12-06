@@ -8,6 +8,7 @@ import com.mavis.api.auth.service.UserService;
 import com.mavis.common.dto.JwtPair;
 import com.mavis.common.properties.KakaoProperties;
 import com.mavis.common.properties.NaverProperties;
+import com.mavis.domain.domains.user.domain.SnsType;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.infrastructure.outer.api.oauth.client.kakao.KakaoInfoClient;
 import com.mavis.infrastructure.outer.api.oauth.client.kakao.KakaoOAuthClient;
@@ -39,10 +40,9 @@ public class UserFacade {
 
         String bearerAccessToken = BEARER + kakaoTokenResponse.accessToken();
         KakaoUserInfoResponse userInfo = kakaoInfoClient.getUserInfo(bearerAccessToken);
-
-        //TODO user 저장 service
-        JwtPair jwtPair = userJwtGenerator.getJwtPair(userInfo.id());
-        return new UserOauthResponse(userInfo.id(), jwtPair);
+        Long userId = userService.upsertKakaouser(userInfo);
+        JwtPair jwtPair = userJwtGenerator.getJwtPair(userId);
+        return new UserOauthResponse(userId, jwtPair);
     }
 
     public void withDrawKakao() {
