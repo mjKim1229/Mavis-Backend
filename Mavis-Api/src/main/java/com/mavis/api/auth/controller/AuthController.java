@@ -4,6 +4,7 @@ import com.mavis.api.auth.dto.UserLoginRequest;
 import com.mavis.api.auth.dto.UserOauthResponse;
 import com.mavis.api.auth.dto.UserSignUpRequest;
 import com.mavis.api.auth.facade.UserFacade;
+import com.mavis.api.auth.implement.UserJwtGenerator;
 import com.mavis.api.auth.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ public class AuthController {
 
     private final UserFacade userFacade;
     private final UserService userService;
+    private final UserJwtGenerator userJwtGenerator;
 
     @Operation(summary = "카카오 로그인 code 전송 후 로그인 처리", description = "code만 보내면 됩니다. (Host, Origin)은 안 보내도 됨")
     @GetMapping("/oauth/kakao")
@@ -25,7 +27,7 @@ public class AuthController {
                                       @RequestHeader(required = false, name = "Referer") String referer) {
         if (referer.contains(host)) {
             return userFacade.register(code, "https://garamall.com");
-        }else {
+        } else {
             return userFacade.register(code, "http://localhost:3000");
         }
     }
@@ -64,5 +66,11 @@ public class AuthController {
     @PostMapping("/withdraw")
     public void withDraw() {
         userService.withDraw();
+    }
+
+    @PostMapping("/refresh")
+    @Operation(summary = "토큰 재발급")
+    public UserOauthResponse tokenRefresh(@RequestHeader(value = "refreshToken") String refreshToken) {
+        return userService.tokenRefresh(refreshToken);
     }
 }

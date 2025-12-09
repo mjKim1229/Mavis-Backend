@@ -5,6 +5,7 @@ import com.mavis.api.auth.dto.UserOauthResponse;
 import com.mavis.api.auth.dto.UserSignUpRequest;
 import com.mavis.api.auth.implement.UserReader;
 import com.mavis.common.dto.JwtPair;
+import com.mavis.common.exception.InvalidTokenException;
 import com.mavis.common.jwt.JwtTokenUtil;
 import com.mavis.domain.domains.user.domain.SnsType;
 import com.mavis.domain.domains.user.domain.User;
@@ -95,6 +96,16 @@ public class UserService {
         String refreshToken = jwtTokenUtil.generateRefreshToken(user.getId());
         return new UserOauthResponse(
                 user.getId(),
+                new JwtPair(accessToken, refreshToken)
+        );
+    }
+
+    public UserOauthResponse tokenRefresh(String refreshToken) {
+        Long id = jwtTokenUtil.parseRefreshToken(refreshToken);
+        String accessToken = jwtTokenUtil.generateAccessToken(id);
+        refreshToken = jwtTokenUtil.generateRefreshToken(id);
+        return new UserOauthResponse(
+                id,
                 new JwtPair(accessToken, refreshToken)
         );
     }
