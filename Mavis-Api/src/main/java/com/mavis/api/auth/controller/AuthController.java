@@ -70,7 +70,7 @@ public class AuthController {
 
     @PostMapping("/refresh")
     @Operation(summary = "토큰 재발급")
-    public UserOauthResponse tokenRefresh(@RequestHeader(value = "refreshToken", required = false, defaultValue = "") String refreshToken) {
+    public UserOauthResponse tokenRefresh(@RequestHeader(value = "refreshToken") String refreshToken) {
         return userService.tokenRefresh(refreshToken);
     }
 }
