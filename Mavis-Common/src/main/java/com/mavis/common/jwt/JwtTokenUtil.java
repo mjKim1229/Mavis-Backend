@@ -2,6 +2,7 @@ package com.mavis.common.jwt;
 
 import com.mavis.common.exception.ExpiredTokenException;
 import com.mavis.common.exception.InvalidTokenException;
+import com.mavis.common.exception.RefreshTokenExpiredException;
 import com.mavis.common.properties.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -78,7 +79,7 @@ public class JwtTokenUtil {
         return payload.get(TOKEN_TYPE).equals(ACCESS_TOKEN);
     }
 
-    private boolean isRefreshToken(String token) {
+    public boolean isRefreshToken(String token) {
         Jws<Claims> jws = getJws(token);
         return jws.getPayload().get(TOKEN_TYPE).equals(REFRESH_TOKEN);
     }
@@ -88,6 +89,18 @@ public class JwtTokenUtil {
             Claims payload = getJws(token).getPayload();
             String id = payload.getSubject();
             return Long.valueOf(id);
+        }
+        throw InvalidTokenException.EXCEPTION;
+    }
+
+    public Long parseRefreshToken(String token) {
+        try {
+            if (isRefreshToken(token)) {
+                Claims claims = getJws(token).getBody();
+                return Long.parseLong(claims.getSubject());
+            }
+        } catch (ExpiredTokenException e) {
+            throw RefreshTokenExpiredException.EXCEPTION;
         }
         throw InvalidTokenException.EXCEPTION;
     }
