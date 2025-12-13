@@ -10,10 +10,10 @@ import static com.mavis.common.enums.ProductSubCategory.*;
 
 @RequiredArgsConstructor
 public enum ProductCategory implements EnumMapperType {
-    EMBROIDERY("자수원단", EnumSet.of(COTTON, COTTON_MESH, COTTON_CHIFFON, COTTON_POLY_PATCH, CHIFFON, TENCEL)),
-    SPECIAL_EMBROIDERY("특수자수원단", EnumSet.of(THREE_D_PATCH, COLOR, HAND, SPANGLE)),
-    LACE("레이스", EnumSet.of(COTTON_LACE, COTTON_MESH_LACE, POLY_LACE)),
-    EMBELLISHMENT("부자재", EnumSet.noneOf(ProductSubCategory.class));
+    FASHION("패션", EnumSet.of(ACCESSORY, INNERWEAR)),
+    FABRIC("원단", EnumSet.of(COTTON, POLY, NYLON, TENCEL)),
+    EMBELLISHMENT("부자재", EnumSet.of(GARMENT_TRIMS, PACKAGING_MATERIALS)),
+    FASHION_GOODS("잡화", EnumSet.noneOf(ProductSubCategory.class));
 
     private final String title;
     @Getter
