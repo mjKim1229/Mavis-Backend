@@ -60,7 +60,7 @@ public class ProductService {
                 .map(category ->
                         SubCategoryVO.from(
                                 category,
-                                !category.isBlankSubCategory() ? List.of() : enumMapper.toEnumVoList(category.getSubCategories())
+                                category.isBlankSubCategory() ? List.of() : enumMapper.toEnumVoList(category.getSubCategories())
                         )
                 )
                 .toList();

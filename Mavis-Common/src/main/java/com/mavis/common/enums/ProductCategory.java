@@ -11,10 +11,10 @@ import static com.mavis.common.enums.ProductSubCategory.*;
 @Getter
 @RequiredArgsConstructor
 public enum ProductCategory implements EnumMapperType {
-    FASHION("패션", EnumSet.of(ACCESSORY, INNERWEAR), true),
-    FABRIC("원단", EnumSet.of(COTTON, POLY, NYLON, TENCEL), true),
-    EMBELLISHMENT("부자재", EnumSet.of(GARMENT_TRIMS, PACKAGING_MATERIALS), true),
-    FASHION_GOODS("잡화", EnumSet.of(ProductSubCategory.FASHION_GOODS), false);
+    FASHION("패션", EnumSet.of(ACCESSORY, INNERWEAR), false),
+    FABRIC("원단", EnumSet.of(COTTON, POLY, NYLON, TENCEL), false),
+    EMBELLISHMENT("부자재", EnumSet.of(GARMENT_TRIMS, PACKAGING_MATERIALS), false),
+    FASHION_GOODS("잡화", EnumSet.of(ProductSubCategory.FASHION_GOODS), true);
 
     private final String title;
     private final EnumSet<ProductSubCategory> subCategories;

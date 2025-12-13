@@ -8,9 +8,10 @@ import java.util.List;
 public record SubCategoryVO(
         String code,
         String title,
+        boolean isBlankSubCategory,
         List<EnumMapperVO> subCategories
 ) {
     public static SubCategoryVO from(ProductCategory category, List<EnumMapperVO> subCategories) {
-        return new SubCategoryVO(category.getCode(), category.getTitle(), subCategories);
+        return new SubCategoryVO(category.getCode(), category.getTitle(), category.isBlankSubCategory(), subCategories);
     }
 }
