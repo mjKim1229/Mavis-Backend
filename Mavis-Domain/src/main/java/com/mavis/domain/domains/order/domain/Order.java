@@ -4,8 +4,6 @@ import com.mavis.domain.domains.common.jpa.BaseEntity;
 import com.mavis.domain.domains.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.util.List;
 
@@ -26,7 +24,7 @@ public class Order extends BaseEntity {
 
     private int totalPrice;
 
-    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(columnDefinition = "varchar(255)")
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
 

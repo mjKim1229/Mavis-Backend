@@ -1,13 +1,8 @@
 package com.mavis.domain.domains.user.domain;
 
 import com.mavis.domain.domains.common.jpa.BaseEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 @AllArgsConstructor
 @Builder
@@ -21,7 +16,7 @@ public class VerificationCode extends BaseEntity {
 
     private Integer code;
 
-    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(columnDefinition = "varchar(255)")
     @Enumerated(EnumType.STRING)
     private VerificationType verificationType;
 
