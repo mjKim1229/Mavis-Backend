@@ -11,7 +11,8 @@ public enum ProductSubCategory implements EnumMapperType {
     NYLON("나일론"),
     TENCEL("텐셀"),
     GARMENT_TRIMS("의류 부자재"),
-    PACKAGING_MATERIALS("포장 부자재");
+    PACKAGING_MATERIALS("포장 부자재"),
+    FASHION_GOODS("잡화");
 
     private final String title;
 

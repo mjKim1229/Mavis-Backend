@@ -8,16 +8,17 @@ import java.util.EnumSet;
 
 import static com.mavis.common.enums.ProductSubCategory.*;
 
+@Getter
 @RequiredArgsConstructor
 public enum ProductCategory implements EnumMapperType {
-    FASHION("패션", EnumSet.of(ACCESSORY, INNERWEAR)),
-    FABRIC("원단", EnumSet.of(COTTON, POLY, NYLON, TENCEL)),
-    EMBELLISHMENT("부자재", EnumSet.of(GARMENT_TRIMS, PACKAGING_MATERIALS)),
-    FASHION_GOODS("잡화", EnumSet.noneOf(ProductSubCategory.class));
+    FASHION("패션", EnumSet.of(ACCESSORY, INNERWEAR), false),
+    FABRIC("원단", EnumSet.of(COTTON, POLY, NYLON, TENCEL), false),
+    EMBELLISHMENT("부자재", EnumSet.of(GARMENT_TRIMS, PACKAGING_MATERIALS), false),
+    FASHION_GOODS("잡화", EnumSet.of(ProductSubCategory.FASHION_GOODS), true);
 
     private final String title;
-    @Getter
     private final EnumSet<ProductSubCategory> subCategories;
+    private final boolean isBlankSubCategory;
 
     @Override
     public String getCode() {

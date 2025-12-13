@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -58,7 +59,8 @@ public class ProductService {
         return Arrays.stream(ProductCategory.values())
                 .map(category ->
                         SubCategoryVO.from(
-                                category, enumMapper.toEnumVoList(category.getSubCategories())
+                                category,
+                                category.isBlankSubCategory() ? List.of() : enumMapper.toEnumVoList(category.getSubCategories())
                         )
                 )
                 .toList();
