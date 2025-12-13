@@ -4,9 +4,7 @@ import com.mavis.common.enums.ProductSubCategory;
 import com.mavis.domain.domains.common.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLRestriction;
-import org.hibernate.type.SqlTypes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +23,7 @@ public class Product extends BaseEntity {
 
     private Integer price;
 
-    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(columnDefinition = "varchar(255)")
     @Enumerated(EnumType.STRING)
     private ProductSubCategory subCategory;
 
