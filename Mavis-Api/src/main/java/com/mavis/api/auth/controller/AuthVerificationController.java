@@ -2,6 +2,8 @@ package com.mavis.api.auth.controller;
 
 import com.mavis.api.auth.dto.UserPasswordFoundVerifyCodeRequest;
 import com.mavis.api.auth.dto.UserPasswordFoundVerifyCreateRequest;
+import com.mavis.api.auth.dto.UserSignUpCodeCreateRequest;
+import com.mavis.api.auth.dto.UserSignUpCodeVerifyRequest;
 import com.mavis.api.auth.service.AuthVerificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,5 +26,15 @@ public class AuthVerificationController {
     @PostMapping("/password/verify")
     public void verifyPasswordFound(@RequestBody UserPasswordFoundVerifyCodeRequest request) {
         authVerificationService.verifyPasswordFound(request);
+    }
+
+    @PostMapping("/sign-up")
+    public void saveEmailSignUpCode(@RequestBody UserSignUpCodeCreateRequest request) {
+        authVerificationService.saveSignUpCode(request);
+    }
+
+    @PostMapping("/sign-up/verify")
+    public void verifyEmailSignUpCode(@RequestBody UserSignUpCodeVerifyRequest request) {
+        authVerificationService.verifySignUpFound(request);
     }
 }

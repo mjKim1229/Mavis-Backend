@@ -1,5 +1,5 @@
 package com.mavis.domain.domains.user.domain;
 
 public enum VerificationType {
-    PASSWORD_FOUND
+    PASSWORD_FOUND, SIGN_UP
 }

@@ -2,8 +2,11 @@ package com.mavis.api.auth.service;
 
 import com.mavis.api.auth.dto.UserPasswordFoundVerifyCodeRequest;
 import com.mavis.api.auth.dto.UserPasswordFoundVerifyCreateRequest;
+import com.mavis.api.auth.dto.UserSignUpCodeCreateRequest;
+import com.mavis.api.auth.dto.UserSignUpCodeVerifyRequest;
 import com.mavis.common.util.RandomAuthCodeUtil;
 import com.mavis.domain.domains.user.domain.VerificationCode;
+import com.mavis.domain.domains.user.domain.VerificationType;
 import com.mavis.domain.domains.user.exception.InvalidVerificationCodeException;
 import com.mavis.domain.domains.user.exception.VerificationCodeExpiredException;
 import com.mavis.domain.domains.user.repository.VerificationCodeRepository;
@@ -15,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 import static com.mavis.domain.domains.user.domain.VerificationType.PASSWORD_FOUND;
+import static com.mavis.domain.domains.user.domain.VerificationType.SIGN_UP;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +42,29 @@ public class AuthVerificationService {
     @Transactional(readOnly = true)
     public void verifyPasswordFound(UserPasswordFoundVerifyCodeRequest request) {
         LocalDateTime validThresholdTime = LocalDateTime.now().minusMinutes(VERIFICATION_CODE_VALID_MINUTES);
-        VerificationCode verificationCode = verificationCodeRepository.findByEmailAndCodeAndIsDeletedFalse(request.email(), request.code())
+        VerificationCode verificationCode = verificationCodeRepository.findByVerificationTypeAndEmailAndCodeAndIsDeletedFalse(VerificationType.PASSWORD_FOUND, request.email(), request.code())
+                .orElseThrow(() -> InvalidVerificationCodeException.EXCEPTION);
+        if (verificationCode.getCreatedAt().isBefore(validThresholdTime)) {
+            throw VerificationCodeExpiredException.EXCEPTION;
+        }
+    }
+
+    @Transactional
+    public void saveSignUpCode(UserSignUpCodeCreateRequest request) {
+        Integer authCode = RandomAuthCodeUtil.generateRandomIntegerNumber();
+        VerificationCode verificationCode = VerificationCode.builder()
+                .code(authCode)
+                .verificationType(SIGN_UP)
+                .email(request.email())
+                .build();
+        mailService.send(request.email(), "회원가입 인증 번호입니다.", authCode.toString());
+        verificationCodeRepository.save(verificationCode);
+    }
+
+    @Transactional(readOnly = true)
+    public void verifySignUpFound(UserSignUpCodeVerifyRequest request) {
+        LocalDateTime validThresholdTime = LocalDateTime.now().minusMinutes(VERIFICATION_CODE_VALID_MINUTES);
+        VerificationCode verificationCode = verificationCodeRepository.findByVerificationTypeAndEmailAndCodeAndIsDeletedFalse(SIGN_UP, request.email(), request.code())
                 .orElseThrow(() -> InvalidVerificationCodeException.EXCEPTION);
         if (verificationCode.getCreatedAt().isBefore(validThresholdTime)) {
             throw VerificationCodeExpiredException.EXCEPTION;
