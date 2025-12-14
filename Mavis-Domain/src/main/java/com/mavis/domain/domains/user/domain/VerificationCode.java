@@ -4,6 +4,8 @@ import com.mavis.domain.domains.common.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @AllArgsConstructor
 @Builder
 @Getter
@@ -20,11 +22,18 @@ public class VerificationCode extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private VerificationType verificationType;
 
+    private LocalDateTime expiredAt;
+
     private String email;
 
     private boolean isDeleted = false;
 
-    void delete() {
+    public void delete() {
         this.isDeleted = true;
+    }
+
+    public void update(Integer code, LocalDateTime expiredAt) {
+        this.code = code;
+        this.expiredAt = expiredAt;
     }
 }
