@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 public class VerificationCode extends BaseEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private Integer code;
