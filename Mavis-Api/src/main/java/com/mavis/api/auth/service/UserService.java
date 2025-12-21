@@ -11,6 +11,7 @@ import com.mavis.domain.domains.user.domain.SnsType;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.domain.domains.user.exception.UserNotFoundException;
 import com.mavis.domain.domains.user.repository.UserRepository;
+import com.mavis.infrastructure.outer.api.oauth.client.naver.NaverOAuthClient;
 import com.mavis.infrastructure.outer.api.oauth.dto.KakaoUserInfoResponse;
 import com.mavis.infrastructure.outer.api.oauth.dto.NaverProfile;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class UserService {
     private final JwtTokenUtil jwtTokenUtil;
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private final NaverOAuthClient naverOAuthClient;
 
     @Transactional
     public Long upsertNaverUser(NaverProfile profile, String naverRefreshToken) {
@@ -75,11 +77,6 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteKakaoUser(User user) {
-        user.withDraw();
-    }
-
-    @Transactional
     public void signUp(UserSignUpRequest request) {
         User user = request.toEntity();
         userRepository.save(user);
@@ -108,11 +105,5 @@ public class UserService {
                 id,
                 new JwtPair(accessToken, refreshToken)
         );
-    }
-
-    @Transactional
-    public void withDraw() {
-        User user = userReader.getCurrentUser();
-        user.withDraw();
     }
 }

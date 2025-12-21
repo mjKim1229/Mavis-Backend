@@ -4,7 +4,6 @@ import com.mavis.api.auth.dto.UserLoginRequest;
 import com.mavis.api.auth.dto.UserOauthResponse;
 import com.mavis.api.auth.dto.UserSignUpRequest;
 import com.mavis.api.auth.facade.UserFacade;
-import com.mavis.api.auth.implement.UserJwtGenerator;
 import com.mavis.api.auth.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +17,6 @@ public class AuthController {
 
     private final UserFacade userFacade;
     private final UserService userService;
-    private final UserJwtGenerator userJwtGenerator;
 
     @Operation(summary = "카카오 로그인 code 전송 후 로그인 처리", description = "code만 보내면 됩니다. (Host, Origin)은 안 보내도 됨")
     @GetMapping("/oauth/kakao")
@@ -44,10 +42,10 @@ public class AuthController {
         return userFacade.registerNaver(code);
     }
 
-    @Operation(summary = "네이버 회원탈퇴")
-    @DeleteMapping("/oauth/naver/withdraw")
+    @Operation(summary = "회원탈퇴")
+    @DeleteMapping("/withdraw")
     public void withDrawNaverUser() {
-        userFacade.withDrawNaver();
+        userFacade.withDraw();
     }
 
     @Operation(summary = "일반 회원가입")
@@ -60,12 +58,6 @@ public class AuthController {
     @PostMapping("/login")
     public UserOauthResponse login(@RequestBody UserLoginRequest request) {
         return userService.login(request);
-    }
-
-    @Operation(summary = "일반 회원탈퇴")
-    @PostMapping("/withdraw")
-    public void withDraw() {
-        userService.withDraw();
     }
 
     @PostMapping("/refresh")

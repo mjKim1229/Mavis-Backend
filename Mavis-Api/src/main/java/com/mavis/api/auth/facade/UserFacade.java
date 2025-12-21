@@ -49,7 +49,6 @@ public class UserFacade {
         User user = userReader.getCurrentUser();
         Long snsId = Long.valueOf(user.getSnsId());
         unlinkKakao(snsId);
-        userService.deleteKakaoUser(user);
     }
 
     private void unlinkKakao(Long snsId) {
@@ -68,8 +67,17 @@ public class UserFacade {
         return new UserOauthResponse(userId, jwtPair);
     }
 
-    public void withDrawNaver() {
+    public void withDraw() {
         User user = userReader.getCurrentUser();
+        user.withDraw();
+        if (user.getSnsType() == SnsType.NAVER) {
+            withDrawNaver(user);
+        } else if (user.getSnsType() == SnsType.KAKAO) {
+            withDrawKakao();
+        }
+    }
+
+    public void withDrawNaver(User user) {
         String naverRefreshToken = user.getNaverRefreshToken();
         NaverTokenRefreshRequest refreshRequest = NaverTokenRefreshRequest.builder()
                 .clientId(naverProperties.clientId())
@@ -88,6 +96,5 @@ public class UserFacade {
                 .grantType("delete")
                 .build();
         naverOAuthClient.tokenRevoke(deleteRequest);
-        userService.withDraw();
     }
 }
