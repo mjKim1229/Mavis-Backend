@@ -17,6 +17,7 @@ import com.mavis.infrastructure.outer.api.oauth.client.naver.NaverOAuthClient;
 import com.mavis.infrastructure.outer.api.oauth.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import static com.mavis.common.consts.MavisStatic.BEARER;
 
@@ -67,6 +68,7 @@ public class UserFacade {
         return new UserOauthResponse(userId, jwtPair);
     }
 
+    @Transactional
     public void withDraw() {
         User user = userReader.getCurrentUser();
         user.withDraw();
@@ -79,22 +81,21 @@ public class UserFacade {
 
     public void withDrawNaver(User user) {
         String naverRefreshToken = user.getNaverRefreshToken();
-        NaverTokenRefreshRequest refreshRequest = NaverTokenRefreshRequest.builder()
+        NaverOAuthRequest refreshTokenRequest = NaverOAuthRequest.builder()
                 .clientId(naverProperties.clientId())
                 .clientSecret(naverProperties.clientSecret())
                 .refreshToken(naverRefreshToken)
                 .grantType("refresh_token")
                 .build();
-        NaverTokenResponse naverTokenResponse = naverOAuthClient.tokenRefresh(refreshRequest);
-
+        NaverTokenResponse naverTokenResponse = naverOAuthClient.naverAuth(refreshTokenRequest);
         String naverAccessToken = naverTokenResponse.accessToken();
-        NaverTokenRevokeRequest deleteRequest = NaverTokenRevokeRequest.builder()
+        NaverOAuthRequest deleteRequest = NaverOAuthRequest.builder()
                 .clientId(naverProperties.clientId())
                 .clientSecret(naverProperties.clientSecret())
                 .accessToken(naverAccessToken)
-                .serviceProvide("NAVER")
+                .serviceProvider("NAVER")
                 .grantType("delete")
                 .build();
-        naverOAuthClient.tokenRevoke(deleteRequest);
+        naverOAuthClient.naverAuth(deleteRequest);
     }
 }
