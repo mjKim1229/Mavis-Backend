@@ -27,6 +27,7 @@ public class UserMapper {
                 .clientSecret(naverProperties.clientSecret())
                 .clientId(naverProperties.clientId())
                 .state(naverProperties.state())
+                .grantType("authorization_code")
                 .build();
     }
 }

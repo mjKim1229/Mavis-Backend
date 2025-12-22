@@ -17,4 +17,12 @@ public class NaverOAuthRequest {
     private String code;
     @FormProperty("state")
     private String state;
+    @FormProperty("access_token")
+    private String accessToken;
+    @FormProperty("refresh_token")
+    private String refreshToken;
+    @FormProperty("grant_type")
+    private String grantType;
+    @FormProperty("service_provider")
+    private String serviceProvider;
 }

@@ -17,6 +17,7 @@ import com.mavis.infrastructure.outer.api.oauth.client.naver.NaverOAuthClient;
 import com.mavis.infrastructure.outer.api.oauth.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import static com.mavis.common.consts.MavisStatic.BEARER;
 
@@ -49,7 +50,6 @@ public class UserFacade {
         User user = userReader.getCurrentUser();
         Long snsId = Long.valueOf(user.getSnsId());
         unlinkKakao(snsId);
-        userService.deleteKakaoUser(user);
     }
 
     private void unlinkKakao(Long snsId) {
@@ -68,26 +68,34 @@ public class UserFacade {
         return new UserOauthResponse(userId, jwtPair);
     }
 
-    public void withDrawNaver() {
+    @Transactional
+    public void withDraw() {
         User user = userReader.getCurrentUser();
+        user.withDraw();
+        if (user.getSnsType() == SnsType.NAVER) {
+            withDrawNaver(user);
+        } else if (user.getSnsType() == SnsType.KAKAO) {
+            withDrawKakao();
+        }
+    }
+
+    public void withDrawNaver(User user) {
         String naverRefreshToken = user.getNaverRefreshToken();
-        NaverTokenRefreshRequest refreshRequest = NaverTokenRefreshRequest.builder()
+        NaverOAuthRequest refreshTokenRequest = NaverOAuthRequest.builder()
                 .clientId(naverProperties.clientId())
                 .clientSecret(naverProperties.clientSecret())
                 .refreshToken(naverRefreshToken)
                 .grantType("refresh_token")
                 .build();
-        NaverTokenResponse naverTokenResponse = naverOAuthClient.tokenRefresh(refreshRequest);
-
+        NaverTokenResponse naverTokenResponse = naverOAuthClient.naverAuth(refreshTokenRequest);
         String naverAccessToken = naverTokenResponse.accessToken();
-        NaverTokenRevokeRequest deleteRequest = NaverTokenRevokeRequest.builder()
+        NaverOAuthRequest deleteRequest = NaverOAuthRequest.builder()
                 .clientId(naverProperties.clientId())
                 .clientSecret(naverProperties.clientSecret())
                 .accessToken(naverAccessToken)
-                .serviceProvide("NAVER")
+                .serviceProvider("NAVER")
                 .grantType("delete")
                 .build();
-        naverOAuthClient.tokenRevoke(deleteRequest);
-        userService.withDraw();
+        naverOAuthClient.naverAuth(deleteRequest);
     }
 }
