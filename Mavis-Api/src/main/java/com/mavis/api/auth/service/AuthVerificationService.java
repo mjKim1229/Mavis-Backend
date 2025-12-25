@@ -9,6 +9,7 @@ import com.mavis.domain.domains.user.domain.VerificationCode;
 import com.mavis.domain.domains.user.domain.VerificationType;
 import com.mavis.domain.domains.user.exception.InvalidVerificationCodeException;
 import com.mavis.domain.domains.user.exception.VerificationCodeExpiredException;
+import com.mavis.domain.domains.user.repository.UserRepository;
 import com.mavis.domain.domains.user.repository.VerificationCodeRepository;
 import com.mavis.infrastructure.outer.email.MailService;
 import lombok.RequiredArgsConstructor;
@@ -26,9 +27,13 @@ public class AuthVerificationService {
     private final VerificationCodeRepository verificationCodeRepository;
     private final MailService mailService;
     private static final long VERIFICATION_CODE_VALID_MINUTES = 5;
+    private final UserRepository userRepository;
 
     @Transactional
     public void savePasswordFoundCode(UserPasswordFoundVerifyCreateRequest request) {
+        boolean isUserExists = userRepository.existsByEmailAndIsDeletedFalse(request.email());
+        if (!isUserExists) return;
+
         Integer authCode = RandomAuthCodeUtil.generateRandomIntegerNumber();
         LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(VERIFICATION_CODE_VALID_MINUTES);
         verificationCodeRepository.findByVerificationTypeAndEmail(PASSWORD_FOUND, request.email())
