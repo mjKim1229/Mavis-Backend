@@ -37,6 +37,7 @@ public class SecurityConfig {
                                 .requestMatchers("/v1/api/inquiry/user/**").hasRole("USER")
                                 .requestMatchers("/v1/api/order/**").hasRole("USER")
                                 .requestMatchers("/v1/api/cart/**").hasRole("USER")
+                                .requestMatchers("/v1/api/favorites/**").hasRole("USER")
                                 .requestMatchers(
                                         "/v1/api/auths/withdraw",
                                         "/v1/api/auths/oauth/kakao/withdraw",
