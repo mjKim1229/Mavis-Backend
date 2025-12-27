@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum OrderStatus implements EnumMapperType {
     ORDERED("주문 완료"),
-    CONFIRMED("주문 확인");
+    CONFIRMED("주문 확인 (발주 완료)");
 
     private final String title;
 

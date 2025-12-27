@@ -1,9 +1,12 @@
 package com.mavis.admin.domains.delivery.service;
 
+import com.mavis.admin.domains.delivery.dto.UpdateAdminDeliveredConfirmRequest;
 import com.mavis.admin.domains.order.dto.GetAdminOrderExcelResponse;
 import com.mavis.admin.domains.order.dto.UpdateAdminOrderConfirmRequest;
 import com.mavis.common.annotation.ExcelColumn;
 import com.mavis.domain.domains.delivery.domain.Delivery;
+import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
+import com.mavis.domain.domains.delivery.exception.DeliveryCannotBeCompleteException;
 import com.mavis.domain.domains.delivery.repository.DeliveryRepository;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderStatus;
@@ -129,6 +132,23 @@ public class AdminDeliveryService {
                     .order(order)
                     .build();
             deliveryRepository.save(delivery);
+        });
+    }
+
+    @Transactional
+    public void confirmDelivered(UpdateAdminDeliveredConfirmRequest request) {
+        if (request.deliveryStatus() == DeliveryStatus.READY) {
+            throw DeliveryCannotBeCompleteException.EXCEPTION;
+        }
+
+        //TODO 단계별 검증
+        List<Long> deliverIds = request.deliverIds();
+        List<Delivery> deliveries = deliveryRepository.findByIdInAndIsDeletedFalse(deliverIds);
+        deliveries.forEach(delivery -> {
+            if (delivery.getDeliveryStatus() == request.deliveryStatus()) {
+                throw DeliveryCannotBeCompleteException.EXCEPTION;
+            }
+            delivery.updateDeliveryStatus(request.deliveryStatus());
         });
     }
 }

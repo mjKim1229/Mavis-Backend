@@ -5,7 +5,9 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public enum DeliveryStatus implements EnumMapperType {
-    READY("발주 완료");
+    READY("배송 준비"), //발주 완료
+    SHIPPED("배송중"),
+    DELIVERED("배송 완료");
 
     private final String title;
 

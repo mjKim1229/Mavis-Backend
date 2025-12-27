@@ -25,4 +25,8 @@ public class Delivery extends BaseEntity {
 
     @Builder.Default
     private boolean isDeleted = false;
+
+    public void updateDeliveryStatus(DeliveryStatus deliveryStatus) {
+        this.deliveryStatus = deliveryStatus;
+    }
 }
