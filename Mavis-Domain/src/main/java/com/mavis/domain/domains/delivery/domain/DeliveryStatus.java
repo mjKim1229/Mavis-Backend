@@ -1,12 +1,11 @@
-package com.mavis.domain.domains.order.domain;
+package com.mavis.domain.domains.delivery.domain;
 
 import com.mavis.common.enums.EnumMapperType;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public enum OrderStatus implements EnumMapperType {
-    ORDERED("주문 완료"),
-    CONFIRMED("주문 확인");
+public enum DeliveryStatus implements EnumMapperType {
+    READY("발주 완료");
 
     private final String title;
 
