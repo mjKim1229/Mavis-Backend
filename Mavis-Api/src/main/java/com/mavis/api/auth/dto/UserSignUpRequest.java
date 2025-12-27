@@ -16,10 +16,10 @@ public record UserSignUpRequest(
         String phoneNumber,
         String email
 ) {
-    public User toEntity() {
+    public User toEntity(String encodedPassword) {
         return User.builder()
                 .username(username)
-                .password(password)
+                .password(encodedPassword)
                 .nickname(nickname)
                 .name(name)
                 .birthDay(birthDay)
