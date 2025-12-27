@@ -4,12 +4,10 @@ import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.order.dto.CreateOrderRequest;
 import com.mavis.api.order.dto.UserOrderInfo;
 import com.mavis.api.order.service.OrderService;
-import com.mavis.domain.domains.order.domain.OrderStatus;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RequestMapping("/v1/api/order")
 @RequiredArgsConstructor
@@ -18,13 +16,15 @@ public class OrderController {
 
     private final OrderService orderService;
 
+    @Operation(summary = "주문 생성")
     @PostMapping
     public void createOrder(@RequestBody CreateOrderRequest request) {
         orderService.createOrder(request);
     }
 
+    @Operation(summary = "회원별 주문 & 배송 목록 조회")
     @GetMapping
-    public PageResponse<UserOrderInfo> getUserOrderList(Pageable pageable, OrderStatus orderStatus) {
-        return orderService.getUserOrderList(pageable, orderStatus);
+    public PageResponse<UserOrderInfo> getUserOrderList(Pageable pageable) {
+        return orderService.getUserOrderList(pageable);
     }
 }

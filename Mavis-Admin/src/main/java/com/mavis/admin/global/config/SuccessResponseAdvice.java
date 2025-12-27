@@ -20,9 +20,16 @@ public class SuccessResponseAdvice implements ResponseBodyAdvice {
     }
 
     @Override
-    public Object beforeBodyWrite(Object body, MethodParameter returnType,
-                                  MediaType selectedContentType, Class selectedConverterType, ServerHttpRequest request,
+    public Object beforeBodyWrite(Object body,
+                                  MethodParameter returnType,
+                                  MediaType selectedContentType,
+                                  Class selectedConverterType,
+                                  ServerHttpRequest request,
                                   ServerHttpResponse response) {
+
+        if (isBinaryResponse(selectedContentType)) {
+            return body;
+        }
 
         HttpServletResponse servletResponse =
                 ((ServletServerHttpResponse) response).getServletResponse();
@@ -33,5 +40,13 @@ public class SuccessResponseAdvice implements ResponseBodyAdvice {
             return new SuccessResponse(body);
         }
         return body;
+    }
+
+    private boolean isBinaryResponse(MediaType mediaType) {
+        if (mediaType == null) return false;
+
+        return MediaType.APPLICATION_OCTET_STREAM.includes(mediaType)
+                || mediaType.toString()
+                .contains("application/vnd.openxmlformats-officedocument");
     }
 }

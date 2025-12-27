@@ -8,7 +8,7 @@ import com.mavis.api.order.dto.UserOrderInfo;
 import com.mavis.api.order.implement.OrderItemAppender;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderAddress;
-import com.mavis.domain.domains.order.domain.OrderStatus;
+import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.user.domain.User;
 import lombok.RequiredArgsConstructor;
@@ -39,9 +39,9 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<UserOrderInfo> getUserOrderList(Pageable pageable, OrderStatus orderStatus) {
+    public PageResponse<UserOrderInfo> getUserOrderList(Pageable pageable) {
         User user = userReader.getCurrentUser();
-        Page<Order> orderPages = orderRepository.findOrderPagesByUser(pageable, orderStatus, user);
+        Page<Order> orderPages = orderRepository.findOrderPagesByUser(pageable, user);
         Page<UserOrderInfo> userOrderInfoPages = orderPages.map(order -> {
                     OrderAddress orderAddress = order.getOrderAddress();
                     return UserOrderInfo.builder()
@@ -49,6 +49,7 @@ public class OrderService {
                             .addressInfo(orderAddress.getAddressMemo())
                             .totalPrice(order.getTotalPrice())
                             .userName(user.getName())
+                            .orderStatus(order.getOrderStatus())
                             .build();
                 }
         );

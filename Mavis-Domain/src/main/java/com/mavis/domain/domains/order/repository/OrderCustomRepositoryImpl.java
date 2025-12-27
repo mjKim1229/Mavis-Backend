@@ -1,5 +1,6 @@
 package com.mavis.domain.domains.order.repository;
 
+import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderStatus;
 import com.mavis.domain.domains.user.domain.User;
@@ -37,10 +38,9 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
     }
 
     @Override
-    public Page<Order> findOrderPagesByUser(Pageable pageable, OrderStatus orderStatus, User user) {
+    public Page<Order> findOrderPagesByUser(Pageable pageable, User user) {
         List<Order> orders = queryFactory.selectFrom(order)
                 .where(order.isDeleted.eq(false)
-                        .and(order.orderStatus.eq(orderStatus))
                         .and(order.user.eq(user)))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -50,7 +50,6 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
         JPAQuery<Long> countQuery = queryFactory.select(order.count())
                 .from(order)
                 .where(order.isDeleted.eq(false)
-                        .and(order.orderStatus.eq(orderStatus))
                         .and(order.user.eq(user)));
 
         return PageableExecutionUtils.getPage(orders, pageable, countQuery::fetchOne);

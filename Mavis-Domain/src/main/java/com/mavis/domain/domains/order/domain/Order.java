@@ -26,7 +26,8 @@ public class Order extends BaseEntity {
 
     @Column(columnDefinition = "varchar(255)")
     @Enumerated(EnumType.STRING)
-    private OrderStatus orderStatus;
+    @Builder.Default
+    private OrderStatus orderStatus = OrderStatus.ORDERED;
 
     @Embedded
     private OrderAddress orderAddress;
@@ -39,5 +40,9 @@ public class Order extends BaseEntity {
 
     public void setTotalPrice(int totalPrice) {
         this.totalPrice = totalPrice;
+    }
+
+    public void confirm() {
+        this.orderStatus = OrderStatus.CONFIRMED;
     }
 }
