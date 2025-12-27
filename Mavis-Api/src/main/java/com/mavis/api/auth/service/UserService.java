@@ -3,18 +3,16 @@ package com.mavis.api.auth.service;
 import com.mavis.api.auth.dto.UserLoginRequest;
 import com.mavis.api.auth.dto.UserOauthResponse;
 import com.mavis.api.auth.dto.UserSignUpRequest;
-import com.mavis.api.auth.implement.UserReader;
 import com.mavis.common.dto.JwtPair;
-import com.mavis.common.exception.InvalidTokenException;
 import com.mavis.common.jwt.JwtTokenUtil;
 import com.mavis.domain.domains.user.domain.SnsType;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.domain.domains.user.exception.UserNotFoundException;
 import com.mavis.domain.domains.user.repository.UserRepository;
-import com.mavis.infrastructure.outer.api.oauth.client.naver.NaverOAuthClient;
 import com.mavis.infrastructure.outer.api.oauth.dto.KakaoUserInfoResponse;
 import com.mavis.infrastructure.outer.api.oauth.dto.NaverProfile;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,12 +23,11 @@ import java.time.format.DateTimeFormatter;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserReader userReader;
     private final UserRepository userRepository;
     private final JwtTokenUtil jwtTokenUtil;
+    private final PasswordEncoder passwordEncoder;
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private final NaverOAuthClient naverOAuthClient;
 
     @Transactional
     public Long upsertNaverUser(NaverProfile profile, String naverRefreshToken) {
@@ -78,7 +75,8 @@ public class UserService {
 
     @Transactional
     public void signUp(UserSignUpRequest request) {
-        User user = request.toEntity();
+        String encodedPassword = passwordEncoder.encode(request.password());
+        User user = request.toEntity(encodedPassword);
         userRepository.save(user);
     }
 
@@ -86,7 +84,7 @@ public class UserService {
     public UserOauthResponse login(UserLoginRequest request) {
         User user = userRepository.findByUsernameAndIsDeletedFalse(request.username())
                 .orElseThrow(() -> UserNotFoundException.EXCEPTION);
-        if (!user.getPassword().equals(request.password())) {
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw UserNotFoundException.EXCEPTION;
         }
         String accessToken = jwtTokenUtil.generateAccessToken(user.getId());
