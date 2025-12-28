@@ -2,6 +2,7 @@ package com.mavis.api.order.controller;
 
 import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.order.dto.CreateOrderRequest;
+import com.mavis.api.order.dto.PendingOrderRequest;
 import com.mavis.api.order.dto.UserOrderInfo;
 import com.mavis.api.order.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,5 +27,15 @@ public class OrderController {
     @GetMapping
     public PageResponse<UserOrderInfo> getUserOrderList(Pageable pageable) {
         return orderService.getUserOrderList(pageable);
+    }
+
+    @PostMapping("/toss/pending")
+    public void createPendingOrder(PendingOrderRequest request) {
+        orderService.createPendingOrder(request);
+    }
+
+    @PostMapping("/toss/pending/verify")
+    public void verifyPendingOrder(PendingOrderRequest request) {
+        orderService.validatePendingOrder(request);
     }
 }
