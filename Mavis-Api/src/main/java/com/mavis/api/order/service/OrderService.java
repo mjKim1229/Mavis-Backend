@@ -54,7 +54,7 @@ public class OrderService {
         order.setTotalPrice(totalPrice);
     }
 
-    private void confirmPayments(ConfirmPaymentRequest request) {
+    public void confirmPayments(ConfirmPaymentRequest request) {
         String authorizationHeader = "Basic " + Base64.getEncoder()
                 .encodeToString((tossPaymentsProperties.secretKey() + ":").getBytes(StandardCharsets.UTF_8));
         try {
