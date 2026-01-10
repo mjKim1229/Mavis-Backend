@@ -1,5 +1,6 @@
 package com.mavis.domain.domains.cart.domain;
 
+import com.mavis.domain.domains.common.jpa.BaseEntity;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.user.domain.User;
 import jakarta.persistence.*;
@@ -10,7 +11,7 @@ import lombok.*;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CartItem {
+public class CartItem extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
