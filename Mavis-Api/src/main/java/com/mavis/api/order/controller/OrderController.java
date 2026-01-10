@@ -31,17 +31,17 @@ public class OrderController {
     }
 
     @PostMapping("/toss/pending")
-    public void createPendingOrder(PendingOrderRequest request) {
+    public void createPendingOrder(@RequestBody PendingOrderRequest request) {
         orderService.createPendingOrder(request);
     }
 
     @PostMapping("/toss/pending/verify")
-    public void verifyPendingOrder(PendingOrderRequest request) {
+    public void verifyPendingOrder(@RequestBody PendingOrderRequest request) {
         orderService.validatePendingOrder(request);
     }
 
     @PostMapping("/toss/confirm/test")
-    public void confirmPayments(ConfirmPaymentRequest request) {
+    public void confirmPayments(@RequestBody ConfirmPaymentRequest request) {
         orderService.confirmPayments(request);
     }
 }
