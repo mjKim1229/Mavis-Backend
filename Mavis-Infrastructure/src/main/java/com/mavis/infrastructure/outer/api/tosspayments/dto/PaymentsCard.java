@@ -2,7 +2,7 @@ package com.mavis.infrastructure.outer.api.tosspayments.dto;
 
 public record PaymentsCard(
         Long amount,
-        CardCode issuerCode,
+        String issuerCode,
         CardCode acquirerCode,
         String number,
         Long installmentPlanMonths,
