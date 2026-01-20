@@ -28,7 +28,7 @@ public class AuthController {
 //        } else {
 //            return userFacade.register(code, "http://localhost:3000");
 //        }
-        return userFacade.register(code, "https://garamall.com");
+        return userFacade.register(code, "https://www.garamall.com");
     }
 
     @Operation(summary = "카카오 탈퇴")
