@@ -3,7 +3,9 @@ package com.mavis.api.order.dto;
 import com.mavis.domain.domains.order.domain.OrderAddress;
 
 public record OrderAddressRequest(
+        String receiverName,
         String address,
+        String receiverPhoneNumber,
         String addressMemo
 ) {
     public OrderAddress toOrderAddress() {

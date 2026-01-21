@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface OrderRepository extends JpaRepository<Order, Long>, OrderCustomRepository {
     Optional<Order> findByIdAndIsDeletedFalse(Long id);
     List<Order> findByIdInAndIsDeletedFalse(List<Long> orderIds);
+    Optional<Order> findByOrderIdAndIsDeletedFalse(String orderId);
 }
