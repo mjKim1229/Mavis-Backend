@@ -18,6 +18,8 @@ public class Order extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String orderId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
@@ -44,5 +46,12 @@ public class Order extends BaseEntity {
 
     public void confirm() {
         this.orderStatus = OrderStatus.CONFIRMED;
+    }
+
+    @Builder.Default
+    private boolean isPayConfirmed = false;
+
+    public void setPayConfirmed() {
+        this.isPayConfirmed = true;
     }
 }

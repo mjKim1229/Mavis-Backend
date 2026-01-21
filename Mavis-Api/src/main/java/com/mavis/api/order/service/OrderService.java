@@ -8,11 +8,12 @@ import com.mavis.api.order.dto.OrderAddressRequest;
 import com.mavis.api.order.dto.UserOrderInfo;
 import com.mavis.api.order.implement.OrderItemAppender;
 import com.mavis.common.properties.TossPaymentsProperties;
-import com.mavis.domain.domains.order.domain.Order;
-import com.mavis.domain.domains.order.domain.OrderAddress;
-import com.mavis.domain.domains.order.domain.PendingOrder;
+import com.mavis.domain.domains.order.domain.*;
 import com.mavis.domain.domains.order.exception.InvalidOrderInfoException;
+import com.mavis.domain.domains.order.exception.OrderNotFoundException;
+import com.mavis.domain.domains.order.implement.OrderReader;
 import com.mavis.domain.domains.order.repository.OrderRepository;
+import com.mavis.domain.domains.order.repository.PaymentRepository;
 import com.mavis.domain.domains.order.repository.PendingOrderRepository;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsCancelClient;
@@ -40,28 +41,71 @@ public class OrderService {
     private final PaymentsConfirmClient paymentsConfirmClient;
     private final PaymentsCancelClient paymentsCancelClient;
     private final TossPaymentsProperties tossPaymentsProperties;
+    private final OrderReader orderReader;
+    private final PaymentRepository paymentRepository;
 
     @Transactional
     public void createOrder(CreateOrderRequest request) {
         User user = userReader.getCurrentUser();
         OrderAddressRequest orderAddressRequest = request.orderAddressRequest();
         Order order = Order.builder()
+                .orderId(request.orderId())
                 .user(user)
                 .orderAddress(orderAddressRequest.toOrderAddress())
                 .build();
         Order savedOrder = orderRepository.save(order);
         int totalPrice = orderItemAppender.saveOrderItems(request.orderItems(), savedOrder);
+        if (totalPrice != request.amount()) {
+            //TODO 가격 예외 수정
+            throw InvalidOrderInfoException.EXCEPTION;
+        }
         order.setTotalPrice(totalPrice);
     }
 
+    @Transactional
     public void confirmPayments(ConfirmPaymentRequest request) {
         String authorizationHeader = "Basic " + Base64.getEncoder()
                 .encodeToString((tossPaymentsProperties.secretKey() + ":").getBytes(StandardCharsets.UTF_8));
         try {
-            PaymentsResponse paymentsResponse = paymentsConfirmClient.confirmPayments(authorizationHeader, request);
-            //TODO TossPayments Table 저장
+            Order order = orderRepository.findByOrderIdAndIsDeletedFalse(request.orderId())
+                    .orElseThrow(() -> OrderNotFoundException.EXCEPTION);
+
+            if (order.getTotalPrice() != request.amount()) {
+                throw InvalidOrderInfoException.EXCEPTION;
+            }
+
+            if (order.isPayConfirmed()) {
+                throw InvalidOrderInfoException.EXCEPTION;
+            }
+
+            PaymentsResponse response = paymentsConfirmClient.confirmPayments(authorizationHeader, request);
+            if (!response.totalAmount().equals(request.amount())) {
+                throw new IllegalStateException("결제 금액 위변조");
+            }
+
+            Payment payment = Payment.builder()
+                    .order(order)
+                    .paymentKey(response.paymentKey())
+                    .method(PaymentMethod.valueOf(response.method().name()))
+                    .totalAmount(response.totalAmount())
+                    .balanceAmount(response.balanceAmount())
+                    .requestedAt(response.requestedAt())
+                    .approvedAt(response.approvedAt())
+                    .lastTransactionKey(response.lastTransactionKey())
+                    .partialCancelable(response.isPartialCancelable())
+                    .cardNumber(response.card() != null ? response.card().number() : null)
+                    .receiptUrl(response.receipt() != null ? response.receipt().url() : null)
+                    .build();
+
+            paymentRepository.save(payment);
+            order.setPayConfirmed();
         } catch (Exception e) {
-            paymentsCancelClient.cancelPayments(authorizationHeader, request.paymentKey(), new CancelPaymentsRequest("결제 취소"));
+            paymentsCancelClient.cancelPayments(
+                    authorizationHeader,
+                    request.paymentKey(),
+                    new CancelPaymentsRequest("결제 실패로 인한 자동 취소")
+            );
+            throw e;
         }
     }
 

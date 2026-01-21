@@ -1,5 +1,6 @@
 package com.mavis.domain.domains.order.implement;
 
+import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.exception.OrderNotFoundException;
 import com.mavis.domain.domains.order.repository.OrderItemRepository;
@@ -16,6 +17,11 @@ public class OrderReader {
 
     public OrderItem findById(Long id) {
         return orderItemRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> OrderNotFoundException.EXCEPTION);
+    }
+
+    public Order findOrderById(Long id) {
+        return orderRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> OrderNotFoundException.EXCEPTION);
     }
 }
