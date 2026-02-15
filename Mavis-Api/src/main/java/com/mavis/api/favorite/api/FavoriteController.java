@@ -14,7 +14,7 @@ public class FavoriteController {
 
     private final FavoriteService favoriteService;
 
-    @GetMapping
+    @GetMapping("/user")
     public PageResponse<GetUserFavoriteResponse> getUserFavorites(Pageable pageable) {
         return favoriteService.getUserFavorites(pageable);
     }
