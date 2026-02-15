@@ -3,6 +3,7 @@ package com.mavis.api.order.service;
 import com.mavis.api.auth.implement.UserReader;
 import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.order.dto.CreateOrderRequest;
+import com.mavis.api.order.dto.OrderAddressResponse;
 import com.mavis.api.order.dto.PendingOrderRequest;
 import com.mavis.api.order.dto.OrderAddressRequest;
 import com.mavis.api.order.dto.UserOrderInfo;
@@ -138,5 +139,11 @@ public class OrderService {
         PendingOrder pendingOrder = pendingOrderRepository.findByOrderIdAndAmountAndIsConfirmedFalse(request.orderId(), request.amount())
                 .orElseThrow(() -> InvalidOrderInfoException.EXCEPTION);
         pendingOrder.confirmed();
+    }
+
+    @Transactional(readOnly = true)
+    public OrderAddressResponse getUserAddress() {
+        User user = userReader.getCurrentUser();
+        return OrderAddressResponse.from(user);
     }
 }
