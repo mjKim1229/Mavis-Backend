@@ -19,4 +19,7 @@ public class Notice extends BaseEntity {
     private String title;
 
     private String content;
+
+    @Builder.Default
+    private boolean isDeleted = false;
 }
