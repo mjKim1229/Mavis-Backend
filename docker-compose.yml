@@ -40,8 +40,6 @@ services:
       - /data/certbot/conf:/etc/letsencrypt
       - /data/certbot/www:/var/www/certbot
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do \
-          certbot certonly --webroot -w /var/www/certbot \
-            --email chlrldnjs0804@gmail.com \
-            --agree-tos --no-eff-email --non-interactive \
-            -d api.garamall.com -d api.admin.garamall.com; \
-          sleep 12h & wait $${!}; done;'"
+      certbot certonly --webroot -w /var/www/certbot --email chlrldnjs0804@gmail.com --agree-tos --no-eff-email --non-interactive -d api.garamall.com; \
+      certbot certonly --webroot -w /var/www/certbot --email chlrldnjs0804@gmail.com --agree-tos --no-eff-email --non-interactive -d api.admin.garamall.com; \
+      sleep 12h & wait $${!}; done;'"
