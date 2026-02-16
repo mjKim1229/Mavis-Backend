@@ -145,4 +145,10 @@ public class UserService {
         User user = userReader.getCurrentUser();
         return UserDetailResponse.from(user);
     }
+
+    @Transactional(readOnly = true)
+    public boolean verifyPassword(String password) {
+        User user = userReader.getCurrentUser();
+        return passwordEncoder.matches(password, user.getPassword());
+    }
 }

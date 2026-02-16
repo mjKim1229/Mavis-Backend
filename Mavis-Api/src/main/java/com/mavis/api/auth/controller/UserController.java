@@ -1,5 +1,6 @@
 package com.mavis.api.auth.controller;
 
+import com.mavis.api.auth.dto.PasswordVerifyRequest;
 import com.mavis.api.auth.dto.UserAddressRequest;
 import com.mavis.api.auth.dto.UserDetailResponse;
 import com.mavis.api.auth.dto.UserProfileResponse;
@@ -44,5 +45,11 @@ public class UserController {
     @Operation(summary = "회원 상세 정보 조회 - 회원 프로필 클릭시")
     public UserDetailResponse getUserDetail() {
         return userService.getUserDetail();
+    }
+
+    @PostMapping("/verify-password")
+    @Operation(summary = "비밀번호 확인")
+    public boolean verifyPassword(@RequestBody PasswordVerifyRequest request) {
+        return userService.verifyPassword(request.password());
     }
 }
