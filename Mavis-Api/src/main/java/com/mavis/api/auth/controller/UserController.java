@@ -1,6 +1,7 @@
 package com.mavis.api.auth.controller;
 
 import com.mavis.api.auth.dto.UserAddressRequest;
+import com.mavis.api.auth.dto.UserProfileResponse;
 import com.mavis.api.auth.service.UserService;
 import com.mavis.api.order.dto.OrderAddressResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,5 +31,11 @@ public class UserController {
     @Operation(summary = "기본 배송지 조회")
     public OrderAddressResponse getUserAddress() {
         return userService.getUserAddress();
+    }
+
+    @GetMapping("/my-page")
+    @Operation(summary = "마이페이지 조회 - nickname, snsType 반환")
+    public UserProfileResponse getUserProfile() {
+        return userService.getUserProfile();
     }
 }
