@@ -4,6 +4,7 @@ import com.mavis.api.cart.dto.CreateCartRequest;
 import com.mavis.api.cart.dto.GetCartResponse;
 import com.mavis.api.cart.dto.UpdateCartRequest;
 import com.mavis.api.cart.service.CartService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +18,7 @@ public class CartController {
     private final CartService cartService;
 
     @PostMapping
-    public void createCartItem(@RequestBody CreateCartRequest request) {
+    public void createCartItem(@RequestBody @Valid CreateCartRequest request) {
         cartService.createCart(request);
     }
 
