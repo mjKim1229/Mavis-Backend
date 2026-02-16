@@ -71,12 +71,13 @@ public class UserFacade {
     @Transactional
     public void withDraw() {
         User user = userReader.getCurrentUser();
-        user.withDraw();
         if (user.getSnsType() == SnsType.NAVER) {
             withDrawNaver(user);
         } else if (user.getSnsType() == SnsType.KAKAO) {
-            withDrawKakao();
+            Long snsId = Long.valueOf(user.getSnsId());
+            unlinkKakao(snsId);
         }
+        user.withDraw();
     }
 
     public void withDrawNaver(User user) {
