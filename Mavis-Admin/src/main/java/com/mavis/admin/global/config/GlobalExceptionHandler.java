@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -26,6 +27,25 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                         HttpStatusCode.valueOf(errorReason.status())
                 )
                 .body(errorResponse);
+    }
+
+    @ExceptionHandler(exception = MethodArgumentNotValidException.class)
+    public ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException e, HttpServletRequest request
+    ) {
+        String errorMessage = e.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .reduce((msg1, msg2) -> msg1 + ", " + msg2)
+                .orElse("요청 데이터가 유효하지 않습니다.");
+
+        ErrorReason errorReason = ErrorReason.builder()
+                .status(400)
+                .code("VALIDATION_400_1")
+                .reason(errorMessage)
+                .build();
+
+        ErrorResponse errorResponse = new ErrorResponse(errorReason, request.getRequestURI());
+        return ResponseEntity.status(400).body(errorResponse);
     }
 
     @ExceptionHandler(exception = Exception.class)

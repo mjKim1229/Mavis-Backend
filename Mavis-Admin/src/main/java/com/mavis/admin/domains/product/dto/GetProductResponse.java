@@ -4,7 +4,6 @@ import com.mavis.common.enums.ProductCategory;
 import com.mavis.common.enums.ProductSubCategory;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.product.vo.ColorVO;
-import jdk.jfr.Category;
 import lombok.Builder;
 
 import java.util.List;
