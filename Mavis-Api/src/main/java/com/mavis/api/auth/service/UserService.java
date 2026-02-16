@@ -70,6 +70,7 @@ public class UserService {
                 .snsType(SnsType.KAKAO)
                 .snsId(snsId)
                 .email(kakaoUserInfoResponse.getEmail())
+                .nickname(kakaoUserInfoResponse.getNickname())
                 .build();
         return userRepository.save(user);
     }
