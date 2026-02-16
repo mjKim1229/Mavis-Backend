@@ -1,5 +1,6 @@
 package com.mavis.api.auth.controller;
 
+import com.mavis.api.auth.dto.PasswordChangeRequest;
 import com.mavis.api.auth.dto.PasswordVerifyRequest;
 import com.mavis.api.auth.dto.UserAddressRequest;
 import com.mavis.api.auth.dto.UserDetailResponse;
@@ -51,5 +52,11 @@ public class UserController {
     @Operation(summary = "비밀번호 확인")
     public boolean verifyPassword(@RequestBody PasswordVerifyRequest request) {
         return userService.verifyPassword(request.password());
+    }
+
+    @PatchMapping("/password")
+    @Operation(summary = "비밀번호 변경")
+    public void changePassword(@RequestBody PasswordChangeRequest request) {
+        userService.changePassword(request.currentPassword(), request.newPassword());
     }
 }

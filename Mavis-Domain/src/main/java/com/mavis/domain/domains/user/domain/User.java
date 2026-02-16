@@ -62,4 +62,8 @@ public class User extends BaseEntity {
     public void updateAddress(DeliveryAddress defaultDeliveryAddress) {
         this.defaultDeliveryAddress = defaultDeliveryAddress;
     }
+
+    public void changePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
 }

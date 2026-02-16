@@ -12,6 +12,8 @@ import com.mavis.common.dto.JwtPair;
 import com.mavis.common.jwt.JwtTokenUtil;
 import com.mavis.domain.domains.user.domain.SnsType;
 import com.mavis.domain.domains.user.domain.User;
+import com.mavis.domain.domains.user.exception.InvalidPasswordException;
+import com.mavis.domain.domains.user.exception.SnsUserCannotChangePasswordException;
 import com.mavis.domain.domains.user.exception.UserNotFoundException;
 import com.mavis.domain.domains.user.repository.UserRepository;
 import com.mavis.infrastructure.outer.api.oauth.dto.KakaoUserInfoResponse;
@@ -151,5 +153,18 @@ public class UserService {
     public boolean verifyPassword(String password) {
         User user = userReader.getCurrentUser();
         return passwordEncoder.matches(password, user.getPassword());
+    }
+
+    @Transactional
+    public void changePassword(String currentPassword, String newPassword) {
+        User user = userReader.getCurrentUser();
+        if (user.getSnsType() != SnsType.MANUAL) {
+            throw SnsUserCannotChangePasswordException.EXCEPTION;
+        }
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw InvalidPasswordException.EXCEPTION;
+        }
+        String encodedNewPassword = passwordEncoder.encode(newPassword);
+        user.changePassword(encodedNewPassword);
     }
 }
