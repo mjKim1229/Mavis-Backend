@@ -117,7 +117,7 @@ public class OrderService {
                     OrderAddress orderAddress = order.getOrderAddress();
                     return UserOrderInfo.builder()
                             .address(orderAddress.getAddress())
-                            .addressInfo(orderAddress.getAddressMemo())
+                            .addressInfo(orderAddress.getAddressDetail())
                             .totalPrice(order.getTotalPrice())
                             .userName(user.getName())
                             .orderStatus(order.getOrderStatus())

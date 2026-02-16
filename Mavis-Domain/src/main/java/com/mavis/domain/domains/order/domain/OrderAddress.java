@@ -11,6 +11,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class OrderAddress {
+    private String receiverName;
+    private String receiverPhone;
+    private String zipCode;
     private String address;
+    private String addressDetail;
     private String addressMemo;
 }

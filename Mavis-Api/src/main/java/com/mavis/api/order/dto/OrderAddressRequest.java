@@ -4,11 +4,13 @@ import com.mavis.domain.domains.order.domain.OrderAddress;
 
 public record OrderAddressRequest(
         String receiverName,
+        String receiverPhone,
+        String zipCode,
         String address,
-        String receiverPhoneNumber,
+        String addressDetail,
         String addressMemo
 ) {
     public OrderAddress toOrderAddress() {
-        return new OrderAddress(address, addressMemo);
+        return new OrderAddress(receiverName, receiverPhone, zipCode, address, addressDetail, addressMemo);
     }
 }

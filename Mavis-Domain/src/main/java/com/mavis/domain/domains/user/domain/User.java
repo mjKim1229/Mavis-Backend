@@ -42,7 +42,7 @@ public class User extends BaseEntity {
     private String naverRefreshToken;
 
     @Embedded
-    private DefaultDeliveryAddress defaultDeliveryAddress;
+    private DeliveryAddress defaultDeliveryAddress;
 
     @Builder.Default
     private boolean isDeleted = false;
@@ -59,7 +59,7 @@ public class User extends BaseEntity {
         this.defaultDeliveryAddress = null;
     }
 
-    public void updateAddress(DefaultDeliveryAddress defaultDeliveryAddress) {
+    public void updateAddress(DeliveryAddress defaultDeliveryAddress) {
         this.defaultDeliveryAddress = defaultDeliveryAddress;
     }
 }

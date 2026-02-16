@@ -1,6 +1,6 @@
 package com.mavis.api.auth.dto;
 
-import com.mavis.domain.domains.user.domain.DefaultDeliveryAddress;
+import com.mavis.domain.domains.user.domain.DeliveryAddress;
 
 public record UserAddressRequest(
         String receiverName,
@@ -9,7 +9,7 @@ public record UserAddressRequest(
         String address,
         String addressDetail
 ) {
-    public DefaultDeliveryAddress toDefaultDeliveryAddress() {
-        return new DefaultDeliveryAddress(receiverName, receiverPhone, zipCode, address, addressDetail);
+    public DeliveryAddress toDefaultDeliveryAddress() {
+        return new DeliveryAddress(receiverName, receiverPhone, zipCode, address, addressDetail);
     }
 }

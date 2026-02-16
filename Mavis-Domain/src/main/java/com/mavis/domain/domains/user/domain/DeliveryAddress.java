@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class DefaultDeliveryAddress {
+public class DeliveryAddress {
     private String receiverName;
     private String receiverPhone;
     private String zipCode;
