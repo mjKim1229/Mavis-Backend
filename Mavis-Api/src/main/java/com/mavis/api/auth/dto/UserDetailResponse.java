@@ -1,6 +1,5 @@
 package com.mavis.api.auth.dto;
 
-import com.mavis.domain.domains.user.domain.Gender;
 import com.mavis.domain.domains.user.domain.User;
 
 import java.time.LocalDate;
@@ -9,7 +8,7 @@ public record UserDetailResponse(
         Long userId,
         String nickname,
         String name,
-        Gender gender,
+        String gender,
         LocalDate birthDay,
         String phoneNumber,
         String email
@@ -19,7 +18,7 @@ public record UserDetailResponse(
                 user.getId(),
                 user.getNickname(),
                 user.getName(),
-                Gender.valueOf(user.getGender()),
+                user.getGender(),
                 user.getBirthDay(),
                 user.getPhoneNumber(),
                 user.getEmail()
