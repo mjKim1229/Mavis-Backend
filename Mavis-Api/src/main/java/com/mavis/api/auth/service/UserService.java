@@ -1,8 +1,10 @@
 package com.mavis.api.auth.service;
 
+import com.mavis.api.auth.dto.UserAddressUpdateRequest;
 import com.mavis.api.auth.dto.UserLoginRequest;
 import com.mavis.api.auth.dto.UserOauthResponse;
 import com.mavis.api.auth.dto.UserSignUpRequest;
+import com.mavis.api.auth.implement.UserReader;
 import com.mavis.common.dto.JwtPair;
 import com.mavis.common.jwt.JwtTokenUtil;
 import com.mavis.domain.domains.user.domain.SnsType;
@@ -26,6 +28,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final JwtTokenUtil jwtTokenUtil;
     private final PasswordEncoder passwordEncoder;
+    private final UserReader userReader;
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -103,5 +106,11 @@ public class UserService {
                 id,
                 new JwtPair(accessToken, refreshToken)
         );
+    }
+
+    @Transactional
+    public void updateAddress(UserAddressUpdateRequest request) {
+        User user = userReader.getCurrentUser();
+        user.updateAddress(request.toDefaultDeliveryAddress());
     }
 }
