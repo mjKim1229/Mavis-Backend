@@ -22,4 +22,14 @@ public class Notice extends BaseEntity {
 
     @Builder.Default
     private boolean isDeleted = false;
+
+    public void update(String category, String title, String content) {
+        this.category = category;
+        this.title = title;
+        this.content = content;
+    }
+
+    public void delete() {
+        this.isDeleted = true;
+    }
 }
