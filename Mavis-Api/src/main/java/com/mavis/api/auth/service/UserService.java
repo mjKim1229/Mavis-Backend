@@ -135,14 +135,14 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserDetailResponse getUserDetail() {
-        User user = userReader.getCurrentUser();
-        return UserDetailResponse.from(user);
-    }
-
-    @Transactional(readOnly = true)
     public UserProfileResponse getUserProfile() {
         User user = userReader.getCurrentUser();
         return UserProfileResponse.from(user);
+    }
+
+    @Transactional(readOnly = true)
+    public UserDetailResponse getUserDetail() {
+        User user = userReader.getCurrentUser();
+        return UserDetailResponse.from(user);
     }
 }

@@ -35,13 +35,13 @@ public class UserController {
     }
 
     @GetMapping("/profile")
-    @Operation(summary = "마이페이지 조회 - nickname, snsType 반환")
+    @Operation(summary = "마이페이지 조회 - 회원 프로필 (sns, 이름)")
     public UserProfileResponse getUserProfile() {
         return userService.getUserProfile();
     }
 
     @GetMapping("/profile/details")
-    @Operation(summary = "회원 상세 정보 조회 - 아이디, 닉네임, 이름, 성별, 생년월일, 전화번호, 이메일")
+    @Operation(summary = "회원 상세 정보 조회 - 회원 프로필 클릭시")
     public UserDetailResponse getUserDetail() {
         return userService.getUserDetail();
     }
