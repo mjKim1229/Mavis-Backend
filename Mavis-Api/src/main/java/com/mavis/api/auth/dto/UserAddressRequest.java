@@ -2,7 +2,7 @@ package com.mavis.api.auth.dto;
 
 import com.mavis.domain.domains.user.domain.DefaultDeliveryAddress;
 
-public record UserAddressUpdateRequest(
+public record UserAddressRequest(
         String receiverName,
         String receiverPhone,
         String zipCode,

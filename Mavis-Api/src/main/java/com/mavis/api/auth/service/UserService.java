@@ -1,10 +1,11 @@
 package com.mavis.api.auth.service;
 
-import com.mavis.api.auth.dto.UserAddressUpdateRequest;
+import com.mavis.api.auth.dto.UserAddressRequest;
 import com.mavis.api.auth.dto.UserLoginRequest;
 import com.mavis.api.auth.dto.UserOauthResponse;
 import com.mavis.api.auth.dto.UserSignUpRequest;
 import com.mavis.api.auth.implement.UserReader;
+import com.mavis.api.order.dto.OrderAddressResponse;
 import com.mavis.common.dto.JwtPair;
 import com.mavis.common.jwt.JwtTokenUtil;
 import com.mavis.domain.domains.user.domain.SnsType;
@@ -109,8 +110,20 @@ public class UserService {
     }
 
     @Transactional
-    public void updateAddress(UserAddressUpdateRequest request) {
+    public void updateAddress(UserAddressRequest request) {
         User user = userReader.getCurrentUser();
         user.updateAddress(request.toDefaultDeliveryAddress());
+    }
+
+    @Transactional
+    public void createAddress(UserAddressRequest request) {
+        User user = userReader.getCurrentUser();
+        user.updateAddress(request.toDefaultDeliveryAddress());
+    }
+
+    @Transactional(readOnly = true)
+    public OrderAddressResponse getUserAddress() {
+        User user = userReader.getCurrentUser();
+        return OrderAddressResponse.from(user);
     }
 }
