@@ -33,7 +33,7 @@ public class UserController {
         return userService.getUserAddress();
     }
 
-    @GetMapping("/my-page")
+    @GetMapping("/profile")
     @Operation(summary = "마이페이지 조회 - nickname, snsType 반환")
     public UserProfileResponse getUserProfile() {
         return userService.getUserProfile();
