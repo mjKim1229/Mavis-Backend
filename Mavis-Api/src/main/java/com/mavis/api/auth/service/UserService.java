@@ -126,4 +126,9 @@ public class UserService {
         User user = userReader.getCurrentUser();
         return OrderAddressResponse.from(user);
     }
+
+    @Transactional(readOnly = true)
+    public boolean isUsernameAvailable(String username) {
+        return !userRepository.existsByUsernameAndIsDeletedFalse(username);
+    }
 }
