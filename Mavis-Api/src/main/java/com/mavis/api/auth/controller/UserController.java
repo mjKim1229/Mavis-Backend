@@ -1,6 +1,7 @@
 package com.mavis.api.auth.controller;
 
 import com.mavis.api.auth.dto.UserAddressRequest;
+import com.mavis.api.auth.dto.UserDetailResponse;
 import com.mavis.api.auth.dto.UserProfileResponse;
 import com.mavis.api.auth.service.UserService;
 import com.mavis.api.order.dto.OrderAddressResponse;
@@ -37,5 +38,11 @@ public class UserController {
     @Operation(summary = "마이페이지 조회 - nickname, snsType 반환")
     public UserProfileResponse getUserProfile() {
         return userService.getUserProfile();
+    }
+
+    @GetMapping("/profile/details")
+    @Operation(summary = "회원 상세 정보 조회 - 아이디, 닉네임, 이름, 성별, 생년월일, 전화번호, 이메일")
+    public UserDetailResponse getUserDetail() {
+        return userService.getUserDetail();
     }
 }

@@ -1,6 +1,7 @@
 package com.mavis.api.auth.service;
 
 import com.mavis.api.auth.dto.UserAddressRequest;
+import com.mavis.api.auth.dto.UserDetailResponse;
 import com.mavis.api.auth.dto.UserLoginRequest;
 import com.mavis.api.auth.dto.UserOauthResponse;
 import com.mavis.api.auth.dto.UserProfileResponse;
@@ -131,6 +132,12 @@ public class UserService {
     @Transactional(readOnly = true)
     public boolean isUsernameAvailable(String username) {
         return !userRepository.existsByUsernameAndIsDeletedFalse(username);
+    }
+
+    @Transactional(readOnly = true)
+    public UserDetailResponse getUserDetail() {
+        User user = userReader.getCurrentUser();
+        return UserDetailResponse.from(user);
     }
 
     @Transactional(readOnly = true)
