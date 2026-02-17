@@ -66,4 +66,12 @@ public class User extends BaseEntity {
     public void changePassword(String encodedPassword) {
         this.password = encodedPassword;
     }
+
+    public void updateProfile(String nickname, String name, String gender, LocalDate birthDay, String phoneNumber) {
+        this.nickname = nickname;
+        this.name = name;
+        this.gender = gender;
+        this.birthDay = birthDay;
+        this.phoneNumber = phoneNumber;
+    }
 }

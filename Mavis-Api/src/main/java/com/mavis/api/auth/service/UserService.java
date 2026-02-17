@@ -2,6 +2,7 @@ package com.mavis.api.auth.service;
 
 import com.mavis.api.auth.dto.UserAddressRequest;
 import com.mavis.api.auth.dto.UserDetailResponse;
+import com.mavis.api.auth.dto.UserDetailUpdateRequest;
 import com.mavis.api.auth.dto.UserLoginRequest;
 import com.mavis.api.auth.dto.UserOauthResponse;
 import com.mavis.api.auth.dto.UserProfileResponse;
@@ -166,5 +167,17 @@ public class UserService {
         }
         String encodedNewPassword = passwordEncoder.encode(newPassword);
         user.changePassword(encodedNewPassword);
+    }
+
+    @Transactional
+    public void updateUserDetail(UserDetailUpdateRequest request) {
+        User user = userReader.getCurrentUser();
+        user.updateProfile(
+                request.nickname(),
+                request.name(),
+                request.gender(),
+                request.birthDay(),
+                request.phoneNumber()
+        );
     }
 }

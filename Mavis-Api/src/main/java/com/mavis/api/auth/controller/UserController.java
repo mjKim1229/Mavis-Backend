@@ -4,6 +4,7 @@ import com.mavis.api.auth.dto.PasswordChangeRequest;
 import com.mavis.api.auth.dto.PasswordVerifyRequest;
 import com.mavis.api.auth.dto.UserAddressRequest;
 import com.mavis.api.auth.dto.UserDetailResponse;
+import com.mavis.api.auth.dto.UserDetailUpdateRequest;
 import com.mavis.api.auth.dto.UserProfileResponse;
 import com.mavis.api.auth.service.UserService;
 import com.mavis.api.order.dto.OrderAddressResponse;
@@ -58,5 +59,11 @@ public class UserController {
     @Operation(summary = "비밀번호 변경")
     public void changePassword(@RequestBody PasswordChangeRequest request) {
         userService.changePassword(request.currentPassword(), request.newPassword());
+    }
+
+    @PatchMapping("/profile/details")
+    @Operation(summary = "회원 상세 정보 수정")
+    public void updateUserDetail(@RequestBody UserDetailUpdateRequest request) {
+        userService.updateUserDetail(request);
     }
 }
