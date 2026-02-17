@@ -74,4 +74,8 @@ public class User extends BaseEntity {
         this.birthDay = birthDay;
         this.phoneNumber = phoneNumber;
     }
+
+    public void changeEmail(String email) {
+        this.email = email;
+    }
 }

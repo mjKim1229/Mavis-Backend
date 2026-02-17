@@ -4,6 +4,8 @@ import com.mavis.api.auth.dto.UserPasswordFoundVerifyCodeRequest;
 import com.mavis.api.auth.dto.UserPasswordFoundVerifyCreateRequest;
 import com.mavis.api.auth.dto.UserSignUpCodeCreateRequest;
 import com.mavis.api.auth.dto.UserSignUpCodeVerifyRequest;
+import com.mavis.api.auth.dto.UserEmailChangeCreateRequest;
+import com.mavis.api.auth.dto.UserEmailChangeVerifyRequest;
 import com.mavis.api.auth.service.AuthVerificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -41,5 +43,17 @@ public class AuthVerificationController {
     @PostMapping("/sign-up/verify")
     public void verifyEmailSignUpCode(@RequestBody UserSignUpCodeVerifyRequest request) {
         authVerificationService.verifySignUpFound(request);
+    }
+
+    @Operation(summary = "이메일 변경 인증번호 발송")
+    @PostMapping("/email-change")
+    public void saveEmailChangeCode(@RequestBody UserEmailChangeCreateRequest request) {
+        authVerificationService.saveEmailChangeCode(request);
+    }
+
+    @Operation(summary = "이메일 변경 인증번호 검증")
+    @PostMapping("/email-change/verify")
+    public void verifyEmailChange(@RequestBody UserEmailChangeVerifyRequest request) {
+        authVerificationService.verifyEmailChange(request);
     }
 }
