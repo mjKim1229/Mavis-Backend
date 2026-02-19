@@ -27,12 +27,6 @@ public class AuthController {
         return userFacade.register(code, "https://www.garamall.com");
     }
 
-    @Operation(summary = "카카오 탈퇴")
-    @DeleteMapping("/oauth/kakao/withdraw")
-    public void withDrawKakaoUser() {
-        userFacade.withDrawKakao();
-    }
-
     @Operation(summary = "네이버 로그인")
     @GetMapping("/oauth/naver")
     public UserOauthResponse registerNaver(@RequestParam String code) {

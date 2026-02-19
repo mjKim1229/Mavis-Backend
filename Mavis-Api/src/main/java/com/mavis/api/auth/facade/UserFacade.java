@@ -46,12 +46,6 @@ public class UserFacade {
         return new UserOauthResponse(userId, jwtPair);
     }
 
-    public void withDrawKakao() {
-        User user = userReader.getCurrentUser();
-        Long snsId = Long.valueOf(user.getSnsId());
-        unlinkKakao(snsId);
-    }
-
     private void unlinkKakao(Long snsId) {
         String header = "KakaoAK " + kakaoProperties.adminKey();
         UnlinkKaKaoTarget unlinkKakaoTarget = UnlinkKaKaoTarget.from(snsId);
