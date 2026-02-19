@@ -11,6 +11,7 @@ import com.mavis.common.properties.TossPaymentsProperties;
 import com.mavis.domain.domains.order.domain.*;
 import com.mavis.domain.domains.order.exception.InvalidOrderInfoException;
 import com.mavis.domain.domains.order.exception.OrderNotFoundException;
+import com.mavis.domain.domains.order.exception.PriceMismatchException;
 import com.mavis.domain.domains.order.implement.OrderReader;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.order.repository.PaymentRepository;
@@ -43,6 +44,7 @@ public class OrderService {
     private final TossPaymentsProperties tossPaymentsProperties;
     private final OrderReader orderReader;
     private final PaymentRepository paymentRepository;
+    private static final int DELIVERY_FEE = 4000;
 
     @Transactional
     public void createOrder(CreateOrderRequest request) {
@@ -54,10 +56,10 @@ public class OrderService {
                 .orderAddress(orderAddressRequest.toOrderAddress())
                 .build();
         Order savedOrder = orderRepository.save(order);
-        int totalPrice = orderItemAppender.saveOrderItems(request.orderItems(), savedOrder);
+        int itemsTotalPrice = orderItemAppender.saveOrderItems(request.orderItems(), savedOrder);
+        int totalPrice = itemsTotalPrice + DELIVERY_FEE;
         if (totalPrice != request.amount()) {
-            //TODO 가격 예외 수정
-            throw InvalidOrderInfoException.EXCEPTION;
+            throw PriceMismatchException.EXCEPTION;
         }
         order.setTotalPrice(totalPrice);
     }
@@ -71,7 +73,7 @@ public class OrderService {
                     .orElseThrow(() -> OrderNotFoundException.EXCEPTION);
 
             if (order.getTotalPrice() != request.amount()) {
-                throw InvalidOrderInfoException.EXCEPTION;
+                throw PriceMismatchException.EXCEPTION;
             }
 
             if (order.isPayConfirmed()) {
@@ -80,7 +82,7 @@ public class OrderService {
 
             PaymentsResponse response = paymentsConfirmClient.confirmPayments(authorizationHeader, request);
             if (!response.totalAmount().equals(request.amount())) {
-                throw new IllegalStateException("결제 금액 위변조");
+                throw PriceMismatchException.EXCEPTION;
             }
 
             Payment payment = Payment.builder()
@@ -113,14 +115,14 @@ public class OrderService {
     public PageResponse<UserOrderInfo> getUserOrderList(Pageable pageable) {
         User user = userReader.getCurrentUser();
         Page<Order> orderPages = orderRepository.findOrderPagesByUser(pageable, user);
-        Page<UserOrderInfo> userOrderInfoPages = orderPages.map(order -> {
-                    OrderAddress orderAddress = order.getOrderAddress();
+        Page<UserOrderInfo> userOrderInfoPages = orderPages.map(o -> {
+                    OrderAddress orderAddress = o.getOrderAddress();
                     return UserOrderInfo.builder()
                             .address(orderAddress.getAddress())
                             .addressInfo(orderAddress.getAddressDetail())
-                            .totalPrice(order.getTotalPrice())
-                            .userName(user.getName())
-                            .orderStatus(order.getOrderStatus())
+                            .totalPrice(o.getTotalPrice())
+                            .userName(o.getUser().getName())
+                            .orderStatus(o.getOrderStatus())
                             .build();
                 }
         );
