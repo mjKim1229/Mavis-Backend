@@ -31,6 +31,10 @@ public class User extends BaseEntity {
 
     private String phoneNumber;
 
+    private String age;
+
+    private String profileImage;
+
     @Column(columnDefinition = "varchar(255)")
     @Enumerated(EnumType.STRING)
     private SnsType snsType;

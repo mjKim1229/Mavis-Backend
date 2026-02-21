@@ -48,11 +48,14 @@ public class UserService {
     private User saveNaverUser(NaverProfile profile, String naverRefreshToken) {
         User user = User.builder()
                 .snsId(profile.id())
-                .name(profile.name())
                 .nickname(profile.nickname())
+                .name(profile.name())
                 .email(profile.email())
                 .gender(profile.gender())
                 .birthDay(toLocalDate(profile.birthyear(), profile.birthday()))
+                .phoneNumber(profile.mobile())
+                .age(profile.age())
+                .profileImage(profile.profileImage())
                 .snsType(SnsType.NAVER)
                 .naverRefreshToken(naverRefreshToken)
                 .build();
