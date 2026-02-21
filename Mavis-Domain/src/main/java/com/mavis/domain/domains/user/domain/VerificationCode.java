@@ -27,6 +27,7 @@ public class VerificationCode extends BaseEntity {
 
     private String email;
 
+    @Builder.Default
     private boolean isDeleted = false;
 
     public void delete() {

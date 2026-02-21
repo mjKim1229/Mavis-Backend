@@ -21,6 +21,7 @@ public class Delivery extends BaseEntity {
 
     @Column(columnDefinition = "varchar(255)")
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private DeliveryStatus deliveryStatus = DeliveryStatus.READY;
 
     @Builder.Default
