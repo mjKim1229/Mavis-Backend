@@ -36,7 +36,8 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserReader userReader;
 
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter NAVER_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMM-dd");
+    private static final DateTimeFormatter KAKAO_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     @Transactional
     public Long upsertNaverUser(NaverProfile profile, String naverRefreshToken) {
@@ -52,7 +53,7 @@ public class UserService {
                 .name(profile.name())
                 .email(profile.email())
                 .gender(profile.gender())
-                .birthDay(toLocalDate(profile.birthyear(), profile.birthday()))
+                .birthDay(toLocalDate(profile.birthyear() + profile.birthday(), NAVER_DATE_TIME_FORMATTER))
                 .phoneNumber(profile.mobile())
                 .age(profile.age())
                 .profileImage(profile.profileImage())
@@ -79,7 +80,7 @@ public class UserService {
                 .email(account.email())
                 .name(account.name())
                 .gender(account.gender())
-                .birthDay(toLocalDate(account.birthyear(), account.birthday()))
+                .birthDay(toLocalDate(account.birthyear() + account.birthday(), KAKAO_DATE_TIME_FORMATTER))
                 .phoneNumber(account.phoneNumber())
                 .nickname(account.profile() != null ? account.profile().nickname() : null)
                 .profileImage(account.profile() != null ? account.profile().image() : null)
@@ -88,9 +89,8 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    private static LocalDate toLocalDate(String birthYear, String birthday) {
-        String fullDate = birthYear + "-" + birthday;
-        return LocalDate.parse(fullDate, DATE_TIME_FORMATTER);
+    private static LocalDate toLocalDate(String dateString, DateTimeFormatter formatter) {
+        return LocalDate.parse(dateString, formatter);
     }
 
     @Transactional
