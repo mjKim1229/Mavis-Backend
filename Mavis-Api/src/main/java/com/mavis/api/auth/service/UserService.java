@@ -11,6 +11,7 @@ import com.mavis.api.auth.implement.UserReader;
 import com.mavis.api.order.dto.OrderAddressResponse;
 import com.mavis.common.dto.JwtPair;
 import com.mavis.common.jwt.JwtTokenUtil;
+import com.mavis.domain.domains.user.domain.Gender;
 import com.mavis.domain.domains.user.domain.SnsType;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.domain.domains.user.exception.InvalidPasswordException;
@@ -52,7 +53,7 @@ public class UserService {
                 .nickname(profile.nickname())
                 .name(profile.name())
                 .email(profile.email())
-                .gender(profile.gender())
+                .gender(Gender.fromCode(profile.gender()))
                 .birthDay(toLocalDate(profile.birthyear() + profile.birthday(), NAVER_DATE_TIME_FORMATTER))
                 .phoneNumber(profile.mobile())
                 .age(profile.age())
@@ -79,7 +80,7 @@ public class UserService {
                 .snsId(snsId)
                 .email(account.email())
                 .name(account.name())
-                .gender(account.gender())
+                .gender(Gender.fromCode(account.gender()))
                 .birthDay(toLocalDate(account.birthyear() + account.birthday(), KAKAO_DATE_TIME_FORMATTER))
                 .phoneNumber(account.phoneNumber())
                 .nickname(account.profile() != null ? account.profile().nickname() : null)

@@ -25,7 +25,9 @@ public class User extends BaseEntity {
 
     private String email;
 
-    private String gender;
+    @Column(columnDefinition = "varchar(255)")
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
 
     private LocalDate birthDay;
 
@@ -71,7 +73,7 @@ public class User extends BaseEntity {
         this.password = encodedPassword;
     }
 
-    public void updateProfile(String nickname, String name, String gender, LocalDate birthDay, String phoneNumber) {
+    public void updateProfile(String nickname, String name, Gender gender, LocalDate birthDay, String phoneNumber) {
         this.nickname = nickname;
         this.name = name;
         this.gender = gender;

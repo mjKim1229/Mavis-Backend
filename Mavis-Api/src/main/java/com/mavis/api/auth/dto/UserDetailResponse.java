@@ -18,7 +18,7 @@ public record UserDetailResponse(
                 user.getId(),
                 user.getNickname(),
                 user.getName(),
-                user.getGender(),
+                user.getGender().getTitle(),
                 user.getBirthDay(),
                 user.getPhoneNumber(),
                 user.getEmail()
