@@ -72,8 +72,8 @@ public class UserService {
         User user = User.builder()
                 .snsType(SnsType.KAKAO)
                 .snsId(snsId)
-                .email(kakaoUserInfoResponse.getEmail())
-                .nickname(kakaoUserInfoResponse.getNickname())
+                .email(kakaoUserInfoResponse.kakaoAccount().email())
+                .nickname(kakaoUserInfoResponse.kakaoAccount().profile() != null ? kakaoUserInfoResponse.kakaoAccount().profile().nickname() : null)
                 .build();
         return userRepository.save(user);
     }
