@@ -72,15 +72,22 @@ public class UserService {
 
     public User saveKakaoUser(KakaoUserInfoResponse kakaoUserInfoResponse) {
         String snsId = String.valueOf(kakaoUserInfoResponse.id());
+        KakaoUserInfoResponse.KakaoAccount account = kakaoUserInfoResponse.kakaoAccount();
+
+        LocalDate birthDate = null;
+        if (account.birthYear() != null && account.birthDay() != null) {
+            birthDate = toLocalDate(account.birthYear(), account.birthDay());
+        }
+
         User user = User.builder()
                 .snsId(snsId)
-                .email(kakaoUserInfoResponse.kakaoAccount().email())
-                .name(kakaoUserInfoResponse.kakaoAccount().name())
-                .gender(kakaoUserInfoResponse.kakaoAccount().gender())
-                .birthDay(toLocalDate(kakaoUserInfoResponse.kakaoAccount().birthYear(), kakaoUserInfoResponse.kakaoAccount().birthDay()))
-                .phoneNumber(kakaoUserInfoResponse.kakaoAccount().phoneNumber())
-                .nickname(kakaoUserInfoResponse.kakaoAccount().profile() != null ? kakaoUserInfoResponse.kakaoAccount().profile().nickname() : null)
-                .profileImage(kakaoUserInfoResponse.kakaoAccount().profile() != null ? kakaoUserInfoResponse.kakaoAccount().profile().image() : null)
+                .email(account.email())
+                .name(account.name())
+                .gender(account.gender())
+                .birthDay(birthDate)
+                .phoneNumber(account.phoneNumber())
+                .nickname(account.profile() != null ? account.profile().nickname() : null)
+                .profileImage(account.profile() != null ? account.profile().image() : null)
                 .snsType(SnsType.KAKAO)
                 .build();
         return userRepository.save(user);
