@@ -73,10 +73,15 @@ public class UserService {
     public User saveKakaoUser(KakaoUserInfoResponse kakaoUserInfoResponse) {
         String snsId = String.valueOf(kakaoUserInfoResponse.id());
         User user = User.builder()
-                .snsType(SnsType.KAKAO)
                 .snsId(snsId)
                 .email(kakaoUserInfoResponse.kakaoAccount().email())
+                .name(kakaoUserInfoResponse.kakaoAccount().name())
+                .gender(kakaoUserInfoResponse.kakaoAccount().gender())
+                .birthDay(toLocalDate(kakaoUserInfoResponse.kakaoAccount().birthYear(), kakaoUserInfoResponse.kakaoAccount().birthDay()))
+                .phoneNumber(kakaoUserInfoResponse.kakaoAccount().phoneNumber())
                 .nickname(kakaoUserInfoResponse.kakaoAccount().profile() != null ? kakaoUserInfoResponse.kakaoAccount().profile().nickname() : null)
+                .profileImage(kakaoUserInfoResponse.kakaoAccount().profile() != null ? kakaoUserInfoResponse.kakaoAccount().profile().image() : null)
+                .snsType(SnsType.KAKAO)
                 .build();
         return userRepository.save(user);
     }
