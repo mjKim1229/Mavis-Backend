@@ -74,17 +74,12 @@ public class UserService {
         String snsId = String.valueOf(kakaoUserInfoResponse.id());
         KakaoUserInfoResponse.KakaoAccount account = kakaoUserInfoResponse.kakaoAccount();
 
-        LocalDate birthDate = null;
-        if (account.birthYear() != null && account.birthDay() != null) {
-            birthDate = toLocalDate(account.birthYear(), account.birthDay());
-        }
-
         User user = User.builder()
                 .snsId(snsId)
                 .email(account.email())
                 .name(account.name())
                 .gender(account.gender())
-                .birthDay(birthDate)
+                .birthDay(toLocalDate(account.birthyear(), account.birthday()))
                 .phoneNumber(account.phoneNumber())
                 .nickname(account.profile() != null ? account.profile().nickname() : null)
                 .profileImage(account.profile() != null ? account.profile().image() : null)

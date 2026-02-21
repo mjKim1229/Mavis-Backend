@@ -11,8 +11,8 @@ public record KakaoUserInfoResponse(long id, KakaoAccount kakaoAccount) {
 		String email,
 		String name,
 		String gender,
-		String birthDay,
-		String birthYear,
+		String birthday,
+		String birthyear,
 		String phoneNumber,
 		KakaoProfile profile
 	) { }
