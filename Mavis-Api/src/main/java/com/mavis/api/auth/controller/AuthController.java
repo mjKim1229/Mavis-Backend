@@ -27,13 +27,13 @@ public class AuthController {
         return userFacade.register(code, "https://www.garamall.com");
     }
 
-    @Operation(summary = "네이버 로그인")
+    @Operation(summary = "네이버 회원가입 & 로그인")
     @GetMapping("/oauth/naver")
     public UserOauthResponse registerNaver(@RequestParam String code) {
         return userFacade.registerNaver(code);
     }
 
-    @Operation(summary = "회원탈퇴")
+    @Operation(summary = "회원 탈퇴 (통합)")
     @DeleteMapping("/withdraw")
     public void withDrawNaverUser() {
         userFacade.withDraw();
@@ -58,7 +58,7 @@ public class AuthController {
     }
 
     @GetMapping("/check-username")
-    @Operation(summary = "username 중복 확인")
+    @Operation(summary = "username 중복 확인 (일반 회원가입일때)")
     public UsernameCheckResponse checkUsername(@RequestParam String username) {
         boolean available = userService.isUsernameAvailable(username);
         return new UsernameCheckResponse(username, available);

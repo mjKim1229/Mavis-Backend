@@ -6,6 +6,7 @@ import com.mavis.api.review.dto.ReviewResponse;
 import com.mavis.api.review.dto.UserReviewResponse;
 import com.mavis.api.review.service.ReviewService;
 import com.mavis.domain.domains.review.vo.ProductReviewTotal;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
@@ -21,22 +22,26 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
+    @Operation(summary = "리뷰 생성", description = "사용자가 상품에 대한 리뷰를 작성합니다.")
     @PostMapping("/user")
     public void createReview(@RequestPart CreateReviewRequest request,
                              @RequestPart List<MultipartFile> images) {
         reviewService.createReview(request, images);
     }
 
+    @Operation(summary = "사용자 리뷰 목록 조회", description = "사용자가 작성한 리뷰 목록을 조회합니다.")
     @GetMapping("/user")
     public PageResponse<UserReviewResponse> getUserReviewList(Pageable pageable) {
         return reviewService.getUserReviews(pageable);
     }
 
+    @Operation(summary = "상품 리뷰 통계 조회", description = "특정 상품의 리뷰 통계 정보를 조회합니다.")
     @GetMapping("/product/{productId}/total")
     public ProductReviewTotal getProductReviewTotal(@PathVariable Long productId) {
         return reviewService.getProductReviewTotal(productId);
     }
 
+    @Operation(summary = "상품 리뷰 목록 조회", description = "특정 상품에 작성된 리뷰 목록을 조회합니다.")
     @GetMapping("/product/{productId}")
     public PageResponse<ReviewResponse> getProductReviews(@PathVariable Long productId, @ParameterObject Pageable pageable) {
         return reviewService.getProductReviews(productId, pageable);
