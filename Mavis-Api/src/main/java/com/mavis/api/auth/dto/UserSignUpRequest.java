@@ -1,6 +1,7 @@
 package com.mavis.api.auth.dto;
 
 import com.mavis.domain.domains.user.domain.Gender;
+import com.mavis.domain.domains.user.domain.MarketingAgreement;
 import com.mavis.domain.domains.user.domain.SnsType;
 import com.mavis.domain.domains.user.domain.User;
 
@@ -14,7 +15,9 @@ public record UserSignUpRequest(
         Gender gender,
         LocalDate birthDay,
         String phoneNumber,
-        String email
+        String email,
+        boolean isEmailAgreed,
+        boolean isSmsAgreed
 ) {
     public User toEntity(String encodedPassword) {
         return User.builder()
@@ -26,6 +29,7 @@ public record UserSignUpRequest(
                 .phoneNumber(phoneNumber)
                 .email(email)
                 .snsType(SnsType.MANUAL)
+                .marketingAgreement(MarketingAgreement.of(isEmailAgreed, isSmsAgreed))
                 .build();
     }
 }

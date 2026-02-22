@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -50,6 +51,9 @@ public class User extends BaseEntity {
     @Embedded
     private DeliveryAddress defaultDeliveryAddress;
 
+    @Embedded
+    private MarketingAgreement marketingAgreement;
+
     @Builder.Default
     private boolean isDeleted = false;
 
@@ -83,5 +87,13 @@ public class User extends BaseEntity {
 
     public void changeEmail(String email) {
         this.email = email;
+    }
+
+    public void updateEmailAgreement(boolean isEmailAgreed) {
+        this.marketingAgreement.updateEmailAgreement(isEmailAgreed);
+    }
+
+    public void updateSmsAgreement(boolean isSmsAgreed) {
+        this.marketingAgreement.updateSmsAgreement(isSmsAgreed);
     }
 }
