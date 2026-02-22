@@ -11,6 +11,7 @@ import com.mavis.api.auth.implement.UserReader;
 import com.mavis.api.order.dto.OrderAddressResponse;
 import com.mavis.common.dto.JwtPair;
 import com.mavis.common.jwt.JwtTokenUtil;
+import com.mavis.common.util.PhoneNormalizer;
 import com.mavis.domain.domains.user.domain.Gender;
 import com.mavis.domain.domains.user.domain.SnsType;
 import com.mavis.domain.domains.user.domain.User;
@@ -55,7 +56,7 @@ public class UserService {
                 .email(profile.email())
                 .gender(Gender.fromCode(profile.gender()))
                 .birthDay(toLocalDate(profile.birthyear() + profile.birthday(), NAVER_DATE_TIME_FORMATTER))
-                .phoneNumber(profile.mobile())
+                .phoneNumber(PhoneNormalizer.normalize(profile.mobileE164()))
                 .age(profile.age())
                 .profileImage(profile.profileImage())
                 .snsType(SnsType.NAVER)
@@ -82,7 +83,7 @@ public class UserService {
                 .name(account.name())
                 .gender(Gender.fromCode(account.gender()))
                 .birthDay(toLocalDate(account.birthyear() + account.birthday(), KAKAO_DATE_TIME_FORMATTER))
-                .phoneNumber(account.phoneNumber())
+                .phoneNumber(PhoneNormalizer.normalize(account.phoneNumber()))
                 .nickname(account.profile() != null ? account.profile().nickname() : null)
                 .profileImage(account.profile() != null ? account.profile().image() : null)
                 .snsType(SnsType.KAKAO)

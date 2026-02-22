@@ -14,6 +14,7 @@ public record NaverProfile(
         String birthday,
         String profileImage,
         String birthyear,
-        String mobile
+        String mobile,
+        String mobileE164
 ) {
 }
