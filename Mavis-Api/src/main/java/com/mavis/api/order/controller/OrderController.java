@@ -39,7 +39,7 @@ public class OrderController {
 //        orderService.validatePendingOrder(request);
 //    }
 
-    @PostMapping("/toss/confirm/test")
+    @PostMapping("/toss/confirm")
     public void confirmPayments(@RequestBody ConfirmPaymentRequest request) {
         orderService.confirmPayments(request);
     }
