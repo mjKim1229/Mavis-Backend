@@ -3,7 +3,6 @@ package com.mavis.api.order.service;
 import com.mavis.api.auth.implement.UserReader;
 import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.order.dto.CreateOrderRequest;
-import com.mavis.api.order.dto.PendingOrderRequest;
 import com.mavis.api.order.dto.OrderAddressRequest;
 import com.mavis.api.order.dto.UserOrderInfo;
 import com.mavis.api.order.implement.OrderItemAppender;
@@ -15,7 +14,6 @@ import com.mavis.domain.domains.order.exception.PriceMismatchException;
 import com.mavis.domain.domains.order.implement.OrderReader;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.order.repository.PaymentRepository;
-import com.mavis.domain.domains.order.repository.PendingOrderRepository;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsCancelClient;
 import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsConfirmClient;
@@ -38,7 +36,6 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final UserReader userReader;
     private final OrderItemAppender orderItemAppender;
-    private final PendingOrderRepository pendingOrderRepository;
     private final PaymentsConfirmClient paymentsConfirmClient;
     private final PaymentsCancelClient paymentsCancelClient;
     private final TossPaymentsProperties tossPaymentsProperties;
@@ -127,18 +124,5 @@ public class OrderService {
                 }
         );
         return PageResponse.of(userOrderInfoPages);
-    }
-
-    @Transactional
-    public void createPendingOrder(PendingOrderRequest request) {
-        PendingOrder pendingOrder = request.toEntity();
-        pendingOrderRepository.save(pendingOrder);
-    }
-
-    @Transactional
-    public void validatePendingOrder(PendingOrderRequest request) {
-        PendingOrder pendingOrder = pendingOrderRepository.findByOrderIdAndAmountAndIsConfirmedFalse(request.orderId(), request.amount())
-                .orElseThrow(() -> InvalidOrderInfoException.EXCEPTION);
-        pendingOrder.confirmed();
     }
 }

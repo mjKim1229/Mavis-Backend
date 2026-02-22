@@ -29,16 +29,7 @@ public class OrderController {
         return orderService.getUserOrderList(pageable);
     }
 
-//    @PostMapping("/toss/pending")
-//    public void createPendingOrder(@RequestBody PendingOrderRequest request) {
-//        orderService.createPendingOrder(request);
-//    }
-
-//    @PostMapping("/toss/pending/verify")
-//    public void verifyPendingOrder(@RequestBody PendingOrderRequest request) {
-//        orderService.validatePendingOrder(request);
-//    }
-
+    @Operation(summary = "토스 PG 결제 승인")
     @PostMapping("/toss/confirm")
     public void confirmPayments(@RequestBody ConfirmPaymentRequest request) {
         orderService.confirmPayments(request);
