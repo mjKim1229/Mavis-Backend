@@ -129,7 +129,7 @@ public class OrderService {
         return PageResponse.of(userOrderInfoPages);
     }
 
-    //TODO orderID 만드는 주체 FE -> BE
+    //혹시나 서버측에서 orderID 생성 필요하다면
     private String generateOrderId() {
         String dateTimePart = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         String randomPart = UUID.randomUUID().toString().substring(0, 8);
