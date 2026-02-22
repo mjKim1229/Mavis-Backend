@@ -6,13 +6,12 @@ import com.mavis.admin.domains.order.dto.UpdateAdminOrderConfirmRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriUtils;
 
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 @RestController
@@ -27,13 +26,12 @@ public class AdminDeliveryController {
     public ResponseEntity<byte[]> getOrdersByExcel(Pageable pageable) {
         byte[] orderBytes = adminDeliveryService.getOrderByExcel(pageable);
 
-        ContentDisposition contentDisposition = ContentDisposition.attachment()
-                .filename("배송목록.xlsx", StandardCharsets.UTF_8)
-                .build();
+        String encodedFileName = UriUtils.encode("배송목록.xlsx", StandardCharsets.UTF_8);
+        String contentDisposition = "attachment; filename=\"" + encodedFileName + "\"; filename*=UTF-8''" + encodedFileName;
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
+                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
                 .body(orderBytes);
     }
 
