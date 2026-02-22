@@ -27,7 +27,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -124,5 +127,12 @@ public class OrderService {
                 }
         );
         return PageResponse.of(userOrderInfoPages);
+    }
+
+    //TODO orderID 만드는 주체 FE -> BE
+    private String generateOrderId() {
+        String dateTimePart = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        String randomPart = UUID.randomUUID().toString().substring(0, 8);
+        return "ORD-" + dateTimePart + "-" + randomPart;
     }
 }
