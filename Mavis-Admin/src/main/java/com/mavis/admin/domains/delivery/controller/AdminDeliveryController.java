@@ -6,6 +6,7 @@ import com.mavis.admin.domains.order.dto.UpdateAdminOrderConfirmRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,31 +25,15 @@ public class AdminDeliveryController {
     @Operation(summary = "발주 완료 주문 목록 엑셀 다운로드")
     @GetMapping("/excel")
     public ResponseEntity<byte[]> getOrdersByExcel(Pageable pageable) {
-
         byte[] orderBytes = adminDeliveryService.getOrderByExcel(pageable);
 
-        String fileName = "배송목록.xlsx";
-
-        String encodedFileName = URLEncoder.encode(
-                fileName,
-                StandardCharsets.UTF_8
-        ).replaceAll("\\+", "%20");
-
-        String contentDisposition =
-                "attachment; " +
-                        "filename=\"delivery.xlsx\"; " +
-                        "filename*=UTF-8''" + encodedFileName;
+        ContentDisposition contentDisposition = ContentDisposition.attachment()
+                .filename("배송목록.xlsx", StandardCharsets.UTF_8)
+                .build();
 
         return ResponseEntity.ok()
-                .contentType(
-                        MediaType.parseMediaType(
-                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                        )
-                )
-                .header(
-                        HttpHeaders.CONTENT_DISPOSITION,
-                        contentDisposition
-                )
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
                 .body(orderBytes);
     }
 
