@@ -28,7 +28,8 @@ public class User extends BaseEntity {
 
     @Column(columnDefinition = "varchar(255)")
     @Enumerated(EnumType.STRING)
-    private Gender gender;
+    @Builder.Default
+    private Gender gender = Gender.UNKNOWN;
 
     private LocalDate birthDay;
 

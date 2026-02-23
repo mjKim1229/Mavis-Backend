@@ -25,6 +25,7 @@ public record UserSignUpRequest(
                 .password(encodedPassword)
                 .nickname(nickname)
                 .name(name)
+                .gender(gender)
                 .birthDay(birthDay)
                 .phoneNumber(phoneNumber)
                 .email(email)
