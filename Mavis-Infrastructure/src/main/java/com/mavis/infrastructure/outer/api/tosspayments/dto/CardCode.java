@@ -1,5 +1,6 @@
 package com.mavis.infrastructure.outer.api.tosspayments.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -42,4 +43,14 @@ public enum CardCode {
     private final String kr;
     private final String en;
     private final String cardCompanyName;
+
+    @JsonCreator
+    public static CardCode fromCode(String code) {
+        for (CardCode cardCode : CardCode.values()) {
+            if (cardCode.code.equals(code)) {
+                return cardCode;
+            }
+        }
+        return null;
+    }
 }
