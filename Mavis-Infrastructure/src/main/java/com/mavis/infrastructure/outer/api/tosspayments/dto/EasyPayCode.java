@@ -1,5 +1,6 @@
 package com.mavis.infrastructure.outer.api.tosspayments.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -16,4 +17,13 @@ public enum EasyPayCode {
     private final String kr;
     private final String en;
 
+    @JsonCreator
+    public static EasyPayCode fromKr(String kr) {
+        for (EasyPayCode easyPayCode : EasyPayCode.values()) {
+            if (easyPayCode.kr.equals(kr)) {
+                return easyPayCode;
+            }
+        }
+        return null;
+    }
 }
