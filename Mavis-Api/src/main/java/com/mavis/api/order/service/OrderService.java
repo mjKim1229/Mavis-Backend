@@ -21,6 +21,7 @@ import com.mavis.infrastructure.outer.api.tosspayments.dto.CancelPaymentsRequest
 import com.mavis.infrastructure.outer.api.tosspayments.dto.ConfirmPaymentRequest;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -102,6 +104,7 @@ public class OrderService {
             paymentRepository.save(payment);
             order.setPayConfirmed();
         } catch (Exception e) {
+            log.error("결제 오류 발생", e);
             paymentsCancelClient.cancelPayments(
                     authorizationHeader,
                     request.paymentKey(),
