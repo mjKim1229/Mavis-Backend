@@ -1,5 +1,6 @@
 package com.mavis.domain.domains.review.repository;
 
+import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.review.domain.Review;
 import com.mavis.domain.domains.review.vo.ProductReviewTotal;
 import com.mavis.domain.domains.user.domain.User;
@@ -12,4 +13,6 @@ public interface ReviewCustomRepository {
     Page<Review> queryProductReviews(Long productId, Pageable pageable);
 
     Page<Review> queryProductReviewsByUser(User user, Pageable pageable);
+
+    Page<OrderItem> queryWritableOrderItemsByUser(User user, Pageable pageable);
 }

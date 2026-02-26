@@ -2,6 +2,7 @@ package com.mavis.api.review.controller;
 
 import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.review.dto.CreateReviewRequest;
+import com.mavis.api.review.dto.GetWritableUserOrderItemResponse;
 import com.mavis.api.review.dto.ReviewResponse;
 import com.mavis.api.review.dto.UserReviewResponse;
 import com.mavis.api.review.service.ReviewService;
@@ -33,6 +34,12 @@ public class ReviewController {
     @GetMapping("/user")
     public PageResponse<UserReviewResponse> getUserReviewList(Pageable pageable) {
         return reviewService.getUserReviews(pageable);
+    }
+
+    @Operation(summary = "사용자 리뷰 작성 가능 리스트 조회")
+    @GetMapping("/user/review-writable")
+    public PageResponse<GetWritableUserOrderItemResponse> getWritableUserOrderItemResponsePageResponse(Pageable pageable) {
+        return reviewService.getWritableOrderItems(pageable);
     }
 
     @Operation(summary = "상품 리뷰 통계 조회", description = "특정 상품의 리뷰 통계 정보를 조회합니다.")

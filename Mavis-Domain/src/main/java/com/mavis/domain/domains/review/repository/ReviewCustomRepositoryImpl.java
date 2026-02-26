@@ -1,5 +1,7 @@
 package com.mavis.domain.domains.review.repository;
 
+import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
+import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.review.domain.Review;
 import com.mavis.domain.domains.review.vo.ProductReviewTotal;
 import com.mavis.domain.domains.user.domain.User;
@@ -18,7 +20,11 @@ import org.springframework.data.support.PageableExecutionUtils;
 
 import java.util.List;
 
+import static com.mavis.domain.domains.delivery.domain.QDelivery.delivery;
+import static com.mavis.domain.domains.order.domain.QOrder.order;
 import static com.mavis.domain.domains.order.domain.QOrderItem.orderItem;
+import static com.mavis.domain.domains.product.domain.QProduct.product; // QProduct import 추가
+import static com.mavis.domain.domains.product.domain.QProductImage.productImage; // QProductImage import 추가
 import static com.mavis.domain.domains.review.domain.QReview.review;
 
 @RequiredArgsConstructor
@@ -85,5 +91,38 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                         .and(review.isDeleted.eq(false)));
 
         return PageableExecutionUtils.getPage(reviews, pageable, countQuery::fetchOne);
+    }
+
+    @Override
+    public Page<OrderItem> queryWritableOrderItemsByUser(User user, Pageable pageable) {
+        List<OrderItem> orderItems = queryFactory.select(orderItem)
+                .from(orderItem)
+                .join(orderItem.order, order).fetchJoin()
+                .join(orderItem.product, product).fetchJoin()
+                .leftJoin(product.images, productImage).fetchJoin()
+                .join(delivery).on(delivery.order.eq(order))
+                .leftJoin(review).on(review.orderItem.eq(orderItem))
+                .where(review.id.isNull()
+                        .and(delivery.deliveryStatus.eq(DeliveryStatus.DELIVERED))
+                        .and(order.user.eq(user))
+                        .and(orderItem.isDeleted.eq(false)))
+                .limit(pageable.getPageSize())
+                .offset(pageable.getOffset())
+                .fetch();
+
+        JPAQuery<Long> countQuery = queryFactory
+                .select(orderItem.count())
+                .from(orderItem)
+                .join(orderItem.order, order)
+                .join(orderItem.product, product) // Product join 추가
+                .leftJoin(product.images, productImage) // ProductImage join 추가
+                .join(delivery).on(delivery.order.eq(order))
+                .leftJoin(review).on(review.orderItem.eq(orderItem))
+                .where(review.id.isNull()
+                        .and(delivery.deliveryStatus.eq(DeliveryStatus.DELIVERED))
+                        .and(order.user.eq(user))
+                        .and(orderItem.isDeleted.eq(false)));
+
+        return PageableExecutionUtils.getPage(orderItems, pageable, countQuery::fetchOne);
     }
 }
