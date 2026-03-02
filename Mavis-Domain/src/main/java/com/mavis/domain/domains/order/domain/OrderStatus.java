@@ -5,9 +5,10 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public enum OrderStatus implements EnumMapperType {
-    ORDERED("주문 완료"),
-    CANCELED("주문 취소"),
-    CONFIRMED("주문 확인 (발주 완료)");
+    READY("주문 준비"),
+    PAYMENT_CONFIRMED("결제 완료"), // 결제 완료 상태 추가
+    ORDERED("발주 완료"), // 발주 완료 상태로 변경
+    CANCELED("주문 취소");
 
     private final String title;
 

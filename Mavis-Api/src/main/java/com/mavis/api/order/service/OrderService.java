@@ -6,10 +6,7 @@ import com.mavis.api.order.dto.CreateOrderRequest;
 import com.mavis.api.order.dto.OrderAddressRequest;
 import com.mavis.api.order.dto.UserOrderInfo;
 import com.mavis.api.order.implement.OrderItemAppender;
-import com.mavis.domain.domains.order.domain.Order;
-import com.mavis.domain.domains.order.domain.OrderAddress;
-import com.mavis.domain.domains.order.domain.Payment;
-import com.mavis.domain.domains.order.domain.PaymentMethod;
+import com.mavis.domain.domains.order.domain.*;
 import com.mavis.domain.domains.order.exception.InvalidOrderInfoException;
 import com.mavis.domain.domains.order.exception.OrderNotFoundException;
 import com.mavis.domain.domains.order.exception.PriceMismatchException;
@@ -58,7 +55,7 @@ public class OrderService {
         if (order.getTotalPrice() != amount) {
             throw PriceMismatchException.EXCEPTION;
         }
-        if (order.isPayConfirmed()) {
+        if (order.getOrderStatus() != OrderStatus.READY) {
             throw InvalidOrderInfoException.EXCEPTION;
         }
         return order;
@@ -66,7 +63,7 @@ public class OrderService {
 
     @Transactional
     public void processPaymentSuccess(Order order, PaymentsResponse response) {
-        if (response.totalAmount() != order.getTotalPrice()) {
+        if (response.totalAmount() != order.getTotalPrice()){
             throw PriceMismatchException.EXCEPTION;
         }
 
@@ -85,7 +82,12 @@ public class OrderService {
                 .build();
 
         paymentRepository.save(payment);
-        order.setPayConfirmed();
+        order.confirmPayment();
+    }
+
+    @Transactional
+    public void cancelOrder(Order order) {
+        order.cancel();
     }
 
     @Transactional(readOnly = true)

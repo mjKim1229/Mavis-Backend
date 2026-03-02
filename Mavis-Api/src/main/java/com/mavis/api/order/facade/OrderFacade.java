@@ -64,5 +64,6 @@ public class OrderFacade {
                 .encodeToString((tossPaymentsProperties.secretKey() + ":").getBytes(StandardCharsets.UTF_8));
         PaymentsResponse paymentsResponse = paymentsCancelClient.cancelPayments(authorizationHeader, payment.getPaymentKey(), cancelPaymentsRequest);
         log.info("주문 취소 요청에 대한 응답 : {}", paymentsResponse);
+        orderService.cancelOrder(order);
     }
 }

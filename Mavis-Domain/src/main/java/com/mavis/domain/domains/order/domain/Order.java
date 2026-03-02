@@ -29,7 +29,7 @@ public class Order extends BaseEntity {
     @Column(columnDefinition = "varchar(255)")
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private OrderStatus orderStatus = OrderStatus.ORDERED;
+    private OrderStatus orderStatus = OrderStatus.READY;
 
     @Embedded
     private OrderAddress orderAddress;
@@ -44,14 +44,15 @@ public class Order extends BaseEntity {
         this.totalPrice = totalPrice;
     }
 
-    public void confirm() {
-        this.orderStatus = OrderStatus.CONFIRMED;
+    public void confirmPayment() {
+        this.orderStatus = OrderStatus.PAYMENT_CONFIRMED;
     }
 
-    @Builder.Default
-    private boolean isPayConfirmed = false;
+    public void cancel() {
+        this.orderStatus = OrderStatus.CANCELED;
+    }
 
-    public void setPayConfirmed() {
-        this.isPayConfirmed = true;
+    public void makeOrder() {
+        this.orderStatus = OrderStatus.ORDERED;
     }
 }

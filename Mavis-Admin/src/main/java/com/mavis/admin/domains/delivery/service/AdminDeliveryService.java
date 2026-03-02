@@ -127,7 +127,7 @@ public class AdminDeliveryService {
             if (order.getOrderStatus() != OrderStatus.ORDERED) {
                 throw OrderNotToBeConfirmedException.EXCEPTION;
             }
-            order.confirm();
+            order.makeOrder();
             Delivery delivery = Delivery.builder()
                     .order(order)
                     .build();
