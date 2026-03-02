@@ -7,11 +7,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum TossPaymentMethod implements EnumMapperType {
     CARD("카드"),
+    EASY_PAY("간편결제"),
     VIRTUAL_ACCOUNT("가상계좌"),
-    EASYPAY("간편결제"),
-    MOBILE_PAY("휴대폰"),
-    BANK_TRANSFER("계좌이체"),
-    GIFT_CARD("상품권");
+    MOBILE_PHONE("휴대폰"),
+    TRANSFER("계좌이체"),
+    CULTURE_GIFT_CERTIFICATE("문화상품권"),
+    BOOK_GIFT_CERTIFICATE("도서문화상품권"),
+    GAME_GIFT_CERTIFICATE("게임문화상품권");
 
     private final String kr;
 
@@ -27,6 +29,10 @@ public enum TossPaymentMethod implements EnumMapperType {
 
     @JsonCreator
     public static TossPaymentMethod fromKr(String kr) {
+        if (kr == null) {
+            return null;
+        }
+
         for (TossPaymentMethod method : TossPaymentMethod.values()) {
             if (method.kr.equals(kr)) {
                 return method;

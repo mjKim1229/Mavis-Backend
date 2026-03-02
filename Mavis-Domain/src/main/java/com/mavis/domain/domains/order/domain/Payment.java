@@ -17,16 +17,16 @@ public class Payment extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "payment_key", length = 200)
     private String paymentKey;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
-    private Order order;
+    private String provider;
 
+    private String receiptUrl;
+
+    @Column(columnDefinition = "varchar(255)")
     @Enumerated(EnumType.STRING)
-    @Column(length = 30)
-    private PaymentMethod method;
+    @Builder.Default
+    private PaymentMethod method = PaymentMethod.DEFAULT;
 
     private Long totalAmount;
 
@@ -41,9 +41,9 @@ public class Payment extends BaseEntity {
 
     private Boolean partialCancelable;
 
-    private String provider;
-
     private String cardNumber;
 
-    private String receiptUrl;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private Order order;
 }

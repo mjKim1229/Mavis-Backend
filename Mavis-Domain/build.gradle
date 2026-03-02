@@ -10,6 +10,7 @@ dependencies{
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
     implementation project(":Mavis-Common")
+    implementation project(":Mavis-Infrastructure")
 }
 
 tasks.register('copySubmoduleYml', Copy) {
