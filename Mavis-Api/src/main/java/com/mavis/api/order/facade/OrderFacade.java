@@ -63,6 +63,6 @@ public class OrderFacade {
         String authorizationHeader = "Basic " + Base64.getEncoder()
                 .encodeToString((tossPaymentsProperties.secretKey() + ":").getBytes(StandardCharsets.UTF_8));
         PaymentsResponse paymentsResponse = paymentsCancelClient.cancelPayments(authorizationHeader, payment.getPaymentKey(), cancelPaymentsRequest);
-        log.debug("주문 취소 요청에 대한 응답 : {}", paymentsResponse);
+        log.info("주문 취소 요청에 대한 응답 : {}", paymentsResponse);
     }
 }
