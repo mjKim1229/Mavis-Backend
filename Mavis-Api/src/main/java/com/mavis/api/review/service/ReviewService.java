@@ -41,7 +41,7 @@ public class ReviewService {
     @Transactional
     public void createReview(CreateReviewRequest request, List<MultipartFile> images) {
         User user = userReader.getCurrentUser();
-        OrderItem orderItem = orderReader.findById(request.orderItemId());
+        OrderItem orderItem = orderReader.findOrderItemById(request.orderItemId());
         reviewValidator.validateOrderUserMatch(user, orderItem.getOrder());
         Review review = request.toEntity(orderItem, user);
         Review savedReview = reviewRepository.save(review);

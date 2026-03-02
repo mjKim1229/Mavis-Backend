@@ -3,6 +3,9 @@ package com.mavis.api.order.facade;
 import com.mavis.api.order.service.OrderService;
 import com.mavis.common.properties.TossPaymentsProperties;
 import com.mavis.domain.domains.order.domain.Order;
+import com.mavis.domain.domains.order.domain.Payment;
+import com.mavis.domain.domains.order.implement.OrderReader;
+import com.mavis.domain.domains.order.repository.PaymentRepository;
 import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsCancelClient;
 import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsConfirmClient;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.CancelPaymentsRequest;
@@ -24,6 +27,8 @@ public class OrderFacade {
     private final PaymentsConfirmClient paymentsConfirmClient;
     private final PaymentsCancelClient paymentsCancelClient;
     private final OrderService orderService;
+    private final OrderReader orderReader;
+    private final PaymentRepository paymentRepository;
 
     public void confirmPayments(ConfirmPaymentRequest request) {
         Order order = orderService.validateOrderForPayment(request.orderId(), request.amount());
@@ -49,5 +54,15 @@ public class OrderFacade {
             );
             throw e;
         }
+    }
+
+    public void cancelPayments(Long orderId, CancelPaymentsRequest cancelPaymentsRequest) {
+        Order order = orderReader.findOrderById(orderId);
+        Payment payment = paymentRepository.findByOrder(order);
+
+        String authorizationHeader = "Basic " + Base64.getEncoder()
+                .encodeToString((tossPaymentsProperties.secretKey() + ":").getBytes(StandardCharsets.UTF_8));
+        PaymentsResponse paymentsResponse = paymentsCancelClient.cancelPayments(authorizationHeader, payment.getPaymentKey(), cancelPaymentsRequest);
+        log.debug("주문 취소 요청에 대한 응답 : {}", paymentsResponse);
     }
 }

@@ -5,6 +5,7 @@ import com.mavis.api.order.dto.CreateOrderRequest;
 import com.mavis.api.order.dto.UserOrderInfo;
 import com.mavis.api.order.facade.OrderFacade;
 import com.mavis.api.order.service.OrderService;
+import com.mavis.infrastructure.outer.api.tosspayments.dto.CancelPaymentsRequest;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.ConfirmPaymentRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -35,5 +36,11 @@ public class OrderController {
     @PostMapping("/toss/confirm")
     public void confirmPayments(@RequestBody ConfirmPaymentRequest request) {
         orderFacade.confirmPayments(request);
+    }
+
+    @Operation(summary = "토스 PG 주문 취소 (환불)")
+    @PostMapping("/{orderId}/toss/cancel")
+    public void cancelPayments(@PathVariable Long orderId, @RequestBody CancelPaymentsRequest cancelPaymentsRequest) {
+        orderFacade.cancelPayments(orderId, cancelPaymentsRequest);
     }
 }

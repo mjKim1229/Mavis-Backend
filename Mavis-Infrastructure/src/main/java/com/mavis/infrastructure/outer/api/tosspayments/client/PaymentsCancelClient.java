@@ -18,6 +18,6 @@ public interface PaymentsCancelClient {
     @PostMapping("/v1/payments/{paymentKey}/cancel")
     PaymentsResponse cancelPayments(
             @RequestHeader(name = "Authorization") String authorization,
-            @PathVariable("paymentKey") String paymentKey,
+            @PathVariable String paymentKey,
             @RequestBody CancelPaymentsRequest cancelPaymentsRequest);
 }

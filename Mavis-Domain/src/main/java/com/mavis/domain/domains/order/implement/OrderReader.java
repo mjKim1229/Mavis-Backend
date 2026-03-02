@@ -15,7 +15,7 @@ public class OrderReader {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
 
-    public OrderItem findById(Long id) {
+    public OrderItem findOrderItemById(Long id) {
         return orderItemRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> OrderNotFoundException.EXCEPTION);
     }
