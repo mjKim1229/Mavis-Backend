@@ -12,7 +12,7 @@ public record PaymentsResponse(
         String mId,
         String currency,
         TossPaymentMethod method,
-        Long totalAmount,
+        int totalAmount,
         Long balanceAmount,
         PaymentsStatus status,
         ZonedDateTime requestedAt,

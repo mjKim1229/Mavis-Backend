@@ -3,6 +3,7 @@ package com.mavis.api.order.controller;
 import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.order.dto.CreateOrderRequest;
 import com.mavis.api.order.dto.UserOrderInfo;
+import com.mavis.api.order.facade.OrderFacade;
 import com.mavis.api.order.service.OrderService;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.ConfirmPaymentRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
 
     private final OrderService orderService;
+    private final OrderFacade orderFacade;
 
     @Operation(summary = "주문 생성")
     @PostMapping
@@ -32,6 +34,6 @@ public class OrderController {
     @Operation(summary = "토스 PG 결제 승인")
     @PostMapping("/toss/confirm")
     public void confirmPayments(@RequestBody ConfirmPaymentRequest request) {
-        orderService.confirmPayments(request);
+        orderFacade.confirmPayments(request);
     }
 }

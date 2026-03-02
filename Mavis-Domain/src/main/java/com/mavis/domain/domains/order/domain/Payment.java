@@ -28,7 +28,7 @@ public class Payment extends BaseEntity {
     @Builder.Default
     private PaymentMethod method = PaymentMethod.DEFAULT;
 
-    private Long totalAmount;
+    private int totalAmount;
 
     private Long balanceAmount;
 
