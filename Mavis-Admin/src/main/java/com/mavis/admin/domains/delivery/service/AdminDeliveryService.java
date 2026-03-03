@@ -2,7 +2,7 @@ package com.mavis.admin.domains.delivery.service;
 
 import com.mavis.admin.domains.delivery.dto.UpdateAdminDeliveredConfirmRequest;
 import com.mavis.admin.domains.order.dto.GetAdminOrderExcelResponse;
-import com.mavis.admin.domains.order.dto.UpdateAdminOrderConfirmRequest;
+import com.mavis.admin.domains.order.dto.AdminDeliveryStartRequest;
 import com.mavis.common.annotation.ExcelColumn;
 import com.mavis.domain.domains.delivery.domain.Delivery;
 import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
@@ -121,7 +121,7 @@ public class AdminDeliveryService {
     }
 
     @Transactional
-    public void confirmOrderDelivery(Long orderId, UpdateAdminOrderConfirmRequest request) {
+    public void confirmOrderDelivery(Long orderId, AdminDeliveryStartRequest request) {
         Order order = orderReader.findOrderById(orderId);
         if (order.getOrderStatus() != OrderStatus.ORDERED) {
             throw OrderNotToBeConfirmedException.EXCEPTION;

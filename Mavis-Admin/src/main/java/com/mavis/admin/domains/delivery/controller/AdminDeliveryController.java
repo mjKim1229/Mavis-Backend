@@ -2,7 +2,7 @@ package com.mavis.admin.domains.delivery.controller;
 
 import com.mavis.admin.domains.delivery.dto.UpdateAdminDeliveredConfirmRequest;
 import com.mavis.admin.domains.delivery.service.AdminDeliveryService;
-import com.mavis.admin.domains.order.dto.UpdateAdminOrderConfirmRequest;
+import com.mavis.admin.domains.order.dto.AdminDeliveryStartRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -37,7 +37,7 @@ public class AdminDeliveryController {
 
     @Operation(summary = "발주 완료 페이지에서 배송 생성")
     @PostMapping("/confirm/{orderId}")
-    public void confirmDelivery(@PathVariable Long orderId, @RequestBody UpdateAdminOrderConfirmRequest request) {
+    public void confirmDelivery(@PathVariable Long orderId, @RequestBody AdminDeliveryStartRequest request) {
         adminDeliveryService.confirmOrderDelivery(orderId, request);
     }
 

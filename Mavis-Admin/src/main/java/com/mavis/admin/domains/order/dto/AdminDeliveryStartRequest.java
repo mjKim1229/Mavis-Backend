@@ -1,6 +1,6 @@
 package com.mavis.admin.domains.order.dto;
 
-public record UpdateAdminOrderConfirmRequest(
+public record AdminDeliveryStartRequest(
         String carrier,
         String trackingNumber
 ) {

@@ -1,7 +1,11 @@
 package com.mavis.admin.domains.order.service;
 
 import com.mavis.admin.common.page.PageResponse;
+import com.mavis.admin.domains.order.dto.AdminOrderConfirmRequest;
 import com.mavis.admin.domains.order.dto.OrderInfo;
+import com.mavis.domain.domains.delivery.domain.Delivery;
+import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
+import com.mavis.domain.domains.delivery.repository.DeliveryRepository;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderAddress;
 import com.mavis.domain.domains.order.domain.OrderStatus;
@@ -13,10 +17,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class AdminOrderService {
     private final OrderRepository orderRepository;
+    private final DeliveryRepository deliveryRepository;
 
     @Transactional(readOnly = true)
     public PageResponse<OrderInfo> getOrderLists(Pageable pageable) {
@@ -33,5 +40,18 @@ public class AdminOrderService {
                 }
         );
         return PageResponse.of(orderInfoPages);
+    }
+
+    @Transactional
+    public void confirmOrder(AdminOrderConfirmRequest request) {
+        List<Order> orders = orderRepository.findByIdInAndIsDeletedFalse(request.orderIds());
+        orders.forEach(order -> {
+            order.confirmOrder();
+            Delivery delivery = Delivery.builder()
+                    .order(order)
+                    .deliveryStatus(DeliveryStatus.READY)
+                    .build();
+            deliveryRepository.save(delivery);
+        });
     }
 }

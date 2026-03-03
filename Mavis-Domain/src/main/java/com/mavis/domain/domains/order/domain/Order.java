@@ -52,7 +52,7 @@ public class Order extends BaseEntity {
         this.orderStatus = OrderStatus.CANCELED;
     }
 
-    public void makeOrder() {
+    public void confirmOrder() {
         this.orderStatus = OrderStatus.ORDERED;
     }
 }
