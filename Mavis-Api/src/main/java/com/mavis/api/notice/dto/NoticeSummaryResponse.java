@@ -17,7 +17,6 @@ public record NoticeSummaryResponse(
     public static NoticeSummaryResponse of(Notice notice) {
         return NoticeSummaryResponse.builder()
                 .id(notice.getId())
-                .category(notice.getCategory().getTitle())
                 .title(notice.getTitle())
                 .createdAt(notice.getCreatedAt())
                 .build();

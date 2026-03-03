@@ -25,7 +25,7 @@ public class AdminNoticeService {
     public void updateNotice(Long noticeId, UpdateNoticeRequest request) {
         Notice notice = noticeRepository.findByIdAndIsDeletedFalse(noticeId)
                 .orElseThrow(() -> NoticeNotFoundException.EXCEPTION);
-        notice.update(request.category(), request.title(), request.content());
+        notice.update(request.title(), request.content());
     }
 
     @Transactional
