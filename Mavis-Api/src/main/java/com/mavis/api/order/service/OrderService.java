@@ -7,9 +7,11 @@ import com.mavis.api.order.dto.OrderAddressRequest;
 import com.mavis.api.order.dto.UserOrderInfo;
 import com.mavis.api.order.implement.OrderItemAppender;
 import com.mavis.domain.domains.order.domain.*;
+import com.mavis.domain.domains.order.exception.CannotCancelOrderException;
 import com.mavis.domain.domains.order.exception.InvalidOrderInfoException;
 import com.mavis.domain.domains.order.exception.OrderNotFoundException;
 import com.mavis.domain.domains.order.exception.PriceMismatchException;
+import com.mavis.domain.domains.order.implement.OrderReader;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.order.repository.PaymentRepository;
 import com.mavis.domain.domains.user.domain.User;
@@ -29,6 +31,7 @@ public class OrderService {
     private final OrderItemAppender orderItemAppender;
     private final PaymentRepository paymentRepository;
     private static final int DELIVERY_FEE = 4000;
+    private final OrderReader orderReader;
 
     @Transactional
     public void createOrder(CreateOrderRequest request) {
@@ -63,7 +66,7 @@ public class OrderService {
 
     @Transactional
     public void processPaymentSuccess(Order order, PaymentsResponse response) {
-        if (response.totalAmount() != order.getTotalPrice()){
+        if (response.totalAmount() != order.getTotalPrice()) {
             throw PriceMismatchException.EXCEPTION;
         }
 
@@ -88,6 +91,15 @@ public class OrderService {
     @Transactional
     public void cancelOrder(Order order) {
         order.cancel();
+    }
+
+    @Transactional(readOnly = true)
+    public Order findOrderToCancel(Long orderId) {
+        Order order = orderReader.findOrderById(orderId);
+        if (!order.getOrderStatus().equals(OrderStatus.PAYMENT_CONFIRMED)) {
+            throw CannotCancelOrderException.EXCEPTION;
+        }
+        return order;
     }
 
     @Transactional(readOnly = true)

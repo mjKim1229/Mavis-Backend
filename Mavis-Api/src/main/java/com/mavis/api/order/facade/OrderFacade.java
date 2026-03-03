@@ -57,7 +57,7 @@ public class OrderFacade {
     }
 
     public void cancelPayments(Long orderId, CancelPaymentsRequest cancelPaymentsRequest) {
-        Order order = orderReader.findOrderById(orderId);
+        Order order = orderService.findOrderToCancel(orderId);
         Payment payment = paymentRepository.findByOrder(order);
 
         String authorizationHeader = "Basic " + Base64.getEncoder()
