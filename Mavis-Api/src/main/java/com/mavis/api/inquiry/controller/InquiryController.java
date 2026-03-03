@@ -29,7 +29,7 @@ public class InquiryController {
 
     @Operation(summary = "상품 문의 등록")
     @PostMapping("/product/{id}")
-    public void createProductInquiry(@PathVariable Long id, @RequestPart CreateInquiryRequest request, @RequestPart List<MultipartFile> images) {
+    public void createProductInquiry(@PathVariable Long id, @RequestPart CreateInquiryRequest request, @RequestPart(required = false) List<MultipartFile> images) {
         inquiryService.createInquiry(id, request, images);
     }
 
