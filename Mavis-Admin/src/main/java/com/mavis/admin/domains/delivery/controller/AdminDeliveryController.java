@@ -1,6 +1,6 @@
 package com.mavis.admin.domains.delivery.controller;
 
-import com.mavis.admin.domains.delivery.dto.UpdateAdminDeliveredConfirmRequest;
+import com.mavis.admin.domains.delivery.dto.AdminCompleteDeliveryRequest;
 import com.mavis.admin.domains.delivery.service.AdminDeliveryService;
 import com.mavis.admin.domains.order.dto.AdminDeliveryStartRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,9 +41,9 @@ public class AdminDeliveryController {
         adminDeliveryService.confirmOrderDelivery(orderId, request);
     }
 
-    @Operation(summary = "주문 상태 변경")
-    @PatchMapping("/delivered")
-    public void completeDelivery(@RequestBody UpdateAdminDeliveredConfirmRequest request) {
-        adminDeliveryService.confirmDelivered(request);
+    @Operation(summary = "배송 완료 처리")
+    @PatchMapping("/complete")
+    public void completeDelivery(@RequestBody AdminCompleteDeliveryRequest request) {
+        adminDeliveryService.completeDelivery(request);
     }
 }

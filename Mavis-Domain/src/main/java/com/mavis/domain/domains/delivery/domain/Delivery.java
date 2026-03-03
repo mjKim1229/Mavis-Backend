@@ -40,4 +40,8 @@ public class Delivery extends BaseEntity {
         this.trackingNumber = trackingNumber;
         this.deliveryStatus = DeliveryStatus.SHIPPED;
     }
+
+    public void complete() {
+        this.deliveryStatus = DeliveryStatus.DELIVERED;
+    }
 }
