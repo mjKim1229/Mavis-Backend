@@ -5,7 +5,7 @@ import com.mavis.domain.domains.user.domain.User;
 import java.time.LocalDate;
 
 public record UserDetailResponse(
-        Long userId,
+        String username,
         String nickname,
         String name,
         String gender,
@@ -15,7 +15,7 @@ public record UserDetailResponse(
 ) {
     public static UserDetailResponse from(User user) {
         return new UserDetailResponse(
-                user.getId(),
+                user.getUsername(),
                 user.getNickname(),
                 user.getName(),
                 user.getGender().getTitle(),
