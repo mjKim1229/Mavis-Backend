@@ -14,12 +14,16 @@ public class ProductNotice extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 1000)
     private String precaution;
 
+    @Column(length = 1000)
     private String shippingInfo;
 
+    @Column(length = 1000)
     private String returnRequest;
 
+    @Column(length = 1000)
     private String returnProcess;
 
     @OneToOne(fetch = FetchType.LAZY)
