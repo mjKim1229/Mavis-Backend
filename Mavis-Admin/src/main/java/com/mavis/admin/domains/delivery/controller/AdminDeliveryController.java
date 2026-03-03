@@ -35,11 +35,10 @@ public class AdminDeliveryController {
                 .body(orderBytes);
     }
 
-
-    @Operation(summary = "주문 발주 확인 & 배송 생성")
-    @PostMapping("/confirm")
-    public void confirmDelivery(@RequestBody UpdateAdminOrderConfirmRequest request) {
-        adminDeliveryService.confirmOrderDelivery(request);
+    @Operation(summary = "발주 완료 페이지에서 배송 생성")
+    @PostMapping("/confirm/{orderId}")
+    public void confirmDelivery(@PathVariable Long orderId, @RequestBody UpdateAdminOrderConfirmRequest request) {
+        adminDeliveryService.confirmOrderDelivery(orderId, request);
     }
 
     @Operation(summary = "주문 상태 변경")

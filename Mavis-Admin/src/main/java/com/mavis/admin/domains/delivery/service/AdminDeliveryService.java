@@ -7,11 +7,12 @@ import com.mavis.common.annotation.ExcelColumn;
 import com.mavis.domain.domains.delivery.domain.Delivery;
 import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
 import com.mavis.domain.domains.delivery.exception.DeliveryCannotBeCompleteException;
+import com.mavis.domain.domains.delivery.exception.DeliveryNotFoundException;
 import com.mavis.domain.domains.delivery.repository.DeliveryRepository;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderStatus;
 import com.mavis.domain.domains.order.exception.OrderNotToBeConfirmedException;
-import com.mavis.domain.domains.order.repository.OrderRepository;
+import com.mavis.domain.domains.order.implement.OrderReader;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
@@ -31,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class AdminDeliveryService {
 
     private final DeliveryRepository deliveryRepository;
-    private final OrderRepository orderRepository;
+    private final OrderReader orderReader;
 
     public byte[] getOrderByExcel(Pageable pageable) {
         try (
@@ -120,19 +121,15 @@ public class AdminDeliveryService {
     }
 
     @Transactional
-    public void confirmOrderDelivery(UpdateAdminOrderConfirmRequest request) {
-        List<Long> orderIds = request.orderIds();
-        List<Order> orders = orderRepository.findByIdInAndIsDeletedFalse(orderIds);
-        orders.forEach(order -> {
-            if (order.getOrderStatus() != OrderStatus.ORDERED) {
-                throw OrderNotToBeConfirmedException.EXCEPTION;
-            }
-            order.makeOrder();
-            Delivery delivery = Delivery.builder()
-                    .order(order)
-                    .build();
-            deliveryRepository.save(delivery);
-        });
+    public void confirmOrderDelivery(Long orderId, UpdateAdminOrderConfirmRequest request) {
+        Order order = orderReader.findOrderById(orderId);
+        if (order.getOrderStatus() != OrderStatus.ORDERED) {
+            throw OrderNotToBeConfirmedException.EXCEPTION;
+        }
+
+        Delivery delivery = deliveryRepository.findByOrderAndIsDeletedFalse(order)
+                .orElseThrow(() -> DeliveryNotFoundException.EXCEPTION);
+        delivery.startDelivery(request.carrier(), request.trackingNumber());
     }
 
     @Transactional

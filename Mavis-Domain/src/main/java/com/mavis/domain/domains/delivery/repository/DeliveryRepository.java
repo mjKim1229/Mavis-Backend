@@ -1,10 +1,14 @@
 package com.mavis.domain.domains.delivery.repository;
 
 import com.mavis.domain.domains.delivery.domain.Delivery;
+import com.mavis.domain.domains.order.domain.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
     List<Delivery> findByIdInAndIsDeletedFalse(List<Long> ids);
+
+    Optional<Delivery> findByOrderAndIsDeletedFalse(Order order);
 }

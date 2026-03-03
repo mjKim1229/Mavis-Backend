@@ -24,10 +24,20 @@ public class Delivery extends BaseEntity {
     @Builder.Default
     private DeliveryStatus deliveryStatus = DeliveryStatus.READY;
 
+    private String carrier;
+
+    private String trackingNumber;
+
     @Builder.Default
     private boolean isDeleted = false;
 
     public void updateDeliveryStatus(DeliveryStatus deliveryStatus) {
         this.deliveryStatus = deliveryStatus;
+    }
+
+    public void startDelivery(String carrier, String trackingNumber) {
+        this.carrier = carrier;
+        this.trackingNumber = trackingNumber;
+        this.deliveryStatus = DeliveryStatus.SHIPPED;
     }
 }
