@@ -35,7 +35,7 @@ public class AdminDeliveryController {
                 .body(orderBytes);
     }
 
-    @Operation(summary = "배송 시작 (발주 완료 -> 배송 시작)")
+    @Operation(summary = "배송 시작 (발주 완료 -> 배송중)")
     @PostMapping("/confirm/{orderId}")
     public void confirmDelivery(@PathVariable Long orderId, @RequestBody AdminDeliveryStartRequest request) {
         adminDeliveryService.confirmOrderDelivery(orderId, request);
