@@ -35,13 +35,13 @@ public class AdminDeliveryController {
                 .body(orderBytes);
     }
 
-    @Operation(summary = "발주 완료 페이지에서 배송 생성")
+    @Operation(summary = "배송 시작 (발주 완료 -> 배송 시작)")
     @PostMapping("/confirm/{orderId}")
     public void confirmDelivery(@PathVariable Long orderId, @RequestBody AdminDeliveryStartRequest request) {
         adminDeliveryService.confirmOrderDelivery(orderId, request);
     }
 
-    @Operation(summary = "배송 완료 처리")
+    @Operation(summary = "배송 완료 처리 (배송중 -> 배송 완료)")
     @PatchMapping("/complete")
     public void completeDelivery(@RequestBody AdminCompleteDeliveryRequest request) {
         adminDeliveryService.completeDelivery(request);

@@ -24,7 +24,7 @@ public class AdminOrderController {
     }
 
     @PostMapping("/confirm")
-    @Operation(summary = "고객 발주 확인")
+    @Operation(summary = "고객 발주 확인 (결제 완료 -> 발주 완료)")
     public void confirmOrder(@RequestBody AdminOrderConfirmRequest request) {
         adminOrderService.confirmOrder(request);
     }
