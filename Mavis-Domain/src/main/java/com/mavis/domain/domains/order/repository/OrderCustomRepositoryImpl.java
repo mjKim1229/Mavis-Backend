@@ -1,6 +1,5 @@
 package com.mavis.domain.domains.order.repository;
 
-import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderStatus;
 import com.mavis.domain.domains.user.domain.User;

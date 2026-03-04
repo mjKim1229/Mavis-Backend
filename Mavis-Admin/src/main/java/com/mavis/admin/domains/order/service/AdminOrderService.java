@@ -26,8 +26,8 @@ public class AdminOrderService {
     private final DeliveryRepository deliveryRepository;
 
     @Transactional(readOnly = true)
-    public PageResponse<OrderInfo> getOrderLists(Pageable pageable) {
-        Page<Order> orderPages = orderRepository.findOrderPages(pageable, OrderStatus.ORDERED);
+    public PageResponse<OrderInfo> getOrderLists(Pageable pageable, OrderStatus orderStatus) {
+        Page<Order> orderPages = orderRepository.findOrderPages(pageable, orderStatus);
         Page<OrderInfo> orderInfoPages = orderPages.map(order -> {
                     OrderAddress orderAddress = order.getOrderAddress();
                     User user = order.getUser();
