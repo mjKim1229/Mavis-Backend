@@ -97,4 +97,8 @@ public class User extends BaseEntity {
     public void updateSmsAgreement(boolean isSmsAgreed) {
         this.marketingAgreement.updateSmsAgreement(isSmsAgreed);
     }
+
+    public void updatePassword(String password) {
+        this.password = password;
+    }
 }

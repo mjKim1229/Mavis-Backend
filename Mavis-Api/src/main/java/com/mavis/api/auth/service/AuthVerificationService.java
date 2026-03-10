@@ -8,66 +8,82 @@ import com.mavis.api.auth.dto.UserEmailChangeCreateRequest;
 import com.mavis.api.auth.dto.UserEmailChangeVerifyRequest;
 import com.mavis.api.auth.implement.UserReader;
 import com.mavis.common.util.RandomAuthCodeUtil;
+import com.mavis.domain.domains.user.domain.PasswordResetToken;
 import com.mavis.domain.domains.user.domain.VerificationCode;
 import com.mavis.domain.domains.user.domain.VerificationType;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.domain.domains.user.exception.InvalidVerificationCodeException;
+import com.mavis.domain.domains.user.exception.UserNotFoundException;
 import com.mavis.domain.domains.user.exception.VerificationCodeExpiredException;
+import com.mavis.domain.domains.user.repository.PasswordResetTokenRepository;
 import com.mavis.domain.domains.user.repository.UserRepository;
 import com.mavis.domain.domains.user.repository.VerificationCodeRepository;
 import com.mavis.infrastructure.outer.email.MailService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
-import static com.mavis.domain.domains.user.domain.VerificationType.PASSWORD_FOUND;
 import static com.mavis.domain.domains.user.domain.VerificationType.SIGN_UP;
 import static com.mavis.domain.domains.user.domain.VerificationType.UPDATE_EMAIL;
 
 @Service
 @RequiredArgsConstructor
 public class AuthVerificationService {
+    private static final String PASSWORD_RESET_URL = "https://www.garamall.com/password-reset?token=";
+
     private final VerificationCodeRepository verificationCodeRepository;
     private final MailService mailService;
     private static final long VERIFICATION_CODE_VALID_MINUTES = 5;
     private final UserRepository userRepository;
     private final UserReader userReader;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public void savePasswordFoundCode(UserPasswordFoundVerifyCreateRequest request) {
-        boolean isUserExists = userRepository.existsByEmailAndIsDeletedFalse(request.email());
+        boolean isUserExists = userRepository.existsByUsernameAndEmailAndIsDeletedFalse(request.username(), request.email());
         if (!isUserExists) return;
 
-        Integer authCode = RandomAuthCodeUtil.generateRandomIntegerNumber();
+        UUID token = UUID.randomUUID();
+        String resetURL = PASSWORD_RESET_URL + token;
+
         LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(VERIFICATION_CODE_VALID_MINUTES);
-        verificationCodeRepository.findByVerificationTypeAndEmail(PASSWORD_FOUND, request.email())
+        passwordResetTokenRepository.findByUsernameAndEmail(request.username(), request.email())
                 .ifPresentOrElse(
-                        verificationCode -> verificationCode.update(authCode, expiredAt)
-                        , () -> savePasswordCode(request, authCode, expiredAt)
+                        passwordResetToken -> passwordResetToken.update(token.toString(), expiredAt)
+                        , () -> saveToken(request, token.toString(), expiredAt)
                 );
-        mailService.send(request.email(), "비밀번호 찾기 인증 번호입니다.", authCode.toString());
+        mailService.send(request.email(), "비밀번호 찾기 인증 링크입니다.", resetURL);
     }
 
-    private void savePasswordCode(UserPasswordFoundVerifyCreateRequest request, Integer authCode, LocalDateTime expiredAt) {
-        VerificationCode verificationCode = VerificationCode.builder()
-                .code(authCode)
-                .verificationType(PASSWORD_FOUND)
-                .expiredAt(expiredAt)
+    private void saveToken(UserPasswordFoundVerifyCreateRequest request, String token, LocalDateTime expiredAt) {
+        PasswordResetToken passwordResetToken = PasswordResetToken.builder()
+                .username(request.username())
                 .email(request.email())
+                .expiredAt(expiredAt)
+                .token(token)
                 .build();
-        verificationCodeRepository.save(verificationCode);
+        passwordResetTokenRepository.save(passwordResetToken);
     }
 
     @Transactional
     public void verifyPasswordFound(UserPasswordFoundVerifyCodeRequest request) {
-        VerificationCode verificationCode = verificationCodeRepository.findByVerificationTypeAndEmailAndCodeAndIsDeletedFalse(VerificationType.PASSWORD_FOUND, request.email(), request.code())
+        PasswordResetToken passwordResetToken = passwordResetTokenRepository.findByToken(request.token())
                 .orElseThrow(() -> InvalidVerificationCodeException.EXCEPTION);
-        if (verificationCode.getExpiredAt().isBefore(LocalDateTime.now())) {
+
+        if (passwordResetToken.getExpiredAt().isBefore(LocalDateTime.now())) {
             throw VerificationCodeExpiredException.EXCEPTION;
         }
-        verificationCodeRepository.delete(verificationCode);
+
+        User user = userRepository.findByUsernameAndIsDeletedFalse(passwordResetToken.getUsername())
+                .orElseThrow(() -> UserNotFoundException.EXCEPTION);
+        String password = passwordEncoder.encode(request.password());
+        user.updatePassword(password);
+        passwordResetTokenRepository.delete(passwordResetToken);
     }
 
     @Transactional
