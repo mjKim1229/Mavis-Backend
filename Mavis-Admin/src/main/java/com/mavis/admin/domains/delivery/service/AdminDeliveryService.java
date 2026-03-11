@@ -5,6 +5,7 @@ import com.mavis.admin.domains.delivery.dto.AdminCompleteDeliveryRequest;
 import com.mavis.admin.domains.delivery.dto.GetAdminDeliveryResponse;
 import com.mavis.admin.domains.order.dto.AdminDeliveryStartRequest;
 import com.mavis.admin.domains.order.dto.GetAdminOrderExcelResponse;
+import com.mavis.admin.domains.order.dto.OrderItemExcelInfo;
 import com.mavis.admin.domains.order.dto.OrderItemInfo;
 import com.mavis.common.annotation.ExcelColumn;
 import com.mavis.domain.domains.delivery.domain.Delivery;
@@ -33,6 +34,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -68,6 +70,19 @@ public class AdminDeliveryService {
                 SXSSFWorkbook workbook = new SXSSFWorkbook();
                 ByteArrayOutputStream out = new ByteArrayOutputStream()
         ) {
+            Page<Delivery> deliveryPages = deliveryRepository.findDeliveryPagesByDeliveryStatus(pageable, DeliveryStatus.READY);
+            Page<GetAdminOrderExcelResponse> deliveryExcelResponses = deliveryPages.map(delivery -> {
+                        Order order = delivery.getOrder();
+                        OrderAddress orderAddress = order.getOrderAddress();
+                        User user = order.getUser();
+                        List<OrderItem> orderItems = order.getOrderItems();
+                        List<OrderItemExcelInfo> orderItemInfoList = orderItems.stream()
+                                .map(orderItem -> OrderItemExcelInfo.from(orderItem.getProduct().getName(), orderItem.getColor(), orderItem.getQuantity()))
+                                .toList();
+                        return GetAdminOrderExcelResponse.from(order, orderAddress, orderItemInfoList, user);
+                    }
+            );
+
             Sheet sheet = workbook.createSheet("배송목록");
             CellStyle style = workbook.createCellStyle();
             style.setBorderTop(BorderStyle.THIN);
@@ -80,7 +95,7 @@ public class AdminDeliveryService {
             style.setLeftBorderColor(IndexedColors.BLACK.getIndex());
             style.setRightBorderColor(IndexedColors.BLACK.getIndex());
             createHeader(sheet, workbook);
-            //createBody(sheet, orderPages.getContent());
+            createBody(sheet, deliveryExcelResponses.getContent());
             workbook.write(out);
             return out.toByteArray();
         } catch (IOException e) {
@@ -93,8 +108,25 @@ public class AdminDeliveryService {
         CellStyle headerStyle = createHeaderStyle(workbook);
 
         AtomicInteger index = new AtomicInteger(0);
+
         Arrays.stream(GetAdminOrderExcelResponse.class.getDeclaredFields())
                 .forEach(field -> {
+                    if (List.class.isAssignableFrom(field.getType())) {
+                        Arrays.stream(OrderItemExcelInfo.class.getDeclaredFields())
+                                .filter(f -> f.isAnnotationPresent(ExcelColumn.class))
+                                .forEach(f -> {
+                                    String headerName = f.getAnnotation(ExcelColumn.class).header();
+                                    Cell cell = header.createCell(index.getAndIncrement());
+                                    cell.setCellValue(headerName);
+                                    cell.setCellStyle(headerStyle);
+                                });
+                        return;
+                    }
+
+                    if (!field.isAnnotationPresent(ExcelColumn.class)) {
+                        return;
+                    }
+
                     String headerName = field.getAnnotation(ExcelColumn.class).header();
                     Cell cell = header.createCell(index.getAndIncrement());
                     cell.setCellValue(headerName);
@@ -136,15 +168,38 @@ public class AdminDeliveryService {
             for (Field field : GetAdminOrderExcelResponse.class.getDeclaredFields()) {
                 field.setAccessible(true);
 
-                Object value;
                 try {
-                    value = field.get(data);
-                } catch (Exception e) {
-                    throw new IllegalStateException("액셀 필드 실패");
-                }
 
-                Cell cell = row.createCell(colIndex++);
-                cell.setCellValue(value == null ? "" : value.toString());
+                    Object value = field.get(data);
+
+                    // List<OrderItemExcelInfo> 처리
+                    if (value instanceof List<?> list) {
+
+                        List<OrderItemExcelInfo> items = (List<OrderItemExcelInfo>) list;
+
+                        String productNames = items.stream()
+                                .map(OrderItemExcelInfo::productName)
+                                .collect(Collectors.joining("\n"));
+
+                        String optionQuantities = items.stream()
+                                .map(OrderItemExcelInfo::optionQuantity)
+                                .collect(Collectors.joining("\n"));
+
+                        Cell productCell = row.createCell(colIndex++);
+                        productCell.setCellValue(productNames);
+
+                        Cell optionCell = row.createCell(colIndex++);
+                        optionCell.setCellValue(optionQuantities);
+
+                        continue;
+                    }
+
+                    Cell cell = row.createCell(colIndex++);
+                    cell.setCellValue(value == null ? "" : value.toString());
+
+                } catch (Exception e) {
+                    throw new IllegalStateException("엑셀 바디 생성 실패", e);
+                }
             }
         }
     }

@@ -1,6 +1,5 @@
 package com.mavis.admin.domains.order.dto;
 
-import com.mavis.common.annotation.ExcelColumn;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderAddress;
 import com.mavis.domain.domains.user.domain.User;
@@ -10,41 +9,29 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Builder
-public record GetAdminOrderExcelResponse(
-//        @ExcelColumn(header = "번호")
-//        Long rowNumber,
-
-        @ExcelColumn(header = "주문번호")
+public record GetAdminOrderResponse(
         String orderId,
 
-        @ExcelColumn(header = "주문일시")
         LocalDateTime orderedAt,
 
-        List<OrderItemExcelInfo> orderItemInfos,
+        List<OrderItemInfo> orderItemInfos,
 
-        @ExcelColumn(header = "주문총액")
         int totalPrice,
 
-        @ExcelColumn(header = "배송지")
         String address,
 
-        @ExcelColumn(header = "우편번호")
         String zipCode,
 
-        @ExcelColumn(header = "구매자")
         String buyerName,
 
-        @ExcelColumn(header = "수취인")
         String receiverName,
 
-        @ExcelColumn(header = "수취인 번호")
         String receiverPhoneNumber,
 
-        @ExcelColumn(header = "요청 사항")
         String requestMessage
 ) {
-    public static GetAdminOrderExcelResponse from(Order order, OrderAddress orderAddress, List<OrderItemExcelInfo> orderItemInfos, User user) {
-        return GetAdminOrderExcelResponse.builder()
+    public static GetAdminOrderResponse from(Order order, OrderAddress orderAddress, List<OrderItemInfo> orderItemInfos, User user) {
+        return GetAdminOrderResponse.builder()
                 .orderItemInfos(orderItemInfos)
                 .orderId(order.getOrderId())
                 .orderedAt(order.getCreatedAt())

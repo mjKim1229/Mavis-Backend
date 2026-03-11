@@ -1,10 +1,7 @@
 package com.mavis.admin.domains.order.service;
 
 import com.mavis.admin.common.page.PageResponse;
-import com.mavis.admin.domains.order.dto.AdminOrderConfirmRequest;
-import com.mavis.admin.domains.order.dto.GetAdminOrderExcelResponse;
-import com.mavis.admin.domains.order.dto.OrderInfo;
-import com.mavis.admin.domains.order.dto.OrderItemInfo;
+import com.mavis.admin.domains.order.dto.*;
 import com.mavis.domain.domains.delivery.domain.Delivery;
 import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
 import com.mavis.domain.domains.delivery.repository.DeliveryRepository;
@@ -29,9 +26,9 @@ public class AdminOrderService {
     private final DeliveryRepository deliveryRepository;
 
     @Transactional(readOnly = true)
-    public PageResponse<GetAdminOrderExcelResponse> getOrderLists(Pageable pageable, OrderStatus orderStatus) {
+    public PageResponse<GetAdminOrderResponse> getOrderLists(Pageable pageable, OrderStatus orderStatus) {
         Page<Order> orderPages = orderRepository.findOrderPages(pageable, orderStatus);
-        Page<GetAdminOrderExcelResponse> orderInfoPages = orderPages.map(order -> {
+        Page<GetAdminOrderResponse> orderInfoPages = orderPages.map(order -> {
                     OrderAddress orderAddress = order.getOrderAddress();
                     User user = order.getUser();
                     List<OrderItem> orderItems = order.getOrderItems();
@@ -42,7 +39,7 @@ public class AdminOrderService {
                                     .quantity(orderItem.getQuantity())
                                     .build()
                     ).toList();
-                    return GetAdminOrderExcelResponse.from(order, orderAddress, orderItemInfoList, user);
+                    return GetAdminOrderResponse.from(order, orderAddress, orderItemInfoList, user);
                 }
         );
         return PageResponse.of(orderInfoPages);
