@@ -1,8 +1,11 @@
 package com.mavis.admin.domains.delivery.service;
 
+import com.mavis.admin.common.page.PageResponse;
 import com.mavis.admin.domains.delivery.dto.AdminCompleteDeliveryRequest;
+import com.mavis.admin.domains.delivery.dto.GetAdminDeliveryResponse;
 import com.mavis.admin.domains.order.dto.AdminDeliveryStartRequest;
 import com.mavis.admin.domains.order.dto.GetAdminOrderExcelResponse;
+import com.mavis.admin.domains.order.dto.OrderItemInfo;
 import com.mavis.common.annotation.ExcelColumn;
 import com.mavis.domain.domains.delivery.domain.Delivery;
 import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
@@ -10,12 +13,16 @@ import com.mavis.domain.domains.delivery.exception.DeliveryCannotBeCompleteExcep
 import com.mavis.domain.domains.delivery.exception.DeliveryNotFoundException;
 import com.mavis.domain.domains.delivery.repository.DeliveryRepository;
 import com.mavis.domain.domains.order.domain.Order;
+import com.mavis.domain.domains.order.domain.OrderAddress;
+import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.domain.OrderStatus;
 import com.mavis.domain.domains.order.exception.OrderNotToBeConfirmedException;
 import com.mavis.domain.domains.order.implement.OrderReader;
+import com.mavis.domain.domains.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +40,28 @@ public class AdminDeliveryService {
 
     private final DeliveryRepository deliveryRepository;
     private final OrderReader orderReader;
+
+    @Transactional(readOnly = true)
+    public PageResponse<GetAdminDeliveryResponse> getAdminDeliveryLists(Pageable pageable, DeliveryStatus deliveryStatus) {
+        Page<Delivery> deliveryPages = deliveryRepository.findDeliveryPagesByDeliveryStatus(pageable, deliveryStatus);
+        Page<GetAdminDeliveryResponse> deliveryResponses = deliveryPages.map(delivery -> {
+                    Order order = delivery.getOrder();
+                    OrderAddress orderAddress = order.getOrderAddress();
+                    User user = order.getUser();
+                    List<OrderItem> orderItems = order.getOrderItems();
+                    List<OrderItemInfo> orderItemInfoList = orderItems.stream().map(
+                            orderItem -> OrderItemInfo.builder()
+                                    .productName(orderItem.getProduct().getName())
+                                    .color(orderItem.getColor())
+                                    .quantity(orderItem.getQuantity())
+                                    .build()
+                    ).toList();
+                    return GetAdminDeliveryResponse.from(delivery, order, orderAddress, orderItemInfoList, user);
+                }
+        );
+        return PageResponse.of(deliveryResponses);
+    }
+
 
     public byte[] getOrderByExcel(Pageable pageable) {
         try (

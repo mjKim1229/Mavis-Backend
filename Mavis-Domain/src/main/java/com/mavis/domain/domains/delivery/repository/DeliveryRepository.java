@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
+public interface DeliveryRepository extends JpaRepository<Delivery, Long>, DeliveryCustomRepository {
     List<Delivery> findByIdInAndIsDeletedFalse(List<Long> ids);
 
     Optional<Delivery> findByOrderAndIsDeletedFalse(Order order);

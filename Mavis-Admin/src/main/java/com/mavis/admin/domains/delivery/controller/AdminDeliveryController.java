@@ -1,8 +1,11 @@
 package com.mavis.admin.domains.delivery.controller;
 
+import com.mavis.admin.common.page.PageResponse;
 import com.mavis.admin.domains.delivery.dto.AdminCompleteDeliveryRequest;
+import com.mavis.admin.domains.delivery.dto.GetAdminDeliveryResponse;
 import com.mavis.admin.domains.delivery.service.AdminDeliveryService;
 import com.mavis.admin.domains.order.dto.AdminDeliveryStartRequest;
+import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +36,12 @@ public class AdminDeliveryController {
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
                 .body(orderBytes);
+    }
+
+    @Operation(summary = "배송 목록 조회 (배송중, 배송완료)")
+    @GetMapping
+    public PageResponse<GetAdminDeliveryResponse> getAdminDeliveryList(Pageable pageable, DeliveryStatus deliveryStatus) {
+        return adminDeliveryService.getAdminDeliveryLists(pageable, deliveryStatus);
     }
 
     @Operation(summary = "배송 시작 (발주 완료 -> 배송중)")
