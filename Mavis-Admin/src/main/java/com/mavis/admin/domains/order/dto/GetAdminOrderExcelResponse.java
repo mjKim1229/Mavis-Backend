@@ -1,30 +1,26 @@
 package com.mavis.admin.domains.order.dto;
 
 import com.mavis.common.annotation.ExcelColumn;
+import com.mavis.domain.domains.order.domain.Order;
+import com.mavis.domain.domains.order.domain.OrderAddress;
+import com.mavis.domain.domains.user.domain.User;
+import lombok.Builder;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+@Builder
 public record GetAdminOrderExcelResponse(
-        @ExcelColumn(header = "번호")
-        Long rowNumber,
+//        @ExcelColumn(header = "번호")
+//        Long rowNumber,
 
         @ExcelColumn(header = "주문번호")
-        Long orderId,
+        String orderId,
 
         @ExcelColumn(header = "주문일시")
         LocalDateTime orderedAt,
 
-        @ExcelColumn(header = "상품명")
-        String productName,
-
-        @ExcelColumn(header = "색상")
-        String color,
-
-        @ExcelColumn(header = "수량")
-        int quantity,
-
-        @ExcelColumn(header = "단가")
-        int price,
+        List<OrderItemInfo> orderItemInfos,
 
         @ExcelColumn(header = "주문총액")
         int totalPrice,
@@ -33,13 +29,10 @@ public record GetAdminOrderExcelResponse(
         String address,
 
         @ExcelColumn(header = "우편번호")
-        String postalCode,
+        String zipCode,
 
         @ExcelColumn(header = "구매자")
         String buyerName,
-
-        @ExcelColumn(header = "주문자 번호")
-        String buyerPhoneNumber,
 
         @ExcelColumn(header = "수취인")
         String receiverName,
@@ -50,4 +43,18 @@ public record GetAdminOrderExcelResponse(
         @ExcelColumn(header = "요청 사항")
         String requestMessage
 ) {
+    public static GetAdminOrderExcelResponse from(Order order, OrderAddress orderAddress, List<OrderItemInfo> orderItemInfos, User user) {
+        return GetAdminOrderExcelResponse.builder()
+                .orderItemInfos(orderItemInfos)
+                .orderId(order.getOrderId())
+                .orderedAt(order.getCreatedAt())
+                .totalPrice(order.getTotalPrice())
+                .address(orderAddress.getAddress())
+                .zipCode(orderAddress.getZipCode())
+                .receiverName(orderAddress.getReceiverName())
+                .receiverPhoneNumber(orderAddress.getReceiverPhone())
+                .requestMessage(orderAddress.getAddressMemo())
+                .buyerName(user.getUsername())
+                .build();
+    }
 }

@@ -2,12 +2,15 @@ package com.mavis.admin.domains.order.service;
 
 import com.mavis.admin.common.page.PageResponse;
 import com.mavis.admin.domains.order.dto.AdminOrderConfirmRequest;
+import com.mavis.admin.domains.order.dto.GetAdminOrderExcelResponse;
 import com.mavis.admin.domains.order.dto.OrderInfo;
+import com.mavis.admin.domains.order.dto.OrderItemInfo;
 import com.mavis.domain.domains.delivery.domain.Delivery;
 import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
 import com.mavis.domain.domains.delivery.repository.DeliveryRepository;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderAddress;
+import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.domain.OrderStatus;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.user.domain.User;
@@ -26,17 +29,20 @@ public class AdminOrderService {
     private final DeliveryRepository deliveryRepository;
 
     @Transactional(readOnly = true)
-    public PageResponse<OrderInfo> getOrderLists(Pageable pageable, OrderStatus orderStatus) {
+    public PageResponse<GetAdminOrderExcelResponse> getOrderLists(Pageable pageable, OrderStatus orderStatus) {
         Page<Order> orderPages = orderRepository.findOrderPages(pageable, orderStatus);
-        Page<OrderInfo> orderInfoPages = orderPages.map(order -> {
+        Page<GetAdminOrderExcelResponse> orderInfoPages = orderPages.map(order -> {
                     OrderAddress orderAddress = order.getOrderAddress();
                     User user = order.getUser();
-                    return OrderInfo.builder()
-                            .address(orderAddress.getAddress())
-                            .addressInfo(orderAddress.getAddressMemo())
-                            .totalPrice(order.getTotalPrice())
-                            .userName(user.getName())
-                            .build();
+                    List<OrderItem> orderItems = order.getOrderItems();
+                    List<OrderItemInfo> orderItemInfoList = orderItems.stream().map(
+                            orderItem -> OrderItemInfo.builder()
+                                    .productName(orderItem.getProduct().getName())
+                                    .color(orderItem.getColor())
+                                    .quantity(orderItem.getQuantity())
+                                    .build()
+                    ).toList();
+                    return GetAdminOrderExcelResponse.from(order, orderAddress, orderItemInfoList, user);
                 }
         );
         return PageResponse.of(orderInfoPages);
