@@ -18,7 +18,7 @@ public record GetAdminOrderExcelResponse(
         String orderId,
 
         @ExcelColumn(header = "주문일시")
-        LocalDateTime orderedAt,
+        String orderedAt,
 
         List<OrderItemExcelInfo> orderItemInfos,
 
@@ -43,11 +43,11 @@ public record GetAdminOrderExcelResponse(
         @ExcelColumn(header = "요청 사항")
         String requestMessage
 ) {
-    public static GetAdminOrderExcelResponse from(Order order, OrderAddress orderAddress, List<OrderItemExcelInfo> orderItemInfos, User user) {
+    public static GetAdminOrderExcelResponse from(Order order, OrderAddress orderAddress, List<OrderItemExcelInfo> orderItemInfos, User user, String orderedAt) {
         return GetAdminOrderExcelResponse.builder()
                 .orderItemInfos(orderItemInfos)
                 .orderId(order.getOrderId())
-                .orderedAt(order.getCreatedAt())
+                .orderedAt(orderedAt)
                 .totalPrice(order.getTotalPrice())
                 .address(orderAddress.getAddress())
                 .zipCode(orderAddress.getZipCode())

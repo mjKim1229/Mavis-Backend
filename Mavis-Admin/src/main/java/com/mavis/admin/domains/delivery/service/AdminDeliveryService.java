@@ -31,8 +31,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -42,6 +44,7 @@ public class AdminDeliveryService {
 
     private final DeliveryRepository deliveryRepository;
     private final OrderReader orderReader;
+    private static final DateTimeFormatter EXCEL_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd(E)", Locale.KOREAN);
 
     @Transactional(readOnly = true)
     public PageResponse<GetAdminDeliveryResponse> getAdminDeliveryLists(Pageable pageable, DeliveryStatus deliveryStatus) {
@@ -79,7 +82,9 @@ public class AdminDeliveryService {
                         List<OrderItemExcelInfo> orderItemInfoList = orderItems.stream()
                                 .map(orderItem -> OrderItemExcelInfo.from(orderItem.getProduct().getName(), orderItem.getColor(), orderItem.getQuantity()))
                                 .toList();
-                        return GetAdminOrderExcelResponse.from(order, orderAddress, orderItemInfoList, user);
+
+                        String orderedAt = order.getCreatedAt().format(EXCEL_DATE_FORMATTER);
+                        return GetAdminOrderExcelResponse.from(order, orderAddress, orderItemInfoList, user, orderedAt);
                     }
             );
 
@@ -161,6 +166,9 @@ public class AdminDeliveryService {
     private void createBody(Sheet sheet, List<GetAdminOrderExcelResponse> orders) {
         int rowIndex = 1;
 
+        CellStyle bodyStyle = sheet.getWorkbook().createCellStyle();
+        bodyStyle.setWrapText(true);
+
         for (GetAdminOrderExcelResponse data : orders) {
             Row row = sheet.createRow(rowIndex++);
             int colIndex = 0;
@@ -169,10 +177,8 @@ public class AdminDeliveryService {
                 field.setAccessible(true);
 
                 try {
-
                     Object value = field.get(data);
 
-                    // List<OrderItemExcelInfo> 처리
                     if (value instanceof List<?> list) {
 
                         List<OrderItemExcelInfo> items = (List<OrderItemExcelInfo>) list;
@@ -187,15 +193,18 @@ public class AdminDeliveryService {
 
                         Cell productCell = row.createCell(colIndex++);
                         productCell.setCellValue(productNames);
+                        productCell.setCellStyle(bodyStyle);
 
                         Cell optionCell = row.createCell(colIndex++);
                         optionCell.setCellValue(optionQuantities);
+                        optionCell.setCellStyle(bodyStyle);
 
                         continue;
                     }
 
                     Cell cell = row.createCell(colIndex++);
                     cell.setCellValue(value == null ? "" : value.toString());
+                    cell.setCellStyle(bodyStyle);
 
                 } catch (Exception e) {
                     throw new IllegalStateException("엑셀 바디 생성 실패", e);
