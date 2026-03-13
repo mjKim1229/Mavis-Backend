@@ -1,5 +1,6 @@
 package com.mavis.api.auth.facade;
 
+import com.mavis.api.auth.dto.OauthLoginRequest;
 import com.mavis.api.auth.dto.UserOauthResponse;
 import com.mavis.api.auth.implement.UserJwtGenerator;
 import com.mavis.api.auth.implement.UserReader;
@@ -35,13 +36,13 @@ public class UserFacade {
     private final UserService userService;
     private final UserReader userReader;
 
-    public UserOauthResponse register(String code, String url) {
-        KakaoOAuthRequest kakaoOAuthRequest = userMapper.fromCode(code, url);
+    public UserOauthResponse register(OauthLoginRequest request, String url) {
+        KakaoOAuthRequest kakaoOAuthRequest = userMapper.fromCode(request.code(), url);
         KakaoTokenResponse kakaoTokenResponse = kakaoOAuthClient.kakaoAuth(kakaoOAuthRequest);
 
         String bearerAccessToken = BEARER + kakaoTokenResponse.accessToken();
         KakaoUserInfoResponse userInfo = kakaoInfoClient.getUserInfo(bearerAccessToken);
-        Long userId = userService.upsertKakaouser(userInfo);
+        Long userId = userService.upsertKakaouser(userInfo, request);
         JwtPair jwtPair = userJwtGenerator.getJwtPair(userId);
         return new UserOauthResponse(userId, jwtPair);
     }
@@ -52,12 +53,12 @@ public class UserFacade {
         kakaoInfoClient.unlink(header, unlinkKakaoTarget);
     }
 
-    public UserOauthResponse registerNaver(String code) {
-        NaverOAuthRequest naverOAuthRequest = userMapper.fromNaverCode(code);
+    public UserOauthResponse registerNaver(OauthLoginRequest request) {
+        NaverOAuthRequest naverOAuthRequest = userMapper.fromNaverCode(request.code());
         NaverTokenResponse naverTokenResponse = naverOAuthClient.naverAuth(naverOAuthRequest);
         String bearerAccessToken = BEARER + naverTokenResponse.accessToken();
         NaverUserInfoResponse userInfo = naverInfoClient.getUserInfo(bearerAccessToken);
-        Long userId = userService.upsertNaverUser(userInfo.response(), naverTokenResponse.refreshToken());
+        Long userId = userService.upsertNaverUser(userInfo.response(), naverTokenResponse.refreshToken(), request);
         JwtPair jwtPair = userJwtGenerator.getJwtPair(userId);
         return new UserOauthResponse(userId, jwtPair);
     }

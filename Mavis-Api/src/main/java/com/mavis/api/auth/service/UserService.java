@@ -1,18 +1,13 @@
 package com.mavis.api.auth.service;
 
-import com.mavis.api.auth.dto.UserAddressRequest;
-import com.mavis.api.auth.dto.UserDetailResponse;
-import com.mavis.api.auth.dto.UserDetailUpdateRequest;
-import com.mavis.api.auth.dto.UserLoginRequest;
-import com.mavis.api.auth.dto.UserOauthResponse;
-import com.mavis.api.auth.dto.UserProfileResponse;
-import com.mavis.api.auth.dto.UserSignUpRequest;
+import com.mavis.api.auth.dto.*;
 import com.mavis.api.auth.implement.UserReader;
 import com.mavis.api.order.dto.OrderAddressResponse;
 import com.mavis.common.dto.JwtPair;
 import com.mavis.common.jwt.JwtTokenUtil;
 import com.mavis.common.util.PhoneNormalizer;
 import com.mavis.domain.domains.user.domain.Gender;
+import com.mavis.domain.domains.user.domain.MarketingAgreement;
 import com.mavis.domain.domains.user.domain.SnsType;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.domain.domains.user.exception.InvalidPasswordException;
@@ -42,13 +37,13 @@ public class UserService {
     private static final DateTimeFormatter KAKAO_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     @Transactional
-    public Long upsertNaverUser(NaverProfile profile, String naverRefreshToken) {
+    public Long upsertNaverUser(NaverProfile profile, String naverRefreshToken, OauthLoginRequest request) {
         return userRepository.findBySnsTypeAndSnsIdAndIsDeletedFalse(SnsType.NAVER, profile.id())
-                .orElseGet(() -> saveNaverUser(profile, naverRefreshToken))
+                .orElseGet(() -> saveNaverUser(profile, naverRefreshToken, request))
                 .getId();
     }
 
-    private User saveNaverUser(NaverProfile profile, String naverRefreshToken) {
+    private User saveNaverUser(NaverProfile profile, String naverRefreshToken, OauthLoginRequest request) {
         User user = User.builder()
                 .snsId(profile.id())
                 .nickname(profile.nickname())
@@ -61,19 +56,20 @@ public class UserService {
                 .profileImage(profile.profileImage())
                 .snsType(SnsType.NAVER)
                 .naverRefreshToken(naverRefreshToken)
+                .marketingAgreement(MarketingAgreement.of(request.isEmailAgreed(), request.isSmsAgreed()))
                 .build();
         return userRepository.save(user);
     }
 
     @Transactional
-    public Long upsertKakaouser(KakaoUserInfoResponse kakaoUserInfoResponse) {
+    public Long upsertKakaouser(KakaoUserInfoResponse kakaoUserInfoResponse, OauthLoginRequest request) {
         String kakaoSnsId = String.valueOf(kakaoUserInfoResponse.id());
         return userRepository.findBySnsTypeAndSnsIdAndIsDeletedFalse(SnsType.KAKAO, kakaoSnsId)
-                .orElseGet(() -> saveKakaoUser(kakaoUserInfoResponse))
+                .orElseGet(() -> saveKakaoUser(kakaoUserInfoResponse, request))
                 .getId();
     }
 
-    public User saveKakaoUser(KakaoUserInfoResponse kakaoUserInfoResponse) {
+    public User saveKakaoUser(KakaoUserInfoResponse kakaoUserInfoResponse, OauthLoginRequest request) {
         String snsId = String.valueOf(kakaoUserInfoResponse.id());
         KakaoUserInfoResponse.KakaoAccount account = kakaoUserInfoResponse.kakaoAccount();
 
@@ -87,6 +83,7 @@ public class UserService {
                 .nickname(account.profile() != null ? account.profile().nickname() : null)
                 .profileImage(account.profile() != null ? account.profile().image() : null)
                 .snsType(SnsType.KAKAO)
+                .marketingAgreement(MarketingAgreement.of(request.isEmailAgreed(), request.isSmsAgreed()))
                 .build();
         return userRepository.save(user);
     }
