@@ -18,6 +18,7 @@ public class Order extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String orderId;
 
     @ManyToOne(fetch = FetchType.LAZY)
