@@ -3,9 +3,11 @@ package com.mavis.api.order.service;
 import com.mavis.api.auth.implement.UserReader;
 import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.order.dto.CreateOrderRequest;
+import com.mavis.api.order.dto.CreateOrderResponse;
 import com.mavis.api.order.dto.OrderAddressRequest;
 import com.mavis.api.order.dto.UserOrderInfo;
 import com.mavis.api.order.implement.OrderItemAppender;
+import com.mavis.common.util.OrderNumberGenerator;
 import com.mavis.domain.domains.order.domain.*;
 import com.mavis.domain.domains.order.exception.CannotCancelOrderException;
 import com.mavis.domain.domains.order.exception.InvalidOrderInfoException;
@@ -17,8 +19,11 @@ import com.mavis.domain.domains.order.repository.PaymentRepository;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,21 +39,28 @@ public class OrderService {
     private final OrderReader orderReader;
 
     @Transactional
-    public void createOrder(CreateOrderRequest request) {
+    @Retryable(
+            retryFor = { DataIntegrityViolationException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 100)
+    )
+    public CreateOrderResponse createOrder(CreateOrderRequest request) {
         User user = userReader.getCurrentUser();
         OrderAddressRequest orderAddressRequest = request.orderAddressRequest();
         Order order = Order.builder()
-                .orderId(request.orderId())
+                .orderId(OrderNumberGenerator.generateOrderId())
                 .user(user)
                 .orderAddress(orderAddressRequest.toOrderAddress())
                 .build();
-        Order savedOrder = orderRepository.save(order);
+        Order savedOrder = orderRepository.saveAndFlush(order);
+
         int itemsTotalPrice = orderItemAppender.saveOrderItems(request.orderItems(), savedOrder);
         int totalPrice = itemsTotalPrice + DELIVERY_FEE;
         if (totalPrice != request.amount()) {
             throw PriceMismatchException.EXCEPTION;
         }
         order.setTotalPrice(totalPrice);
+        return CreateOrderResponse.from(order.getOrderId());
     }
 
     @Transactional(readOnly = true)

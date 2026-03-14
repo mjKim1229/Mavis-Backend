@@ -2,6 +2,7 @@ package com.mavis.api.order.controller;
 
 import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.order.dto.CreateOrderRequest;
+import com.mavis.api.order.dto.CreateOrderResponse;
 import com.mavis.api.order.dto.UserOrderInfo;
 import com.mavis.api.order.facade.OrderFacade;
 import com.mavis.api.order.service.OrderService;
@@ -22,8 +23,8 @@ public class OrderController {
 
     @Operation(summary = "주문 생성")
     @PostMapping
-    public void createOrder(@RequestBody CreateOrderRequest request) {
-        orderService.createOrder(request);
+    public CreateOrderResponse createOrder(@RequestBody CreateOrderRequest request) {
+        return orderService.createOrder(request);
     }
 
     @Operation(summary = "회원별 주문 & 배송 목록 조회")
