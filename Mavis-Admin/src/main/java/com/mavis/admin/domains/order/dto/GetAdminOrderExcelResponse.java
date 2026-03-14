@@ -15,32 +15,28 @@ import static com.mavis.common.util.OrderNumberGenerator.DOMAIN_PREFIX;
 public record GetAdminOrderExcelResponse(
 //        @ExcelColumn(header = "번호")
 //        Long rowNumber,
-
         @ExcelColumn(header = "주문번호")
         String orderId,
 
-        @ExcelColumn(header = "주문일시")
-        String orderedAt,
-
         List<OrderItemExcelInfo> orderItemInfos,
-
-        @ExcelColumn(header = "주문총액")
-        int totalPrice,
-
-        @ExcelColumn(header = "배송지")
-        String address,
-
-        @ExcelColumn(header = "우편번호")
-        String zipCode,
-
-        @ExcelColumn(header = "구매자")
-        String buyerName,
 
         @ExcelColumn(header = "수취인")
         String receiverName,
 
-        @ExcelColumn(header = "수취인 번호")
+        @ExcelColumn(header = "수취인 연락처")
         String receiverPhoneNumber,
+
+        @ExcelColumn(header = "배송지")
+        String address,
+
+        @ExcelColumn(header = "주문자명")
+        String buyerName,
+
+        @ExcelColumn(header = "주문일시")
+        String orderedAt,
+
+        @ExcelColumn(header = "주문총액")
+        int totalPrice,
 
         @ExcelColumn(header = "요청 사항")
         String requestMessage
@@ -52,7 +48,6 @@ public record GetAdminOrderExcelResponse(
                 .orderedAt(orderedAt)
                 .totalPrice(order.getTotalPrice())
                 .address(orderAddress.getAddress())
-                .zipCode(orderAddress.getZipCode())
                 .receiverName(orderAddress.getReceiverName())
                 .receiverPhoneNumber(orderAddress.getReceiverPhone())
                 .requestMessage(orderAddress.getAddressMemo())
