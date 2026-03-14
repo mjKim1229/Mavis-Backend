@@ -144,4 +144,21 @@ public class OrderService {
         );
         return PageResponse.of(userOrderInfoPages);
     }
+
+    @Transactional(readOnly = true)
+    public PageResponse<GetOrderItemUserCanReviewResponse> getUserCanReviewList(Pageable pageable) {
+        User user = userReader.getCurrentUser();
+        Page<OrderItem> orderItemPages = orderRepository.findUserOrderItemCanReview(pageable, user);
+        Page<GetOrderItemUserCanReviewResponse> getOrderItemUserCanReviewResponses = orderItemPages.map(
+                orderItem -> {
+                    OrderOption orderOption = new OrderOption(orderItem.getColor(), orderItem.getQuantity());
+                    return GetOrderItemUserCanReviewResponse.builder()
+                            .productName(orderItem.getProduct().getName())
+                            .orderItemId(orderItem.getId())
+                            .orderOption(orderOption)
+                            .build();
+                }
+        );
+        return PageResponse.of(getOrderItemUserCanReviewResponses);
+    }
 }
