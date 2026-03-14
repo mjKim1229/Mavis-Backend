@@ -67,9 +67,16 @@ public class OrderService {
     public Order validateOrderForPayment(String orderId, Long amount) {
         Order order = orderRepository.findByOrderIdAndIsDeletedFalse(orderId)
                 .orElseThrow(() -> OrderNotFoundException.EXCEPTION);
+
+        User user = userReader.getCurrentUser();
+        if (!order.getUser().equals(user)) {
+            throw InvalidOrderInfoException.EXCEPTION;
+        }
+
         if (order.getTotalPrice() != amount) {
             throw PriceMismatchException.EXCEPTION;
         }
+
         if (order.getOrderStatus() != OrderStatus.READY) {
             throw InvalidOrderInfoException.EXCEPTION;
         }
