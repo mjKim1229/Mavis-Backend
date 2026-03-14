@@ -194,7 +194,13 @@ public class AdminDeliveryService {
             }
         }
 
-        finalizeSheetLayout(sheet, GetAdminOrderExcelResponse.class.getDeclaredFields().length);
+        int totalCols = 0;
+        for (Field field : GetAdminOrderExcelResponse.class.getDeclaredFields()) {
+            if (List.class.isAssignableFrom(field.getType())) totalCols += 2;
+            else if (field.isAnnotationPresent(ExcelColumn.class)) totalCols += 1;
+        }
+
+        finalizeSheetLayout(sheet, totalCols);
     }
 
     private CellStyle createBodyStyle(Workbook workbook) {
@@ -223,10 +229,8 @@ public class AdminDeliveryService {
     }
 
     private void finalizeSheetLayout(Sheet sheet, int columnCount) {
-        for (int i = 0; i <= columnCount + 1; i++) {
-            sheet.autoSizeColumn(i);
-            int adjustedWidth = sheet.getColumnWidth(i) + 1200;
-            sheet.setColumnWidth(i, Math.min(adjustedWidth, 255 * 256));
+        for (int i = 0; i < columnCount; i++) {
+            sheet.setColumnWidth(i, 6000);
         }
         sheet.createFreezePane(0, 1);
     }
