@@ -44,7 +44,7 @@ public record GetAdminDeliveryResponse(
                 .receiverName(orderAddress.getReceiverName())
                 .receiverPhoneNumber(orderAddress.getReceiverPhone())
                 .requestMessage(orderAddress.getAddressMemo())
-                .buyerName(user.getUsername())
+                .buyerName(user.getName())
                 .carrier(delivery.getCarrier())
                 .trackingNumber(delivery.getTrackingNumber())
                 .deliveryStatus(delivery.getDeliveryStatus().getTitle())

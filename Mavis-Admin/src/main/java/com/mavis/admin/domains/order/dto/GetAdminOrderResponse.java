@@ -31,7 +31,7 @@ public record GetAdminOrderResponse(
                 .receiverName(orderAddress.getReceiverName())
                 .receiverPhoneNumber(orderAddress.getReceiverPhone())
                 .requestMessage(orderAddress.getAddressMemo())
-                .buyerName(user.getUsername())
+                .buyerName(user.getName())
                 .build();
     }
 }
