@@ -9,6 +9,8 @@ import lombok.Builder;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.mavis.common.util.OrderNumberGenerator.DOMAIN_PREFIX;
+
 @Builder
 public record GetAdminOrderExcelResponse(
 //        @ExcelColumn(header = "번호")
@@ -46,7 +48,7 @@ public record GetAdminOrderExcelResponse(
     public static GetAdminOrderExcelResponse from(Order order, OrderAddress orderAddress, List<OrderItemExcelInfo> orderItemInfos, User user, String orderedAt) {
         return GetAdminOrderExcelResponse.builder()
                 .orderItemInfos(orderItemInfos)
-                .orderId(order.getOrderId())
+                .orderId(order.getOrderId().substring(DOMAIN_PREFIX.length()))
                 .orderedAt(orderedAt)
                 .totalPrice(order.getTotalPrice())
                 .address(orderAddress.getAddress())

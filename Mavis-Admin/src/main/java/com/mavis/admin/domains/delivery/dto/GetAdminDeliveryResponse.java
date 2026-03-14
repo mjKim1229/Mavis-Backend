@@ -10,6 +10,8 @@ import lombok.Builder;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.mavis.common.util.OrderNumberGenerator.DOMAIN_PREFIX;
+
 @Builder
 public record GetAdminDeliveryResponse(
         String orderId,
@@ -34,7 +36,7 @@ public record GetAdminDeliveryResponse(
     ) {
         return GetAdminDeliveryResponse.builder()
                 .orderItemInfos(orderItemInfos)
-                .orderId(order.getOrderId())
+                .orderId(order.getOrderId().substring(DOMAIN_PREFIX.length()))
                 .orderedAt(order.getCreatedAt())
                 .totalPrice(order.getTotalPrice())
                 .address(orderAddress.getAddress())
