@@ -164,7 +164,7 @@ public class AdminDeliveryService {
 
         for (GetAdminOrderExcelResponse data : orders) {
             Row row = sheet.createRow(rowIndex++);
-            row.setHeightInPoints(row.getHeightInPoints() * 1.1f);
+            row.setHeightInPoints(row.getHeightInPoints() * 2.0f);
 
             int colIndex = 0;
             for (Field field : GetAdminOrderExcelResponse.class.getDeclaredFields()) {
