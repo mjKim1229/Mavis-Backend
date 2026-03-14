@@ -15,21 +15,22 @@ import static com.mavis.common.util.OrderNumberGenerator.DOMAIN_PREFIX;
 @Builder
 public record GetAdminDeliveryResponse(
         String orderId,
-        LocalDateTime orderedAt,
+        String carrier,
+        String trackingNumber,
         List<OrderItemInfo> orderItemInfos,
-        int totalPrice,
-        String address,
-        String zipCode,
-        String buyerName,
         String receiverName,
         String receiverPhoneNumber,
-        String requestMessage,
-        String carrier,
-        String trackingNumber
+        String address,
+        int totalPrice,
+        String deliveryStatus,
+        String buyerName,
+        String orderedAt,
+        String requestMessage
 ) {
     public static GetAdminDeliveryResponse from(
             Delivery delivery,
             Order order,
+            String orderedAt,
             OrderAddress orderAddress,
             List<OrderItemInfo> orderItemInfos,
             User user
@@ -37,16 +38,16 @@ public record GetAdminDeliveryResponse(
         return GetAdminDeliveryResponse.builder()
                 .orderItemInfos(orderItemInfos)
                 .orderId(order.getOrderId().substring(DOMAIN_PREFIX.length()))
-                .orderedAt(order.getCreatedAt())
+                .orderedAt(orderedAt)
                 .totalPrice(order.getTotalPrice())
                 .address(orderAddress.getAddress())
-                .zipCode(orderAddress.getZipCode())
                 .receiverName(orderAddress.getReceiverName())
                 .receiverPhoneNumber(orderAddress.getReceiverPhone())
                 .requestMessage(orderAddress.getAddressMemo())
                 .buyerName(user.getUsername())
                 .carrier(delivery.getCarrier())
                 .trackingNumber(delivery.getTrackingNumber())
+                .deliveryStatus(delivery.getDeliveryStatus().getTitle())
                 .build();
     }
 }

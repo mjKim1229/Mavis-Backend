@@ -44,7 +44,7 @@ public class AdminDeliveryService {
 
     private final DeliveryRepository deliveryRepository;
     private final OrderReader orderReader;
-    private static final DateTimeFormatter EXCEL_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd(E)", Locale.KOREAN);
+    public static final DateTimeFormatter EXCEL_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd(E)", Locale.KOREAN);
 
     @Transactional(readOnly = true)
     public PageResponse<GetAdminDeliveryResponse> getAdminDeliveryLists(Pageable pageable, DeliveryStatus deliveryStatus) {
@@ -61,7 +61,8 @@ public class AdminDeliveryService {
                                     .quantity(orderItem.getQuantity())
                                     .build()
                     ).toList();
-                    return GetAdminDeliveryResponse.from(delivery, order, orderAddress, orderItemInfoList, user);
+                    String orderedAt = order.getCreatedAt().format(EXCEL_DATE_FORMATTER);
+                    return GetAdminDeliveryResponse.from(delivery, order, orderedAt, orderAddress, orderItemInfoList, user);
                 }
         );
         return PageResponse.of(deliveryResponses);

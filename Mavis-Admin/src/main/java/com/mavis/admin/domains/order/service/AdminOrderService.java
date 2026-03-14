@@ -1,7 +1,9 @@
 package com.mavis.admin.domains.order.service;
 
 import com.mavis.admin.common.page.PageResponse;
-import com.mavis.admin.domains.order.dto.*;
+import com.mavis.admin.domains.order.dto.AdminOrderConfirmRequest;
+import com.mavis.admin.domains.order.dto.GetAdminOrderResponse;
+import com.mavis.admin.domains.order.dto.OrderItemInfo;
 import com.mavis.domain.domains.delivery.domain.Delivery;
 import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
 import com.mavis.domain.domains.delivery.repository.DeliveryRepository;
@@ -18,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+import static com.mavis.admin.domains.delivery.service.AdminDeliveryService.EXCEL_DATE_FORMATTER;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +43,8 @@ public class AdminOrderService {
                                     .quantity(orderItem.getQuantity())
                                     .build()
                     ).toList();
-                    return GetAdminOrderResponse.from(order, orderAddress, orderItemInfoList, user);
+                    String orderedAt = order.getCreatedAt().format(EXCEL_DATE_FORMATTER);
+                    return GetAdminOrderResponse.from(order, orderAddress, orderedAt, orderItemInfoList, user);
                 }
         );
         return PageResponse.of(orderInfoPages);
