@@ -67,7 +67,6 @@ public class AdminDeliveryService {
         return PageResponse.of(deliveryResponses);
     }
 
-
     public byte[] getOrderByExcel(Pageable pageable) {
         try (
                 SXSSFWorkbook workbook = new SXSSFWorkbook();
@@ -89,18 +88,10 @@ public class AdminDeliveryService {
             );
 
             Sheet sheet = workbook.createSheet("배송목록");
-            CellStyle style = workbook.createCellStyle();
-            style.setBorderTop(BorderStyle.THIN);
-            style.setBorderBottom(BorderStyle.THIN);
-            style.setBorderLeft(BorderStyle.THIN);
-            style.setBorderRight(BorderStyle.THIN);
 
-            style.setTopBorderColor(IndexedColors.BLACK.getIndex());
-            style.setBottomBorderColor(IndexedColors.BLACK.getIndex());
-            style.setLeftBorderColor(IndexedColors.BLACK.getIndex());
-            style.setRightBorderColor(IndexedColors.BLACK.getIndex());
             createHeader(sheet, workbook);
             createBody(sheet, deliveryExcelResponses.getContent());
+
             workbook.write(out);
             return out.toByteArray();
         } catch (IOException e) {
@@ -110,6 +101,7 @@ public class AdminDeliveryService {
 
     private void createHeader(Sheet sheet, Workbook workbook) {
         Row header = sheet.createRow(0);
+        header.setHeightInPoints(header.getHeightInPoints() * 1.2f);
         CellStyle headerStyle = createHeaderStyle(workbook);
 
         AtomicInteger index = new AtomicInteger(0);
@@ -150,6 +142,9 @@ public class AdminDeliveryService {
         style.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
         style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+
         style.setBorderTop(BorderStyle.THIN);
         style.setBorderBottom(BorderStyle.THIN);
         style.setBorderLeft(BorderStyle.THIN);
@@ -165,52 +160,75 @@ public class AdminDeliveryService {
 
     private void createBody(Sheet sheet, List<GetAdminOrderExcelResponse> orders) {
         int rowIndex = 1;
-
-        CellStyle bodyStyle = sheet.getWorkbook().createCellStyle();
-        bodyStyle.setWrapText(true);
+        CellStyle bodyStyle = createBodyStyle(sheet.getWorkbook());
 
         for (GetAdminOrderExcelResponse data : orders) {
             Row row = sheet.createRow(rowIndex++);
-            int colIndex = 0;
+            row.setHeightInPoints(row.getHeightInPoints() * 1.1f);
 
+            int colIndex = 0;
             for (Field field : GetAdminOrderExcelResponse.class.getDeclaredFields()) {
                 field.setAccessible(true);
-
                 try {
                     Object value = field.get(data);
 
                     if (value instanceof List<?> list) {
-
                         List<OrderItemExcelInfo> items = (List<OrderItemExcelInfo>) list;
 
                         String productNames = items.stream()
                                 .map(OrderItemExcelInfo::productName)
                                 .collect(Collectors.joining("\n"));
-
                         String optionQuantities = items.stream()
                                 .map(OrderItemExcelInfo::optionQuantity)
                                 .collect(Collectors.joining("\n"));
 
-                        Cell productCell = row.createCell(colIndex++);
-                        productCell.setCellValue(productNames);
-                        productCell.setCellStyle(bodyStyle);
-
-                        Cell optionCell = row.createCell(colIndex++);
-                        optionCell.setCellValue(optionQuantities);
-                        optionCell.setCellStyle(bodyStyle);
-
+                        writeCell(row, colIndex++, productNames, bodyStyle);
+                        writeCell(row, colIndex++, optionQuantities, bodyStyle);
                         continue;
                     }
 
-                    Cell cell = row.createCell(colIndex++);
-                    cell.setCellValue(value == null ? "" : value.toString());
-                    cell.setCellStyle(bodyStyle);
-
+                    writeCell(row, colIndex++, value == null ? "" : value.toString(), bodyStyle);
                 } catch (Exception e) {
-                    throw new IllegalStateException("엑셀 바디 생성 실패", e);
+                    throw new IllegalStateException("Failed to generate excel body", e);
                 }
             }
         }
+
+        finalizeSheetLayout(sheet, GetAdminOrderExcelResponse.class.getDeclaredFields().length);
+    }
+
+    private CellStyle createBodyStyle(Workbook workbook) {
+        CellStyle style = workbook.createCellStyle();
+        style.setWrapText(true);
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
+
+        Font font = workbook.createFont();
+        font.setFontName("Arial");
+        font.setFontHeightInPoints((short) 10);
+        style.setFont(font);
+
+        return style;
+    }
+
+    private void writeCell(Row row, int colIndex, String value, CellStyle style) {
+        Cell cell = row.createCell(colIndex);
+        cell.setCellValue(value);
+        cell.setCellStyle(style);
+    }
+
+    private void finalizeSheetLayout(Sheet sheet, int columnCount) {
+        for (int i = 0; i <= columnCount + 1; i++) {
+            sheet.autoSizeColumn(i);
+            int adjustedWidth = sheet.getColumnWidth(i) + 1200;
+            sheet.setColumnWidth(i, Math.min(adjustedWidth, 255 * 256));
+        }
+        sheet.createFreezePane(0, 1);
     }
 
     @Transactional
