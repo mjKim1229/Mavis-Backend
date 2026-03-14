@@ -57,7 +57,7 @@ public class AuthVerificationService {
                         passwordResetToken -> passwordResetToken.update(token.toString(), expiredAt)
                         , () -> saveToken(request, token.toString(), expiredAt)
                 );
-        mailService.send(request.email(), "비밀번호 찾기 인증 링크입니다.", resetURL);
+        mailService.sendPasswordResetEmail(request.email(), resetURL);
     }
 
     private void saveToken(UserPasswordFoundVerifyCreateRequest request, String token, LocalDateTime expiredAt) {
@@ -94,7 +94,7 @@ public class AuthVerificationService {
                 .ifPresentOrElse(verificationCode -> verificationCode.update(authCode, expiredAt)
                         , () -> saveSignUpAuthCode(request, authCode, expiredAt)
                 );
-        mailService.send(request.email(), "회원가입 인증 번호입니다.", authCode.toString());
+        mailService.sendVerifyEmail(request.email(), "[가람몰] 회원가입 인증번호 안내", authCode.toString());
     }
 
     private void saveSignUpAuthCode(UserSignUpCodeCreateRequest request, Integer authCode, LocalDateTime expiredAt) {
@@ -126,7 +126,7 @@ public class AuthVerificationService {
                 .ifPresentOrElse(verificationCode -> verificationCode.update(authCode, expiredAt)
                         , () -> saveEmailChangeAuthCode(request, authCode, expiredAt)
                 );
-        mailService.send(request.newEmail(), "이메일 변경 인증 번호입니다.", authCode.toString());
+        mailService.sendVerifyEmail(request.newEmail(), "[가람몰] 이메일 변경 인증번호 안내", authCode.toString());
     }
 
     private void saveEmailChangeAuthCode(UserEmailChangeCreateRequest request, Integer authCode, LocalDateTime expiredAt) {
