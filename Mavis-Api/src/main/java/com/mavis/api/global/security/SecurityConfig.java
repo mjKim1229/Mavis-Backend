@@ -44,7 +44,8 @@ public class SecurityConfig {
                                 .requestMatchers(
                                         "/v1/api/auths/withdraw",
                                         "/v1/api/auths/oauth/kakao/withdraw",
-                                        "/v1/api/auths/oauth/naver/withdraw"
+                                        "/v1/api/auths/oauth/naver/withdraw",
+                                        "/v1/api/auths/verify/email-change/**"
                                 ).hasRole("USER")
                                 .anyRequest().permitAll()
                 );
