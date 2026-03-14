@@ -41,7 +41,9 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
     public Page<Order> findOrderPagesByUser(Pageable pageable, User user) {
         List<Order> orders = queryFactory.selectFrom(order)
                 .where(order.isDeleted.eq(false)
-                        .and(order.user.eq(user)))
+                        .and(order.user.eq(user))
+                        .and(order.orderStatus.ne(OrderStatus.READY))
+                )
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(order.id.desc())
