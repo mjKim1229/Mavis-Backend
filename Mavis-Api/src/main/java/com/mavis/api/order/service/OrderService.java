@@ -27,6 +27,8 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.mavis.common.util.OrderNumberGenerator.DOMAIN_PREFIX;
+
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -128,11 +130,12 @@ public class OrderService {
         Page<UserOrderInfo> userOrderInfoPages = orderPages.map(o -> {
                     OrderAddress orderAddress = o.getOrderAddress();
                     return UserOrderInfo.builder()
+                            .orderId(o.getOrderId().substring(DOMAIN_PREFIX.length()))
                             .address(orderAddress.getAddress())
                             .addressInfo(orderAddress.getAddressDetail())
                             .totalPrice(o.getTotalPrice())
                             .userName(o.getUser().getName())
-                            .orderStatus(o.getOrderStatus())
+                            .orderStatus(o.getOrderStatus().getTitle())
                             .build();
                 }
         );

@@ -9,7 +9,8 @@ import java.time.LocalDateTime;
 
 @Builder
 public record UserOrderInfo(
-        OrderStatus orderStatus,
+        String orderId,
+        String orderStatus,
         String address,
         String addressInfo,
         int totalPrice,
