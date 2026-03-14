@@ -2,10 +2,7 @@ package com.mavis.api.order.service;
 
 import com.mavis.api.auth.implement.UserReader;
 import com.mavis.api.common.page.PageResponse;
-import com.mavis.api.order.dto.CreateOrderRequest;
-import com.mavis.api.order.dto.CreateOrderResponse;
-import com.mavis.api.order.dto.OrderAddressRequest;
-import com.mavis.api.order.dto.UserOrderInfo;
+import com.mavis.api.order.dto.*;
 import com.mavis.api.order.implement.OrderItemAppender;
 import com.mavis.common.util.OrderNumberGenerator;
 import com.mavis.domain.domains.order.domain.*;
@@ -42,7 +39,7 @@ public class OrderService {
 
     @Transactional
     @Retryable(
-            retryFor = { DataIntegrityViolationException.class },
+            retryFor = {DataIntegrityViolationException.class},
             maxAttempts = 3,
             backoff = @Backoff(delay = 100)
     )
@@ -131,6 +128,12 @@ public class OrderService {
                     OrderAddress orderAddress = o.getOrderAddress();
                     return UserOrderInfo.builder()
                             .orderId(o.getOrderId().substring(DOMAIN_PREFIX.length()))
+                            .orderProductList(o.getOrderItems().stream()
+                                    .map(orderItem -> {
+                                        OrderOption orderOption = new OrderOption(orderItem.getColor(), orderItem.getQuantity());
+                                        return new OrderProduct(orderItem.getProduct().getId(), orderOption);
+                                    }).toList()
+                            )
                             .address(orderAddress.getAddress())
                             .addressInfo(orderAddress.getAddressDetail())
                             .totalPrice(o.getTotalPrice())

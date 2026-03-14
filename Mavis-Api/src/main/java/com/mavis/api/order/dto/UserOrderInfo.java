@@ -1,15 +1,15 @@
 package com.mavis.api.order.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.mavis.domain.domains.order.domain.OrderStatus;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
-
+import java.util.List;
 
 @Builder
 public record UserOrderInfo(
         String orderId,
+        List<OrderProduct> orderProductList,
         String orderStatus,
         String address,
         String addressInfo,
