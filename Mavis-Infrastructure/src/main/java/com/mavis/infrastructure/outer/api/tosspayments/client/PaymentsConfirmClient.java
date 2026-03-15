@@ -15,5 +15,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 )
 public interface PaymentsConfirmClient {
     @PostMapping("/v1/payments/confirm")
-    PaymentsResponse confirmPayments(@RequestHeader(name = "Authorization") String authorization, @RequestBody ConfirmPaymentRequest request);
+    PaymentsResponse confirmPayments(
+            @RequestHeader(name = "Authorization") String authorization,
+            @RequestHeader(name = "Idempotency-Key") String idempotencyKey,
+            @RequestBody ConfirmPaymentRequest request
+    );
 }

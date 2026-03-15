@@ -42,7 +42,7 @@ public class OrderFacade {
                 .encodeToString((tossPaymentsProperties.secretKey() + ":").getBytes(StandardCharsets.UTF_8));
         PaymentsResponse response;
         try {
-            response = paymentsConfirmClient.confirmPayments(authorizationHeader, request);
+            response = paymentsConfirmClient.confirmPayments(authorizationHeader, request.paymentKey(), request);
         } catch (Exception e) {
             log.error("토스 결제 승인 API 호출 실패", e);
             throw e;
