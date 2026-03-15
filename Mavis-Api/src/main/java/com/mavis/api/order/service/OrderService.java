@@ -104,6 +104,7 @@ public class OrderService {
 
         paymentRepository.save(payment);
         order.confirmPayment();
+        orderRepository.save(order);
     }
 
     @Transactional
