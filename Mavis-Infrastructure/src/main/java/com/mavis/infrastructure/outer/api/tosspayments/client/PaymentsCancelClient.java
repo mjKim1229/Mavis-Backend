@@ -18,6 +18,7 @@ public interface PaymentsCancelClient {
     @PostMapping("/v1/payments/{paymentKey}/cancel")
     PaymentsResponse cancelPayments(
             @RequestHeader(name = "Authorization") String authorization,
+            @RequestHeader(name = "Idempotency-Key") String idempotencyKey,
             @PathVariable String paymentKey,
             @RequestBody CancelPaymentsRequest cancelPaymentsRequest);
 }

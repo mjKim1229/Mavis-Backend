@@ -55,6 +55,7 @@ public class OrderFacade {
             paymentsCancelClient.cancelPayments(
                     authorizationHeader,
                     request.paymentKey(),
+                    request.paymentKey(),
                     new CancelPaymentsRequest("결제 실패로 인한 자동 취소")
             );
             throw e;
@@ -67,7 +68,7 @@ public class OrderFacade {
 
         String authorizationHeader = "Basic " + Base64.getEncoder()
                 .encodeToString((tossPaymentsProperties.secretKey() + ":").getBytes(StandardCharsets.UTF_8));
-        PaymentsResponse paymentsResponse = paymentsCancelClient.cancelPayments(authorizationHeader, payment.getPaymentKey(), cancelPaymentsRequest);
+        PaymentsResponse paymentsResponse = paymentsCancelClient.cancelPayments(authorizationHeader, payment.getPaymentKey(), payment.getPaymentKey(), cancelPaymentsRequest);
         log.info("주문 취소 요청에 대한 응답 : {}", paymentsResponse);
         orderService.cancelOrder(order);
     }
