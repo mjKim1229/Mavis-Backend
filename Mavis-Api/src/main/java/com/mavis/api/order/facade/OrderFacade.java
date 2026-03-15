@@ -4,6 +4,7 @@ import com.mavis.api.order.service.OrderService;
 import com.mavis.common.properties.TossPaymentsProperties;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.Payment;
+import com.mavis.domain.domains.order.exception.DuplicatePaymentException;
 import com.mavis.domain.domains.order.implement.OrderReader;
 import com.mavis.domain.domains.order.repository.PaymentRepository;
 import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsCancelClient;
@@ -31,6 +32,10 @@ public class OrderFacade {
     private final PaymentRepository paymentRepository;
 
     public void confirmPayments(ConfirmPaymentRequest request) {
+        if (paymentRepository.existsByPaymentKey(request.paymentKey())) {
+            throw DuplicatePaymentException.EXCEPTION;
+        }
+
         Order order = orderService.validateOrderForPayment(request.orderId(), request.amount());
 
         String authorizationHeader = "Basic " + Base64.getEncoder()
