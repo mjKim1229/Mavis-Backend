@@ -9,6 +9,7 @@ import com.mavis.api.order.facade.OrderFacade;
 import com.mavis.api.order.service.OrderService;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.CancelPaymentsRequest;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.ConfirmPaymentRequest;
+import com.mavis.infrastructure.outer.api.tosspayments.dto.VirtualAccountDepositCallbackRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -50,5 +51,11 @@ public class OrderController {
     @PostMapping("/{orderId}/toss/cancel")
     public void cancelPayments(@PathVariable Long orderId, @RequestBody CancelPaymentsRequest cancelPaymentsRequest) {
         orderFacade.cancelPayments(orderId, cancelPaymentsRequest);
+    }
+
+    @Operation(summary = "토스 PG 가상계좌 입금 콜백")
+    @PostMapping("/deposit-callback")
+    public void depositCallback(@RequestBody VirtualAccountDepositCallbackRequest request) {
+        orderService.processDepositCallback(request);
     }
 }

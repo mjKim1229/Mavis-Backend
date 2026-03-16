@@ -16,6 +16,7 @@ import com.mavis.domain.domains.order.repository.PaymentRepository;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsStatus;
+import com.mavis.infrastructure.outer.api.tosspayments.dto.VirtualAccountDepositCallbackRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -101,6 +102,7 @@ public class OrderService {
                 .partialCancelable(response.isPartialCancelable())
                 .cardNumber(response.card() != null ? response.card().number() : null)
                 .receiptUrl(response.receipt() != null ? response.receipt().url() : null)
+                .virtualAccountSecret(response.secret())
                 .build();
 
         paymentRepository.save(payment);
@@ -111,6 +113,17 @@ public class OrderService {
             order.confirmPayment();
         }
         orderRepository.save(order);
+    }
+
+    @Transactional
+    public void processDepositCallback(VirtualAccountDepositCallbackRequest request) {
+        Payment payment = paymentRepository.findByOrderOrderId(request.orderId());
+        if (payment == null || !request.secret().equals(payment.getVirtualAccountSecret())) {
+            throw InvalidOrderInfoException.EXCEPTION;
+        }
+        if ("DONE".equals(request.status())) {
+            payment.getOrder().confirmPayment();
+        }
     }
 
     @Transactional

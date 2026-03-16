@@ -43,6 +43,8 @@ public class Payment extends BaseEntity {
 
     private String cardNumber;
 
+    private String virtualAccountSecret;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order;
