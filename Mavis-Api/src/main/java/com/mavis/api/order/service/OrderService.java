@@ -15,6 +15,7 @@ import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.order.repository.PaymentRepository;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
+import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -103,7 +104,12 @@ public class OrderService {
                 .build();
 
         paymentRepository.save(payment);
-        order.confirmPayment();
+
+        if (response.status() == PaymentsStatus.WAITING_FOR_DEPOSIT) {
+            order.waitingForDeposit();
+        } else {
+            order.confirmPayment();
+        }
         orderRepository.save(order);
     }
 

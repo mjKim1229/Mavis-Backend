@@ -30,6 +30,8 @@ public record PaymentsResponse(
         PaymentsCheckout checkout,
         PaymentsEasyPay easyPay,
         PaymentsCard card,
+        PaymentsVirtualAccount virtualAccount,
+        String secret,
         String country,
         PaymentsFailure failure,
         PaymentsCashReceipt cashReceipt,
