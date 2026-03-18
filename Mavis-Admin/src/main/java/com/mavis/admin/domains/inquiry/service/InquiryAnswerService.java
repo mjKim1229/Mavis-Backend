@@ -32,4 +32,18 @@ public class InquiryAnswerService {
                 .build();
         inquiryAnswerRepository.save(inquiryAnswer);
     }
+
+    @Transactional
+    public void updateInquiryAnswer(Long inquiryId, String answer) {
+        Inquiry inquiry = inquiryDomainReader.findById(inquiryId);
+        InquiryAnswer inquiryAnswer = inquiryDomainReader.findAnswerByInquiry(inquiry);
+        inquiryAnswer.updateAnswer(answer);
+    }
+
+    @Transactional
+    public void deleteInquiryAnswer(Long inquiryId) {
+        Inquiry inquiry = inquiryDomainReader.findById(inquiryId);
+        InquiryAnswer inquiryAnswer = inquiryDomainReader.findAnswerByInquiry(inquiry);
+        inquiryAnswer.delete();
+    }
 }

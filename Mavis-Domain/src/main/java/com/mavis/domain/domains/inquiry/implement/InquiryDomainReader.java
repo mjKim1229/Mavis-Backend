@@ -2,6 +2,7 @@ package com.mavis.domain.domains.inquiry.implement;
 
 import com.mavis.domain.domains.inquiry.domain.Inquiry;
 import com.mavis.domain.domains.inquiry.domain.InquiryAnswer;
+import com.mavis.domain.domains.inquiry.exception.InquiryAnswerNotFoundException;
 import com.mavis.domain.domains.inquiry.exception.InquiryNotFoundException;
 import com.mavis.domain.domains.inquiry.repository.InquiryAnswerRepository;
 import com.mavis.domain.domains.inquiry.repository.InquiryRepository;
@@ -18,5 +19,10 @@ public class InquiryDomainReader {
     public Inquiry findById(Long inquiryId) {
         return inquiryRepository.findByIdAndIsDeletedFalse(inquiryId)
                 .orElseThrow(() -> InquiryNotFoundException.EXCEPTION);
+    }
+
+    public InquiryAnswer findAnswerByInquiry(Inquiry inquiry) {
+        return inquiryAnswerRepository.findByInquiryAndIsDeletedFalse(inquiry)
+                .orElseThrow(() -> InquiryAnswerNotFoundException.EXCEPTION);
     }
 }

@@ -8,4 +8,5 @@ import java.util.Optional;
 
 public interface InquiryAnswerRepository extends JpaRepository<InquiryAnswer, Long> {
     boolean existsByInquiryAndIsDeletedFalse(Inquiry inquiry);
+    Optional<InquiryAnswer> findByInquiryAndIsDeletedFalse(Inquiry inquiry);
 }

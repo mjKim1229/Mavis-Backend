@@ -28,4 +28,12 @@ public class InquiryAnswer extends BaseEntity {
 
     @Builder.Default
     private boolean isDeleted = false;
+
+    public void updateAnswer(String answer) {
+        this.answer = answer;
+    }
+
+    public void delete() {
+        this.isDeleted = true;
+    }
 }
