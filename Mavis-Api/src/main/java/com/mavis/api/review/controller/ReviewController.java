@@ -8,6 +8,7 @@ import com.mavis.api.review.dto.UserReviewResponse;
 import com.mavis.api.review.service.ReviewService;
 import com.mavis.domain.domains.review.vo.ProductReviewTotal;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +20,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/api/review")
+@Tag(name = "리뷰 API")
 public class ReviewController {
 
     private final ReviewService reviewService;

@@ -4,6 +4,7 @@ import com.mavis.api.auth.dto.*;
 import com.mavis.api.auth.facade.UserFacade;
 import com.mavis.api.auth.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/api/auths")
+@Tag(name = "인증 API")
 public class AuthController {
 
     private final UserFacade userFacade;

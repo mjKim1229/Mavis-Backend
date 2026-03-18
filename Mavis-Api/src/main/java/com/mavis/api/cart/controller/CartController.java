@@ -5,6 +5,7 @@ import com.mavis.api.cart.dto.GetCartResponse;
 import com.mavis.api.cart.dto.UpdateCartRequest;
 import com.mavis.api.cart.service.CartService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import java.util.List;
 @RequestMapping("/v1/api/cart")
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "장바구니 API")
 public class CartController {
 
     private final CartService cartService;

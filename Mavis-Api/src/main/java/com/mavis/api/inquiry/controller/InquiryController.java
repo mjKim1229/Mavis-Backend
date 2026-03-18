@@ -6,6 +6,7 @@ import com.mavis.api.inquiry.dto.GetProductInquiryResponse;
 import com.mavis.api.inquiry.dto.GetUserInquiryResponse;
 import com.mavis.api.inquiry.service.InquiryService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/api/inquiry")
 @RequiredArgsConstructor
+@Tag(name = "문의 API")
 public class InquiryController {
 
     private final InquiryService inquiryService;

@@ -8,6 +8,7 @@ import com.mavis.common.enums.ProductCategory;
 import com.mavis.common.enums.ProductSubCategory;
 import com.mavis.domain.domains.product.vo.ProductNoticeResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/api/products")
+@Tag(name = "상품 API")
 public class ProductController {
 
     private final ProductService productService;

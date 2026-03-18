@@ -9,12 +9,14 @@ import com.mavis.api.auth.dto.UserProfileResponse;
 import com.mavis.api.auth.service.UserService;
 import com.mavis.api.order.dto.OrderAddressResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/api/users")
+@Tag(name = "회원 API")
 public class UserController {
 
     private final UserService userService;

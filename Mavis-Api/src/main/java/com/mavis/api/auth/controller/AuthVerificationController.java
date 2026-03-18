@@ -8,6 +8,7 @@ import com.mavis.api.auth.dto.UserEmailChangeCreateRequest;
 import com.mavis.api.auth.dto.UserEmailChangeVerifyRequest;
 import com.mavis.api.auth.service.AuthVerificationService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/v1/api/auths/verify")
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "인증 코드 API")
 public class AuthVerificationController {
 
     private final AuthVerificationService authVerificationService;
