@@ -6,6 +6,7 @@ import com.mavis.admin.domains.order.dto.GetAdminOrderResponse;
 import com.mavis.admin.domains.order.service.AdminOrderService;
 import com.mavis.domain.domains.order.domain.OrderStatus;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/api/order")
+@Tag(name = "관리자 주문 API")
 public class AdminOrderController {
 
     private final AdminOrderService adminOrderService;

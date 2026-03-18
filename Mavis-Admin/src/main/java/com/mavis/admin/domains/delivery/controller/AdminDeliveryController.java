@@ -7,6 +7,7 @@ import com.mavis.admin.domains.delivery.service.AdminDeliveryService;
 import com.mavis.admin.domains.order.dto.AdminDeliveryStartRequest;
 import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -20,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 @RestController
 @RequestMapping("/v1/api/delivery")
 @RequiredArgsConstructor
+@Tag(name = "관리자 배송 API")
 public class AdminDeliveryController {
 
     private final AdminDeliveryService adminDeliveryService;
