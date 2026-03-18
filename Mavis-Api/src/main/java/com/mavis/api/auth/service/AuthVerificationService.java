@@ -38,6 +38,7 @@ public class AuthVerificationService {
     private final VerificationCodeRepository verificationCodeRepository;
     private final MailService mailService;
     private static final long VERIFICATION_CODE_VALID_MINUTES = 5;
+    private static final long PASSWORD_RESET_LINK_VALID_MINUTES = 10;
     private final UserRepository userRepository;
     private final UserReader userReader;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
@@ -51,7 +52,7 @@ public class AuthVerificationService {
         UUID token = UUID.randomUUID();
         String resetURL = PASSWORD_RESET_URL + token;
 
-        LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(VERIFICATION_CODE_VALID_MINUTES);
+        LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(PASSWORD_RESET_LINK_VALID_MINUTES);
         passwordResetTokenRepository.findByUsernameAndEmail(request.username(), request.email())
                 .ifPresentOrElse(
                         passwordResetToken -> passwordResetToken.update(token.toString(), expiredAt)
