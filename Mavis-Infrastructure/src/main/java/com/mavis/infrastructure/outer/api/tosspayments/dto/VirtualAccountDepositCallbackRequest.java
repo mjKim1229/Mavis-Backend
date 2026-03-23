@@ -1,9 +1,9 @@
 package com.mavis.infrastructure.outer.api.tosspayments.dto;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 
 public record VirtualAccountDepositCallbackRequest(
-        ZonedDateTime createdAt,
+        LocalDateTime createdAt,
         String secret,
         String status,
         String transactionKey,
