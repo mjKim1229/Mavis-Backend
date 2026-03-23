@@ -1,0 +1,23 @@
+package com.mavis.api.refund.controller;
+
+import com.mavis.api.refund.dto.CreateRefundRequest;
+import com.mavis.api.refund.facade.RefundFacade;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+@RequestMapping("/v1/api/refund")
+@RequiredArgsConstructor
+@RestController
+@Tag(name = "환불 API")
+public class RefundController {
+
+    private final RefundFacade refundFacade;
+
+    @Operation(summary = "환불 요청")
+    @PostMapping("/{orderItemId}")
+    public void requestRefund(@PathVariable Long orderItemId, @RequestBody CreateRefundRequest request) {
+        refundFacade.requestRefund(orderItemId, request);
+    }
+}

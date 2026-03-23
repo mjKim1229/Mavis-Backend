@@ -56,7 +56,7 @@ public class OrderFacade {
                     authorizationHeader,
                     request.paymentKey(),
                     request.paymentKey(),
-                    new CancelPaymentsRequest("결제 실패로 인한 자동 취소")
+                    CancelPaymentsRequest.of("결제 실패로 인한 자동 취소")
             );
             throw e;
         }
