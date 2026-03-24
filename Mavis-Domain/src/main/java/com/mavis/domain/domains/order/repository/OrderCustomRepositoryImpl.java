@@ -48,6 +48,7 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
     @Override
     public Page<Order> findOrderPagesByUser(Pageable pageable, User user) {
         List<Order> orders = queryFactory.selectFrom(order)
+                .leftJoin(order.delivery, delivery).fetchJoin()
                 .where(order.isDeleted.eq(false)
                         .and(order.user.eq(user))
                         .and(order.orderStatus.ne(OrderStatus.READY))

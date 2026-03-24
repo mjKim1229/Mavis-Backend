@@ -158,7 +158,9 @@ public class OrderService {
                             .addressInfo(orderAddress.getAddressDetail())
                             .totalPrice(o.getTotalPrice())
                             .userName(o.getUser().getName())
-                            .orderStatus(o.getOrderStatus().getTitle())
+                            .orderStatus(o.getDelivery() != null
+                                    ? o.getDelivery().getDeliveryStatus().getTitle()
+                                    : o.getOrderStatus().getTitle())
                             .build();
                 }
         );
