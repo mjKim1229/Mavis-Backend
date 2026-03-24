@@ -1,6 +1,7 @@
 package com.mavis.api.refund.facade;
 
 import com.mavis.api.refund.dto.CreateRefundRequest;
+import com.mavis.api.refund.implement.RefundImageAppender;
 import com.mavis.api.refund.service.RefundService;
 import com.mavis.common.properties.TossPaymentsProperties;
 import com.mavis.domain.domains.order.domain.Order;
@@ -15,9 +16,11 @@ import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -28,21 +31,36 @@ public class RefundFacade {
     private final PaymentsCancelClient paymentsCancelClient;
     private final RefundService refundService;
     private final PaymentRepository paymentRepository;
+    private final RefundImageAppender refundImageAppender;
 
-    public void requestRefund(Long orderItemId, CreateRefundRequest request) {
+    public void cancelRefund(Long orderItemId, CreateRefundRequest request) {
         Refund refund = refundService.createRefund(orderItemId, request);
 
         OrderItem orderItem = refund.getOrderItem();
         Order order = orderItem.getOrder();
-        OrderStatus orderStatus = order.getOrderStatus();
 
-        if (orderStatus == OrderStatus.PAYMENT_CONFIRMED) {
-            cancelTossPayment(order, refund, request);
-        } else if (orderStatus == OrderStatus.ORDERED) {
-            log.info("반품 요청 생성 - refundId: {}, orderItemId: {}", refund.getId(), orderItemId);
-        } else {
+        if (order.getOrderStatus() != OrderStatus.PAYMENT_CONFIRMED) {
             throw CannotRefundException.EXCEPTION;
         }
+
+        cancelTossPayment(order, refund, request);
+    }
+
+    public void requestReturn(Long orderItemId, CreateRefundRequest request, List<MultipartFile> images) {
+        Refund refund = refundService.createRefund(orderItemId, request);
+
+        OrderItem orderItem = refund.getOrderItem();
+        Order order = orderItem.getOrder();
+
+        if (order.getOrderStatus() != OrderStatus.ORDERED) {
+            throw CannotRefundException.EXCEPTION;
+        }
+
+        if (images != null && !images.isEmpty()) {
+            refundImageAppender.saveRefundImages(refund, images);
+        }
+
+        log.info("반품 요청 생성 - refundId: {}, orderItemId: {}", refund.getId(), orderItemId);
     }
 
     private void cancelTossPayment(Order order, Refund refund, CreateRefundRequest request) {
