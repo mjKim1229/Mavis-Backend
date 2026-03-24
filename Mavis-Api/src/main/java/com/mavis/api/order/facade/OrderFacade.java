@@ -98,6 +98,9 @@ OrderFacade {
             refundAppender.save(refund);
         });
 
+        if (order.getDelivery() != null) {
+            order.getDelivery().cancel();
+        }
         orderService.cancelOrder(order);
     }
 }

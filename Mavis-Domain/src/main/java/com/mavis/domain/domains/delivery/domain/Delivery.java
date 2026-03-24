@@ -28,9 +28,6 @@ public class Delivery extends BaseEntity {
 
     private String trackingNumber;
 
-    @Builder.Default
-    private boolean isDeleted = false;
-
     public void updateDeliveryStatus(DeliveryStatus deliveryStatus) {
         this.deliveryStatus = deliveryStatus;
     }
@@ -43,5 +40,9 @@ public class Delivery extends BaseEntity {
 
     public void complete() {
         this.deliveryStatus = DeliveryStatus.DELIVERED;
+    }
+
+    public void cancel() {
+        this.deliveryStatus = DeliveryStatus.CANCELLED;
     }
 }

@@ -159,9 +159,11 @@ public class OrderService {
                             .addressInfo(orderAddress.getAddressDetail())
                             .totalPrice(o.getTotalPrice())
                             .userName(o.getUser().getName())
-                            .orderStatus(o.getDelivery() != null
-                                    ? o.getDelivery().getDeliveryStatus().getTitle()
-                                    : o.getOrderStatus().getTitle())
+                            .orderStatus(o.getOrderStatus() == OrderStatus.CANCELED
+                                    ? o.getOrderStatus().getTitle()
+                                    : o.getDelivery() != null
+                                        ? o.getDelivery().getDeliveryStatus().getTitle()
+                                        : o.getOrderStatus().getTitle())
                             .createdAt(o.getCreatedAt())
                             .build();
                 }
