@@ -16,7 +16,7 @@ public record GetAdminOrderExcelResponse(
 //        @ExcelColumn(header = "번호")
 //        Long rowNumber,
         @ExcelColumn(header = "주문번호")
-        String orderId,
+        String tossOrderId,
 
         List<OrderItemExcelInfo> orderItemInfos,
 
@@ -44,7 +44,7 @@ public record GetAdminOrderExcelResponse(
     public static GetAdminOrderExcelResponse from(Order order, OrderAddress orderAddress, List<OrderItemExcelInfo> orderItemInfos, User user, String orderedAt) {
         return GetAdminOrderExcelResponse.builder()
                 .orderItemInfos(orderItemInfos)
-                .orderId(order.getOrderId().substring(DOMAIN_PREFIX.length()))
+                .tossOrderId(order.getOrderId().substring(DOMAIN_PREFIX.length()))
                 .orderedAt(orderedAt)
                 .totalPrice(order.getTotalPrice())
                 .address(orderAddress.getAddress())

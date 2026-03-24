@@ -8,8 +8,8 @@ import java.util.List;
 
 @Builder
 public record UserOrderInfo(
-        Long id,
-        String orderId,
+        Long orderId,
+        String tossOrderId,
         List<OrderProduct> orderProductList,
         String orderStatus,
         String address,

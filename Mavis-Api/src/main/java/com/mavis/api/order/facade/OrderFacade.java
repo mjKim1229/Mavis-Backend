@@ -16,6 +16,7 @@ import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsConfirmCli
 import com.mavis.infrastructure.outer.api.tosspayments.dto.CancelPaymentsRequest;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.ConfirmPaymentRequest;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
+import com.mavis.infrastructure.outer.api.tosspayments.dto.TossConfirmRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -43,13 +44,14 @@ OrderFacade {
             throw DuplicatePaymentException.EXCEPTION;
         }
 
-        Order order = orderService.validateOrderForPayment(request.orderId(), request.amount());
+        Order order = orderService.validateOrderForPayment(request.tossOrderId(), request.amount());
 
         String authorizationHeader = "Basic " + Base64.getEncoder()
                 .encodeToString((tossPaymentsProperties.secretKey() + ":").getBytes(StandardCharsets.UTF_8));
+        TossConfirmRequest tossConfirmRequest = TossConfirmRequest.of(request.paymentKey(), request.tossOrderId(), request.amount());
         PaymentsResponse response;
         try {
-            response = paymentsConfirmClient.confirmPayments(authorizationHeader, request.paymentKey(), request);
+            response = paymentsConfirmClient.confirmPayments(authorizationHeader, request.paymentKey(), tossConfirmRequest);
         } catch (Exception e) {
             log.error("토스 결제 승인 API 호출 실패", e);
             throw e;
