@@ -3,6 +3,7 @@ package com.mavis.domain.domains.refund.domain;
 import com.mavis.domain.domains.common.jpa.BaseEntity;
 import com.mavis.domain.domains.order.domain.OrderItem;
 import jakarta.persistence.*;
+
 import lombok.*;
 
 @Getter
@@ -25,11 +26,7 @@ public class Refund extends BaseEntity {
     @Builder.Default
     private RefundStatus refundStatus = RefundStatus.REQUESTED;
 
-    @Column(columnDefinition = "varchar(255)")
-    @Enumerated(EnumType.STRING)
-    private RefundReason refundReason;
-
-    private String refundReasonDetail;
+    private String refundReason;
 
     private int refundQuantity;
 

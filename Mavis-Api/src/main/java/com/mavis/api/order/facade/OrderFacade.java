@@ -9,7 +9,6 @@ import com.mavis.domain.domains.order.exception.DuplicatePaymentException;
 import com.mavis.domain.domains.order.implement.OrderReader;
 import com.mavis.domain.domains.order.repository.PaymentRepository;
 import com.mavis.domain.domains.refund.domain.Refund;
-import com.mavis.domain.domains.refund.domain.RefundReason;
 import com.mavis.domain.domains.refund.domain.RefundStatus;
 import com.mavis.domain.domains.refund.implement.RefundAppender;
 import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsCancelClient;
@@ -88,8 +87,7 @@ OrderFacade {
         orderItems.forEach(orderItem -> {
             Refund refund = Refund.builder()
                     .orderItem(orderItem)
-                    .refundReason(RefundReason.CHANGE_OF_MIND)
-                    .refundReasonDetail(cancelPaymentsRequest.cancelReason())
+                    .refundReason(cancelPaymentsRequest.cancelReason())
                     .refundQuantity(orderItem.getQuantity())
                     .refundAmount(orderItem.getPrice() * orderItem.getQuantity())
                     .refundStatus(RefundStatus.COMPLETED)

@@ -1,7 +1,6 @@
 package com.mavis.api.refund.facade;
 
 import com.mavis.api.refund.dto.CreateRefundRequest;
-import com.mavis.api.refund.implement.RefundImageAppender;
 import com.mavis.api.refund.service.RefundService;
 import com.mavis.common.properties.TossPaymentsProperties;
 import com.mavis.domain.domains.delivery.domain.Delivery;
@@ -18,11 +17,9 @@ import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.List;
 
 @Slf4j
 @Component
@@ -33,7 +30,6 @@ public class RefundFacade {
     private final PaymentsCancelClient paymentsCancelClient;
     private final RefundService refundService;
     private final PaymentRepository paymentRepository;
-    private final RefundImageAppender refundImageAppender;
 
     public void cancelRefund(Long orderItemId, CreateRefundRequest request) {
         Refund refund = refundService.createRefund(orderItemId, request);
@@ -48,7 +44,7 @@ public class RefundFacade {
         cancelTossPayment(order, refund, request);
     }
 
-    public void requestReturn(Long orderItemId, CreateRefundRequest request, List<MultipartFile> images) {
+    public void requestReturn(Long orderItemId, CreateRefundRequest request) {
         Refund refund = refundService.createRefund(orderItemId, request);
 
         OrderItem orderItem = refund.getOrderItem();
@@ -57,10 +53,6 @@ public class RefundFacade {
         Delivery delivery = order.getDelivery();
         if (delivery == null || delivery.getDeliveryStatus() != DeliveryStatus.DELIVERED) {
             throw CannotRefundException.EXCEPTION;
-        }
-
-        if (images != null && !images.isEmpty()) {
-            refundImageAppender.saveRefundImages(refund, images);
         }
 
         log.info("반품 요청 생성 - refundId: {}, orderItemId: {}", refund.getId(), orderItemId);
@@ -75,7 +67,7 @@ public class RefundFacade {
                 authorizationHeader,
                 payment.getPaymentKey(),
                 payment.getPaymentKey(),
-                new CancelPaymentsRequest(request.refundReason().getTitle(), refund.getRefundAmount())
+                new CancelPaymentsRequest(request.refundReason(), refund.getRefundAmount())
         );
 
         log.info("Toss 부분 취소 응답: {}", response);

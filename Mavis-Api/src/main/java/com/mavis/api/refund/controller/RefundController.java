@@ -6,9 +6,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RequestMapping("/v1/api/refund")
 @RequiredArgsConstructor
@@ -25,10 +22,8 @@ public class RefundController {
     }
 
     @Operation(summary = "반품 신청 (배송 후)")
-    @PostMapping(value = "/{orderItemId}/return", consumes = "multipart/form-data")
-    public void requestReturn(@PathVariable Long orderItemId,
-                              @RequestPart CreateRefundRequest request,
-                              @RequestPart(required = false) List<MultipartFile> images) {
-        refundFacade.requestReturn(orderItemId, request, images);
+    @PostMapping("/{orderItemId}/return")
+    public void requestReturn(@PathVariable Long orderItemId, @RequestBody CreateRefundRequest request) {
+        refundFacade.requestReturn(orderItemId, request);
     }
 }

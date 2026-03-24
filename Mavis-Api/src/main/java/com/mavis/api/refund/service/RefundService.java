@@ -39,7 +39,6 @@ public class RefundService {
         Refund refund = Refund.builder()
                 .orderItem(orderItem)
                 .refundReason(request.refundReason())
-                .refundReasonDetail(request.refundReasonDetail())
                 .refundQuantity(request.refundQuantity())
                 .refundAmount(refundAmount)
                 .build();

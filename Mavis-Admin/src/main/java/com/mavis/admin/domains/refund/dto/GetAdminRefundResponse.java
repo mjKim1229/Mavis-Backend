@@ -1,7 +1,6 @@
 package com.mavis.admin.domains.refund.dto;
 
 import com.mavis.domain.domains.refund.domain.Refund;
-import com.mavis.domain.domains.refund.domain.RefundReason;
 import com.mavis.domain.domains.refund.domain.RefundStatus;
 import lombok.Builder;
 
@@ -16,8 +15,7 @@ public record GetAdminRefundResponse(
         int orderQuantity,
         int refundQuantity,
         int refundAmount,
-        RefundReason refundReason,
-        String refundReasonDetail,
+        String refundReason,
         RefundStatus refundStatus,
         String userName,
         LocalDateTime requestedAt
@@ -33,7 +31,6 @@ public record GetAdminRefundResponse(
                 .refundQuantity(refund.getRefundQuantity())
                 .refundAmount(refund.getRefundAmount())
                 .refundReason(refund.getRefundReason())
-                .refundReasonDetail(refund.getRefundReasonDetail())
                 .refundStatus(refund.getRefundStatus())
                 .userName(orderItem.getOrder().getUser().getName())
                 .requestedAt(refund.getCreatedAt())

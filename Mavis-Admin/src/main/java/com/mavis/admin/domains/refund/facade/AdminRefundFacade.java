@@ -38,7 +38,7 @@ public class AdminRefundFacade {
                 authorizationHeader,
                 payment.getPaymentKey(),
                 payment.getPaymentKey(),
-                new CancelPaymentsRequest(refund.getRefundReason().getTitle(), refund.getRefundAmount())
+                new CancelPaymentsRequest(refund.getRefundReason(), refund.getRefundAmount())
         );
 
         log.info("Toss 반품 취소 응답: {}", response);
