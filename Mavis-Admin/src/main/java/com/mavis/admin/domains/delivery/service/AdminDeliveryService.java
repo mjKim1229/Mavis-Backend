@@ -243,7 +243,7 @@ public class AdminDeliveryService {
             throw OrderNotToBeConfirmedException.EXCEPTION;
         }
 
-        Delivery delivery = deliveryRepository.findByOrderAndIsDeletedFalse(order)
+        Delivery delivery = deliveryRepository.findByOrder(order)
                 .orElseThrow(() -> DeliveryNotFoundException.EXCEPTION);
         delivery.startDelivery(request.carrier(), request.trackingNumber());
     }
@@ -251,7 +251,7 @@ public class AdminDeliveryService {
     @Transactional
     public void completeDelivery(AdminCompleteDeliveryRequest request) {
         List<Long> deliverIds = request.deliverIds();
-        List<Delivery> deliveries = deliveryRepository.findByIdInAndIsDeletedFalse(deliverIds);
+        List<Delivery> deliveries = deliveryRepository.findByIdIn(deliverIds);
         deliveries.forEach(delivery -> {
             if (delivery.getDeliveryStatus() != DeliveryStatus.SHIPPED) {
                 throw DeliveryCannotBeCompleteException.EXCEPTION;

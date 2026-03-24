@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DeliveryRepository extends JpaRepository<Delivery, Long>, DeliveryCustomRepository {
-    List<Delivery> findByIdInAndIsDeletedFalse(List<Long> ids);
+    List<Delivery> findByIdIn(List<Long> ids);
 
-    Optional<Delivery> findByOrderAndIsDeletedFalse(Order order);
+    Optional<Delivery> findByOrder(Order order);
 }
