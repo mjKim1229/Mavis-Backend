@@ -8,6 +8,7 @@ import java.util.List;
 
 @Builder
 public record UserOrderInfo(
+        Long id,
         String orderId,
         List<OrderProduct> orderProductList,
         String orderStatus,

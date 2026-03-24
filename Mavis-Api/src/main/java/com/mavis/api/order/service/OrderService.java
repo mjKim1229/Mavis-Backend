@@ -147,6 +147,7 @@ public class OrderService {
         Page<UserOrderInfo> userOrderInfoPages = orderPages.map(o -> {
                     OrderAddress orderAddress = o.getOrderAddress();
                     return UserOrderInfo.builder()
+                            .id(o.getId())
                             .orderId(o.getOrderId().substring(DOMAIN_PREFIX.length()))
                             .orderProductList(o.getOrderItems().stream()
                                     .map(orderItem -> {
