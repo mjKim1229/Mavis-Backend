@@ -162,6 +162,7 @@ public class OrderService {
                             .orderStatus(o.getDelivery() != null
                                     ? o.getDelivery().getDeliveryStatus().getTitle()
                                     : o.getOrderStatus().getTitle())
+                            .createdAt(o.getCreatedAt())
                             .build();
                 }
         );
