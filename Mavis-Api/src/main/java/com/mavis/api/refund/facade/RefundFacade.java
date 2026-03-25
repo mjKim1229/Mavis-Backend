@@ -3,8 +3,6 @@ package com.mavis.api.refund.facade;
 import com.mavis.api.refund.dto.CreateRefundRequest;
 import com.mavis.api.refund.service.RefundService;
 import com.mavis.common.properties.TossPaymentsProperties;
-import com.mavis.domain.domains.delivery.domain.Delivery;
-import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.domain.OrderStatus;
@@ -42,20 +40,6 @@ public class RefundFacade {
         }
 
         cancelTossPayment(order, refund, request);
-    }
-
-    public void requestReturn(Long orderItemId, CreateRefundRequest request) {
-        Refund refund = refundService.createRefund(orderItemId, request);
-
-        OrderItem orderItem = refund.getOrderItem();
-        Order order = orderItem.getOrder();
-
-        Delivery delivery = order.getDelivery();
-        if (delivery == null || delivery.getDeliveryStatus() != DeliveryStatus.DELIVERED) {
-            throw CannotRefundException.EXCEPTION;
-        }
-
-        log.info("반품 요청 생성 - refundId: {}, orderItemId: {}", refund.getId(), orderItemId);
     }
 
     private void cancelTossPayment(Order order, Refund refund, CreateRefundRequest request) {

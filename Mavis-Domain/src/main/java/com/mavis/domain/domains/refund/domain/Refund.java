@@ -34,6 +34,8 @@ public class Refund extends BaseEntity {
 
     private String cancelTransactionKey;
 
+    private String trackingNumber;
+
     public void approve() {
         this.refundStatus = RefundStatus.APPROVED;
     }
