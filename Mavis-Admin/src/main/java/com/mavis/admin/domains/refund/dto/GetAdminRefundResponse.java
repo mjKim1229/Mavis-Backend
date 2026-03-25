@@ -5,6 +5,7 @@ import com.mavis.domain.domains.refund.domain.RefundStatus;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Builder
 public record GetAdminRefundResponse(
@@ -18,6 +19,8 @@ public record GetAdminRefundResponse(
         String refundReason,
         RefundStatus refundStatus,
         String userName,
+        String trackingNumber,
+        List<String> imageUrls,
         LocalDateTime requestedAt
 ) {
     public static GetAdminRefundResponse from(Refund refund) {
@@ -33,6 +36,8 @@ public record GetAdminRefundResponse(
                 .refundReason(refund.getRefundReason())
                 .refundStatus(refund.getRefundStatus())
                 .userName(orderItem.getOrder().getUser().getName())
+                .trackingNumber(refund.getTrackingNumber())
+                .imageUrls(refund.getImages().stream().map(image -> image.getImageUrl()).toList())
                 .requestedAt(refund.getCreatedAt())
                 .build();
     }

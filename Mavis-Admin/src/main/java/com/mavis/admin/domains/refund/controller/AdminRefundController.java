@@ -22,7 +22,7 @@ public class AdminRefundController {
 
     @Operation(summary = "환불 목록 조회")
     @GetMapping
-    public PageResponse<GetAdminRefundResponse> getRefundList(Pageable pageable, RefundStatus refundStatus) {
+    public PageResponse<GetAdminRefundResponse> getRefundList(Pageable pageable, @RequestParam(required = false) RefundStatus refundStatus) {
         return adminRefundService.getRefundList(pageable, refundStatus);
     }
 
