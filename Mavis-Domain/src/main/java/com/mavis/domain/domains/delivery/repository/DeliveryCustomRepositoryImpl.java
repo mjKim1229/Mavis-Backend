@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -34,5 +35,17 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
                 .where(delivery.deliveryStatus.eq(deliveryStatus));
 
         return PageableExecutionUtils.getPage(deliveries, pageable, countQuery::fetchOne);
+    }
+
+    @Override
+    public List<Delivery> findDeliveriesByStatusAndDateRange(DeliveryStatus deliveryStatus, LocalDate startDate, LocalDate endDate) {
+        return queryFactory.selectFrom(delivery)
+                .where(
+                        delivery.deliveryStatus.eq(deliveryStatus),
+                        delivery.order.createdAt.goe(startDate.atStartOfDay()),
+                        delivery.order.createdAt.lt(endDate.plusDays(1).atStartOfDay())
+                )
+                .orderBy(delivery.id.desc())
+                .fetch();
     }
 }

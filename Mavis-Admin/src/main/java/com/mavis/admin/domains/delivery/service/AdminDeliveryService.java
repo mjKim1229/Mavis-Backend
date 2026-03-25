@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
@@ -68,30 +69,29 @@ public class AdminDeliveryService {
         return PageResponse.of(deliveryResponses);
     }
 
-    public byte[] getOrderByExcel(Pageable pageable) {
+    public byte[] getOrderByExcel(LocalDate startDate, LocalDate endDate) {
         try (
                 SXSSFWorkbook workbook = new SXSSFWorkbook();
                 ByteArrayOutputStream out = new ByteArrayOutputStream()
         ) {
-            Page<Delivery> deliveryPages = deliveryRepository.findDeliveryPagesByDeliveryStatus(pageable, DeliveryStatus.READY);
-            Page<GetAdminOrderExcelResponse> deliveryExcelResponses = deliveryPages.map(delivery -> {
-                        Order order = delivery.getOrder();
-                        OrderAddress orderAddress = order.getOrderAddress();
-                        User user = order.getUser();
-                        List<OrderItem> orderItems = order.getOrderItems();
-                        List<OrderItemExcelInfo> orderItemInfoList = orderItems.stream()
-                                .map(orderItem -> OrderItemExcelInfo.from(orderItem.getProduct().getName(), orderItem.getColor(), orderItem.getQuantity()))
-                                .toList();
+            List<Delivery> deliveries = deliveryRepository.findDeliveriesByStatusAndDateRange(DeliveryStatus.READY, startDate, endDate);
+            List<GetAdminOrderExcelResponse> deliveryExcelResponses = deliveries.stream().map(delivery -> {
+                Order order = delivery.getOrder();
+                OrderAddress orderAddress = order.getOrderAddress();
+                User user = order.getUser();
+                List<OrderItem> orderItems = order.getOrderItems();
+                List<OrderItemExcelInfo> orderItemInfoList = orderItems.stream()
+                        .map(orderItem -> OrderItemExcelInfo.from(orderItem.getProduct().getName(), orderItem.getColor(), orderItem.getQuantity()))
+                        .toList();
 
-                        String orderedAt = order.getCreatedAt().format(EXCEL_DATE_FORMATTER);
-                        return GetAdminOrderExcelResponse.from(order, orderAddress, orderItemInfoList, user, orderedAt);
-                    }
-            );
+                String orderedAt = order.getCreatedAt().format(EXCEL_DATE_FORMATTER);
+                return GetAdminOrderExcelResponse.from(order, orderAddress, orderItemInfoList, user, orderedAt);
+            }).toList();
 
             Sheet sheet = workbook.createSheet("배송목록");
 
             createHeader(sheet, workbook);
-            createBody(sheet, deliveryExcelResponses.getContent());
+            createBody(sheet, deliveryExcelResponses);
 
             workbook.write(out);
             return out.toByteArray();

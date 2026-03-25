@@ -9,7 +9,7 @@ import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/v1/api/delivery")
@@ -28,8 +29,10 @@ public class AdminDeliveryController {
 
     @Operation(summary = "발주 완료 주문 목록 엑셀 다운로드")
     @GetMapping("/excel")
-    public ResponseEntity<byte[]> getOrdersByExcel(Pageable pageable) {
-        byte[] orderBytes = adminDeliveryService.getOrderByExcel(pageable);
+    public ResponseEntity<byte[]> getOrdersByExcel(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        byte[] orderBytes = adminDeliveryService.getOrderByExcel(startDate, endDate);
 
         String encodedFileName = UriUtils.encode("배송목록.xlsx", StandardCharsets.UTF_8);
         String contentDisposition = "attachment; filename=\"" + encodedFileName + "\"; filename*=UTF-8''" + encodedFileName;
