@@ -152,7 +152,7 @@ public class OrderService {
                             .orderProductList(o.getOrderItems().stream()
                                     .map(orderItem -> {
                                         OrderOption orderOption = new OrderOption(orderItem.getColor(), orderItem.getQuantity());
-                                        return new OrderProduct(orderItem.getProduct().getId(), orderOption);
+                                        return new OrderProduct(orderItem.getProduct().getId(), orderItem.getProduct().getName(), orderOption);
                                     }).toList()
                             )
                             .address(orderAddress.getAddress())

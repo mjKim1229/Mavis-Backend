@@ -4,6 +4,7 @@ import com.mavis.domain.domains.order.domain.OrderOption;
 
 public record OrderProduct(
         Long productId,
+        String productName,
         OrderOption option
 ) {
 }
