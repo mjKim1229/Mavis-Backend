@@ -1,5 +1,6 @@
 package com.mavis.api.order.facade;
 
+import com.mavis.api.order.dto.CancelOrderRequest;
 import com.mavis.api.order.service.OrderService;
 import com.mavis.common.properties.TossPaymentsProperties;
 import com.mavis.domain.domains.order.domain.Order;
@@ -7,7 +8,7 @@ import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.domain.Payment;
 import com.mavis.domain.domains.order.exception.DuplicatePaymentException;
 import com.mavis.domain.domains.order.implement.OrderReader;
-import com.mavis.domain.domains.order.repository.PaymentRepository;
+import com.mavis.domain.domains.order.implement.PaymentReader;
 import com.mavis.domain.domains.refund.domain.Refund;
 import com.mavis.domain.domains.refund.domain.RefundStatus;
 import com.mavis.domain.domains.refund.implement.RefundAppender;
@@ -36,11 +37,11 @@ OrderFacade {
     private final PaymentsCancelClient paymentsCancelClient;
     private final OrderService orderService;
     private final OrderReader orderReader;
-    private final PaymentRepository paymentRepository;
+    private final PaymentReader paymentReader;
     private final RefundAppender refundAppender;
 
     public void confirmPayments(ConfirmPaymentRequest request) {
-        if (paymentRepository.existsByPaymentKey(request.paymentKey())) {
+        if (paymentReader.existsByPaymentKey(request.paymentKey())) {
             throw DuplicatePaymentException.EXCEPTION;
         }
 
@@ -71,36 +72,33 @@ OrderFacade {
         }
     }
 
-    public void cancelPayments(Long orderId, CancelPaymentsRequest cancelPaymentsRequest) {
+    public void cancelPayments(Long orderId, CancelOrderRequest request) {
         Order order = orderService.findOrderToCancel(orderId);
-        Payment payment = paymentRepository.findByOrder(order);
+        Payment payment = paymentReader.findByOrder(order);
 
         String authorizationHeader = "Basic " + Base64.getEncoder()
                 .encodeToString((tossPaymentsProperties.secretKey() + ":").getBytes(StandardCharsets.UTF_8));
         PaymentsResponse paymentsResponse = paymentsCancelClient.cancelPayments(
-                authorizationHeader, payment.getPaymentKey(), payment.getPaymentKey(), cancelPaymentsRequest);
+                authorizationHeader, payment.getPaymentKey(), payment.getPaymentKey(),
+                CancelPaymentsRequest.of(request.refundReason()));
         log.info("주문 취소 요청에 대한 응답 : {}", paymentsResponse);
 
         String cancelTransactionKey = paymentsResponse.cancels() != null && !paymentsResponse.cancels().isEmpty()
                 ? paymentsResponse.cancels().get(0).transactionKey()
                 : null;
 
-        List<OrderItem> orderItems = order.getOrderItems();
-        orderItems.forEach(orderItem -> {
-            Refund refund = Refund.builder()
-                    .orderItem(orderItem)
-                    .refundReason(cancelPaymentsRequest.cancelReason())
-                    .refundQuantity(orderItem.getQuantity())
-                    .refundAmount(orderItem.getPrice() * orderItem.getQuantity())
-                    .refundStatus(RefundStatus.COMPLETED)
-                    .cancelTransactionKey(cancelTransactionKey)
-                    .build();
-            refundAppender.save(refund);
-        });
+        List<Refund> refunds = order.getOrderItems().stream()
+                .map(orderItem -> Refund.builder()
+                        .orderItem(orderItem)
+                        .refundReason(request.refundReason())
+                        .refundQuantity(orderItem.getQuantity())
+                        .refundAmount(orderItem.getPrice() * orderItem.getQuantity())
+                        .refundStatus(RefundStatus.COMPLETED)
+                        .cancelTransactionKey(cancelTransactionKey)
+                        .build())
+                .toList();
+        refundAppender.saveAll(refunds);
 
-        if (order.getDelivery() != null) {
-            order.getDelivery().cancel();
-        }
         orderService.cancelOrder(order);
     }
 }

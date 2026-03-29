@@ -5,6 +5,8 @@ import com.mavis.domain.domains.refund.repository.RefundRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class RefundAppender {
@@ -13,5 +15,9 @@ public class RefundAppender {
 
     public Refund save(Refund refund) {
         return refundRepository.save(refund);
+    }
+
+    public List<Refund> saveAll(List<Refund> refunds) {
+        return refundRepository.saveAll(refunds);
     }
 }

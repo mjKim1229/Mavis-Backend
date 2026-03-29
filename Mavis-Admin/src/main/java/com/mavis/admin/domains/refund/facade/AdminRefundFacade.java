@@ -3,7 +3,8 @@ package com.mavis.admin.domains.refund.facade;
 import com.mavis.admin.domains.refund.service.AdminRefundService;
 import com.mavis.common.properties.TossPaymentsProperties;
 import com.mavis.domain.domains.order.domain.Order;
-import com.mavis.domain.domains.order.repository.PaymentRepository;
+import com.mavis.domain.domains.order.domain.Payment;
+import com.mavis.domain.domains.order.implement.PaymentReader;
 import com.mavis.domain.domains.refund.domain.Refund;
 import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsCancelClient;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.CancelPaymentsRequest;
@@ -23,13 +24,13 @@ public class AdminRefundFacade {
     private final TossPaymentsProperties tossPaymentsProperties;
     private final PaymentsCancelClient paymentsCancelClient;
     private final AdminRefundService adminRefundService;
-    private final PaymentRepository paymentRepository;
+    private final PaymentReader paymentReader;
 
     public void approveRefund(Long refundId) {
         Refund refund = adminRefundService.approveRefund(refundId);
 
         Order order = refund.getOrderItem().getOrder();
-        var payment = paymentRepository.findByOrder(order);
+        Payment payment = paymentReader.findByOrder(order);
 
         String authorizationHeader = "Basic " + Base64.getEncoder()
                 .encodeToString((tossPaymentsProperties.secretKey() + ":").getBytes(StandardCharsets.UTF_8));
@@ -41,7 +42,7 @@ public class AdminRefundFacade {
                 new CancelPaymentsRequest(refund.getRefundReason(), refund.getRefundAmount())
         );
 
-        log.info("Toss 반품 취소 응답: {}", response);
+        log.info("Toss 환불 취소 응답: {}", response);
 
         String cancelTransactionKey = response.cancels() != null && !response.cancels().isEmpty()
                 ? response.cancels().get(0).transactionKey()

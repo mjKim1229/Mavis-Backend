@@ -1,13 +1,13 @@
 package com.mavis.api.order.controller;
 
 import com.mavis.api.common.page.PageResponse;
+import com.mavis.api.order.dto.CancelOrderRequest;
 import com.mavis.api.order.dto.CreateOrderRequest;
 import com.mavis.api.order.dto.CreateOrderResponse;
 import com.mavis.api.order.dto.GetOrderItemUserCanReviewResponse;
 import com.mavis.api.order.dto.UserOrderInfo;
 import com.mavis.api.order.facade.OrderFacade;
 import com.mavis.api.order.service.OrderService;
-import com.mavis.infrastructure.outer.api.tosspayments.dto.CancelPaymentsRequest;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.ConfirmPaymentRequest;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.VirtualAccountDepositCallbackRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -49,10 +49,10 @@ public class OrderController {
         orderFacade.confirmPayments(request);
     }
 
-    @Operation(summary = "토스 PG 주문 취소 (환불)")
-    @PostMapping("/{orderId}/toss/cancel")
-    public void cancelPayments(@PathVariable Long orderId, @RequestBody CancelPaymentsRequest cancelPaymentsRequest) {
-        orderFacade.cancelPayments(orderId, cancelPaymentsRequest);
+    @Operation(summary = "주문 취소 (배송전)")
+    @PostMapping("/{orderId}/cancel")
+    public void cancelPayments(@PathVariable Long orderId, @RequestBody CancelOrderRequest request) {
+        orderFacade.cancelPayments(orderId, request);
     }
 
     @Operation(summary = "토스 PG 가상계좌 입금 콜백")

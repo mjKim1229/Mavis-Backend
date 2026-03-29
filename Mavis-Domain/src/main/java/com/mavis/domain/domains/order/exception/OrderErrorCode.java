@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum OrderErrorCode implements BaseErrorCode {
     ORDER_NOT_FOUND(404, "주문 정보를 찾을 수 없습니다", "ORDER_404_1"),
+    PAYMENT_NOT_FOUND(404, "결제 정보를 찾을 수 없습니다", "ORDER_404_2"),
     ORDER_NOT_TO_BE_CONFIRMED(400, "주문 상태를 확인해주세요", "ORDER_400_1"),
     INVALID_ORDER_INFO(400, "올바르지 않은 결제 정보입니다.", "ORDER_400_3"),
     PRICE_MISMATCH(400, "주문 금액이 일치하지 않습니다.", "ORDER_400_2"),

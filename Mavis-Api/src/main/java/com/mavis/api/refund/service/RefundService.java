@@ -1,7 +1,5 @@
 package com.mavis.api.refund.service;
 
-import com.mavis.api.auth.implement.UserReader;
-import com.mavis.api.refund.dto.CreateRefundRequest;
 import com.mavis.api.refund.dto.RequestReturnRequest;
 import com.mavis.api.refund.implement.RefundImageUploader;
 import com.mavis.domain.domains.delivery.domain.Delivery;
@@ -26,35 +24,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RefundService {
 
-    private final UserReader userReader;
     private final OrderReader orderReader;
     private final RefundReader refundReader;
     private final RefundAppender refundAppender;
     private final RefundImageUploader refundImageUploader;
-
-    @Transactional
-    public Refund createRefund(Long orderItemId, CreateRefundRequest request) {
-        OrderItem orderItem = orderReader.findOrderItemById(orderItemId);
-
-        if (refundReader.hasActiveRefund(orderItem)) {
-            throw AlreadyRefundRequestedException.EXCEPTION;
-        }
-
-        if (request.refundQuantity() <= 0 || request.refundQuantity() > orderItem.getQuantity()) {
-            throw InvalidRefundQuantityException.EXCEPTION;
-        }
-
-        int refundAmount = orderItem.getPrice() * request.refundQuantity();
-
-        Refund refund = Refund.builder()
-                .orderItem(orderItem)
-                .refundReason(request.refundReason())
-                .refundQuantity(request.refundQuantity())
-                .refundAmount(refundAmount)
-                .build();
-
-        return refundAppender.save(refund);
-    }
 
     @Transactional
     public void createReturnRefund(Long orderItemId, RequestReturnRequest request, List<MultipartFile> images) {
