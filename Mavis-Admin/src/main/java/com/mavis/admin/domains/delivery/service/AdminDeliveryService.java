@@ -69,6 +69,7 @@ public class AdminDeliveryService {
         return PageResponse.of(deliveryResponses);
     }
 
+    @Transactional(readOnly = true)
     public byte[] getOrderByExcel(LocalDate startDate, LocalDate endDate) {
         try (
                 SXSSFWorkbook workbook = new SXSSFWorkbook();
