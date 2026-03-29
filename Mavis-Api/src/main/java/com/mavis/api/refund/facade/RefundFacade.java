@@ -6,6 +6,7 @@ import com.mavis.common.properties.TossPaymentsProperties;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.domain.OrderStatus;
+import com.mavis.domain.domains.order.implement.OrderReader;
 import com.mavis.domain.domains.order.repository.PaymentRepository;
 import com.mavis.domain.domains.refund.domain.Refund;
 import com.mavis.domain.domains.refund.exception.CannotRefundException;
@@ -28,17 +29,17 @@ public class RefundFacade {
     private final PaymentsCancelClient paymentsCancelClient;
     private final RefundService refundService;
     private final PaymentRepository paymentRepository;
+    private final OrderReader orderReader;
 
     public void cancelRefund(Long orderItemId, CreateRefundRequest request) {
-        Refund refund = refundService.createRefund(orderItemId, request);
-
-        OrderItem orderItem = refund.getOrderItem();
+        OrderItem orderItem = orderReader.findOrderItemById(orderItemId);
         Order order = orderItem.getOrder();
 
         if (order.getOrderStatus() != OrderStatus.PAYMENT_CONFIRMED) {
             throw CannotRefundException.EXCEPTION;
         }
 
+        Refund refund = refundService.createRefund(orderItemId, request);
         cancelTossPayment(order, refund, request);
     }
 
