@@ -22,8 +22,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.List;
 
 @Slf4j
@@ -47,8 +45,7 @@ OrderFacade {
 
         Order order = orderService.validateOrderForPayment(request.tossOrderId(), request.amount());
 
-        String authorizationHeader = "Basic " + Base64.getEncoder()
-                .encodeToString((tossPaymentsProperties.secretKey() + ":").getBytes(StandardCharsets.UTF_8));
+        String authorizationHeader = tossPaymentsProperties.getAuthorizationHeader();
         TossConfirmRequest tossConfirmRequest = TossConfirmRequest.of(request.paymentKey(), request.tossOrderId(), request.amount());
         PaymentsResponse response;
         try {
@@ -76,8 +73,7 @@ OrderFacade {
         Order order = orderService.findOrderToCancel(orderId);
         Payment payment = paymentReader.findByOrder(order);
 
-        String authorizationHeader = "Basic " + Base64.getEncoder()
-                .encodeToString((tossPaymentsProperties.secretKey() + ":").getBytes(StandardCharsets.UTF_8));
+        String authorizationHeader = tossPaymentsProperties.getAuthorizationHeader();
         PaymentsResponse paymentsResponse = paymentsCancelClient.cancelPayments(
                 authorizationHeader, payment.getPaymentKey(), payment.getPaymentKey(),
                 CancelPaymentsRequest.of(request.refundReason()));

@@ -13,8 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 
 @Slf4j
 @Component
@@ -32,8 +30,7 @@ public class AdminRefundFacade {
         Order order = refund.getOrderItem().getOrder();
         Payment payment = paymentReader.findByOrder(order);
 
-        String authorizationHeader = "Basic " + Base64.getEncoder()
-                .encodeToString((tossPaymentsProperties.secretKey() + ":").getBytes(StandardCharsets.UTF_8));
+        String authorizationHeader = tossPaymentsProperties.getAuthorizationHeader();
 
         PaymentsResponse response = paymentsCancelClient.cancelPayments(
                 authorizationHeader,
