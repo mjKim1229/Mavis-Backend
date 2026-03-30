@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -49,7 +50,7 @@ OrderFacade {
         TossConfirmRequest tossConfirmRequest = TossConfirmRequest.of(request.paymentKey(), request.tossOrderId(), request.amount());
         PaymentsResponse response;
         try {
-            response = paymentsConfirmClient.confirmPayments(authorizationHeader, request.paymentKey(), tossConfirmRequest);
+            response = paymentsConfirmClient.confirmPayments(authorizationHeader, UUID.randomUUID().toString(), tossConfirmRequest);
         } catch (Exception e) {
             log.error("토스 결제 승인 API 호출 실패", e);
             throw e;
@@ -61,7 +62,7 @@ OrderFacade {
             log.error("결제 후 처리 실패, 결제 취소 시도", e);
             paymentsCancelClient.cancelPayments(
                     authorizationHeader,
-                    request.paymentKey(),
+                    UUID.randomUUID().toString(),
                     request.paymentKey(),
                     CancelPaymentsRequest.of("결제 실패로 인한 자동 취소")
             );
@@ -75,7 +76,7 @@ OrderFacade {
 
         String authorizationHeader = tossPaymentsProperties.getAuthorizationHeader();
         PaymentsResponse paymentsResponse = paymentsCancelClient.cancelPayments(
-                authorizationHeader, payment.getPaymentKey(), payment.getPaymentKey(),
+                authorizationHeader, UUID.randomUUID().toString(), payment.getPaymentKey(),
                 CancelPaymentsRequest.of(request.refundReason()));
         log.info("주문 취소 요청에 대한 응답 : {}", paymentsResponse);
 
