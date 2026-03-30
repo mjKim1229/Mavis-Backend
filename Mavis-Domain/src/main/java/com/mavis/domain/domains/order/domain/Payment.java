@@ -4,7 +4,7 @@ import com.mavis.domain.domains.common.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -32,9 +32,9 @@ public class Payment extends BaseEntity {
 
     private Long balanceAmount;
 
-    private ZonedDateTime requestedAt;
+    private LocalDateTime requestedAt;
 
-    private ZonedDateTime approvedAt;
+    private LocalDateTime approvedAt;
 
     @Column(length = 200)
     private String lastTransactionKey;
