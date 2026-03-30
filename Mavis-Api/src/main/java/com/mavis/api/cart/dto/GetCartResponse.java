@@ -2,6 +2,7 @@ package com.mavis.api.cart.dto;
 
 import com.mavis.domain.domains.cart.domain.CartItem;
 import com.mavis.domain.domains.product.domain.Product;
+import com.mavis.domain.domains.product.domain.ProductImageType;
 import lombok.Builder;
 
 @Builder
@@ -17,8 +18,11 @@ public record GetCartResponse(
         return GetCartResponse.builder()
                 .cartItemId(cartItem.getId())
                 .productName(product.getName())
-                //TODO 이미지
-                .productImageUrl("imageUrl")
+                .productImageUrl(product.getImages().stream()
+                        .filter(image -> image.getImageType() == ProductImageType.MAIN)
+                        .findFirst()
+                        .map(image -> image.getImageUrl())
+                        .orElse(null))
                 .color(cartItem.getColor())
                 .quantity(cartItem.getQuantity())
                 .totalPrice(cartItem.getTotalPrice())
