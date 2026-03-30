@@ -29,6 +29,10 @@ public class Refund extends BaseEntity {
     @Builder.Default
     private RefundStatus refundStatus = RefundStatus.REQUESTED;
 
+    @Column(columnDefinition = "varchar(255)")
+    @Enumerated(EnumType.STRING)
+    private RefundType refundType;
+
     private String refundReason;
 
     private int refundQuantity;

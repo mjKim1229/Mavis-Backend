@@ -8,6 +8,7 @@ import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.implement.OrderReader;
 import com.mavis.domain.domains.refund.domain.Refund;
+import com.mavis.domain.domains.refund.domain.RefundType;
 import com.mavis.domain.domains.refund.exception.AlreadyRefundRequestedException;
 import com.mavis.domain.domains.refund.exception.CannotRefundException;
 import com.mavis.domain.domains.refund.exception.InvalidRefundQuantityException;
@@ -55,6 +56,7 @@ public class RefundService {
                 .refundQuantity(request.refundQuantity())
                 .refundAmount(refundAmount)
                 .trackingNumber(request.trackingNumber())
+                .refundType(RefundType.PARTIAL)
                 .build();
 
         Refund saved = refundAppender.save(refund);

@@ -11,6 +11,7 @@ import com.mavis.domain.domains.order.implement.OrderReader;
 import com.mavis.domain.domains.order.implement.PaymentReader;
 import com.mavis.domain.domains.refund.domain.Refund;
 import com.mavis.domain.domains.refund.domain.RefundStatus;
+import com.mavis.domain.domains.refund.domain.RefundType;
 import com.mavis.domain.domains.refund.implement.RefundAppender;
 import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsCancelClient;
 import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsConfirmClient;
@@ -91,6 +92,7 @@ OrderFacade {
                         .refundQuantity(orderItem.getQuantity())
                         .refundAmount(orderItem.getPrice() * orderItem.getQuantity())
                         .refundStatus(RefundStatus.COMPLETED)
+                        .refundType(RefundType.FULL)
                         .cancelTransactionKey(cancelTransactionKey)
                         .build())
                 .toList();
