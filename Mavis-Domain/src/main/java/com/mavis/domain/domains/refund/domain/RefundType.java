@@ -5,8 +5,8 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public enum RefundType implements EnumMapperType {
-    FULL("전체 환불"),
-    PARTIAL("부분 환불");
+    CANCEL("주문 취소"),
+    RETURN("반품 신청");
 
     private final String title;
 

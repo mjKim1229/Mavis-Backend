@@ -51,7 +51,7 @@ public class RefundService {
                 .refundQuantity(orderItem.getQuantity())
                 .refundAmount(refundAmount)
                 .trackingNumber(request.trackingNumber())
-                .refundType(RefundType.FULL)
+                .refundType(RefundType.RETURN)
                 .build();
 
         Refund saved = refundAppender.save(refund);

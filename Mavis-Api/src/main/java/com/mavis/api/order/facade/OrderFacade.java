@@ -92,7 +92,7 @@ OrderFacade {
                         .refundQuantity(orderItem.getQuantity())
                         .refundAmount(orderItem.getPrice() * orderItem.getQuantity())
                         .refundStatus(RefundStatus.COMPLETED)
-                        .refundType(RefundType.FULL)
+                        .refundType(RefundType.CANCEL)
                         .cancelTransactionKey(cancelTransactionKey)
                         .build())
                 .toList();
