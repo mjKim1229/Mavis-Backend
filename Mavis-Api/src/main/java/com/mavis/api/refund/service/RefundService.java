@@ -11,7 +11,6 @@ import com.mavis.domain.domains.refund.domain.Refund;
 import com.mavis.domain.domains.refund.domain.RefundType;
 import com.mavis.domain.domains.refund.exception.AlreadyRefundRequestedException;
 import com.mavis.domain.domains.refund.exception.CannotRefundException;
-import com.mavis.domain.domains.refund.exception.InvalidRefundQuantityException;
 import com.mavis.domain.domains.refund.implement.RefundAppender;
 import com.mavis.domain.domains.refund.implement.RefundReader;
 import lombok.RequiredArgsConstructor;
@@ -44,19 +43,15 @@ public class RefundService {
             throw AlreadyRefundRequestedException.EXCEPTION;
         }
 
-        if (request.refundQuantity() <= 0 || request.refundQuantity() > orderItem.getQuantity()) {
-            throw InvalidRefundQuantityException.EXCEPTION;
-        }
-
-        int refundAmount = orderItem.getPrice() * request.refundQuantity();
+        int refundAmount = orderItem.getPrice() * orderItem.getQuantity();
 
         Refund refund = Refund.builder()
                 .orderItem(orderItem)
                 .refundReason(request.refundReason())
-                .refundQuantity(request.refundQuantity())
+                .refundQuantity(orderItem.getQuantity())
                 .refundAmount(refundAmount)
                 .trackingNumber(request.trackingNumber())
-                .refundType(RefundType.PARTIAL)
+                .refundType(RefundType.FULL)
                 .build();
 
         Refund saved = refundAppender.save(refund);
