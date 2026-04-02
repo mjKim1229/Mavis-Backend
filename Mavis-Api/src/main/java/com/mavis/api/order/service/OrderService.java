@@ -13,8 +13,6 @@ import com.mavis.domain.domains.order.exception.PriceMismatchException;
 import com.mavis.domain.domains.order.implement.OrderReader;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.order.repository.PaymentRepository;
-import com.mavis.domain.domains.refund.domain.RefundStatus;
-import com.mavis.domain.domains.refund.implement.RefundReader;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsStatus;
@@ -28,7 +26,6 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.mavis.common.util.OrderNumberGenerator.DOMAIN_PREFIX;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +37,6 @@ public class OrderService {
     private final PaymentRepository paymentRepository;
     private static final int DELIVERY_FEE = 4000;
     private final OrderReader orderReader;
-    private final RefundReader refundReader;
 
     @Transactional
     @Retryable(
@@ -147,32 +143,7 @@ public class OrderService {
     public PageResponse<UserOrderInfo> getUserOrderList(Pageable pageable) {
         User user = userReader.getCurrentUser();
         Page<Order> orderPages = orderRepository.findOrderPagesByUser(pageable, user);
-        Page<UserOrderInfo> userOrderInfoPages = orderPages.map(o -> {
-                    OrderAddress orderAddress = o.getOrderAddress();
-                    return UserOrderInfo.builder()
-                            .orderId(o.getId())
-                            .tossOrderId(o.getOrderId().substring(DOMAIN_PREFIX.length()))
-                            .orderProductList(o.getOrderItems().stream()
-                                    .map(orderItem -> {
-                                        OrderOption orderOption = new OrderOption(orderItem.getColor(), orderItem.getQuantity());
-                                        RefundStatus refundStatus = refundReader.findRefundStatusByOrderItem(orderItem).orElse(null);
-                                        return new OrderProduct(orderItem.getId(), orderItem.getProduct().getId(), orderItem.getProduct().getName(), orderOption, orderItem.getPrice() * orderItem.getQuantity(), refundStatus);
-                                    }).toList()
-                            )
-                            .address(orderAddress.getAddress())
-                            .addressInfo(orderAddress.getAddressDetail())
-                            .totalPrice(o.getTotalPrice())
-                            .userName(o.getUser().getName())
-                            .orderStatus(o.getOrderStatus() == OrderStatus.CANCELED
-                                    ? o.getOrderStatus().getTitle()
-                                    : o.getDelivery() != null
-                                        ? o.getDelivery().getDeliveryStatus().getTitle()
-                                        : o.getOrderStatus().getTitle())
-                            .createdAt(o.getCreatedAt())
-                            .build();
-                }
-        );
-        return PageResponse.of(userOrderInfoPages);
+        return PageResponse.of(orderPages.map(UserOrderInfo::from));
     }
 
     @Transactional(readOnly = true)

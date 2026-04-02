@@ -64,4 +64,11 @@ public class Order extends BaseEntity {
     public void confirmOrder() {
         this.orderStatus = OrderStatus.ORDERED;
     }
+
+    public String getDisplayStatus() {
+        if (orderStatus == OrderStatus.CANCELED) {
+            return orderStatus.getTitle();
+        }
+        return delivery != null ? delivery.getDeliveryStatus().getTitle() : orderStatus.getTitle();
+    }
 }
