@@ -3,6 +3,7 @@ package com.mavis.admin.domains.refund.dto;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.refund.domain.Refund;
+import com.mavis.domain.domains.refund.domain.RefundImage;
 import com.mavis.domain.domains.refund.domain.RefundStatus;
 import lombok.Builder;
 
@@ -53,7 +54,7 @@ public record GetAdminRefundResponse(
                         refund.getRefundReason(),
                         refund.getRefundStatus(),
                         refund.getTrackingNumber(),
-                        refund.getImages().stream().map(image -> image.getImageUrl()).toList(),
+                        refund.getImages().stream().map(RefundImage::getImageUrl).toList(),
                         refund.getCreatedAt()
                 ))
                 .build();
