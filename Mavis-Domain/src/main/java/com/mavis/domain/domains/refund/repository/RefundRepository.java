@@ -8,9 +8,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface RefundRepository extends JpaRepository<Refund, Long> {
     boolean existsByOrderItemAndRefundStatusIn(OrderItem orderItem, List<RefundStatus> statuses);
-    List<Refund> findByOrderItem(OrderItem orderItem);
+    Optional<Refund> findByOrderItem(OrderItem orderItem);
     Page<Refund> findByRefundStatus(RefundStatus refundStatus, Pageable pageable);
 }

@@ -2,6 +2,7 @@ package com.mavis.domain.domains.order.domain;
 
 import com.mavis.domain.domains.common.jpa.BaseEntity;
 import com.mavis.domain.domains.product.domain.Product;
+import com.mavis.domain.domains.refund.domain.Refund;
 import com.mavis.domain.domains.review.domain.Review;
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,6 +33,9 @@ public class OrderItem extends BaseEntity {
 
     @OneToOne(mappedBy = "orderItem")
     private Review review;
+
+    @OneToOne(mappedBy = "orderItem")
+    private Refund refund;
 
     @Builder.Default
     private boolean isDeleted = false;

@@ -13,6 +13,8 @@ import com.mavis.domain.domains.order.exception.PriceMismatchException;
 import com.mavis.domain.domains.order.implement.OrderReader;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.order.repository.PaymentRepository;
+import com.mavis.domain.domains.refund.domain.RefundStatus;
+import com.mavis.domain.domains.refund.implement.RefundReader;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsStatus;
@@ -38,6 +40,7 @@ public class OrderService {
     private final PaymentRepository paymentRepository;
     private static final int DELIVERY_FEE = 4000;
     private final OrderReader orderReader;
+    private final RefundReader refundReader;
 
     @Transactional
     @Retryable(
@@ -152,7 +155,8 @@ public class OrderService {
                             .orderProductList(o.getOrderItems().stream()
                                     .map(orderItem -> {
                                         OrderOption orderOption = new OrderOption(orderItem.getColor(), orderItem.getQuantity());
-                                        return new OrderProduct(orderItem.getProduct().getId(), orderItem.getProduct().getName(), orderOption);
+                                        RefundStatus refundStatus = refundReader.findRefundStatusByOrderItem(orderItem).orElse(null);
+                                        return new OrderProduct(orderItem.getId(), orderItem.getProduct().getId(), orderItem.getProduct().getName(), orderOption, orderItem.getPrice() * orderItem.getQuantity(), refundStatus);
                                     }).toList()
                             )
                             .address(orderAddress.getAddress())
