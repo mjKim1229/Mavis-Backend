@@ -24,6 +24,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             MavisCodeException e, HttpServletRequest request
     ) {
         ErrorReason errorReason = e.getErrorReason();
+        if (errorReason.status() >= 500) {
+            log.error("MavisCodeException 5xx [{}]", request.getRequestURI(), e);
+        }
         ErrorResponse errorResponse = new ErrorResponse(errorReason, request.getRequestURI());
         return ResponseEntity.status(
                         HttpStatusCode.valueOf(errorReason.status())
