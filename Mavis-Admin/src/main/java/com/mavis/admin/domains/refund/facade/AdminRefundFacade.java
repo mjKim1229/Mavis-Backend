@@ -10,7 +10,6 @@ import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsCancelClie
 import com.mavis.infrastructure.outer.api.tosspayments.dto.CancelPaymentsRequest;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
 import lombok.RequiredArgsConstructor;
-import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +24,7 @@ public class AdminRefundFacade {
     private final AdminRefundService adminRefundService;
     private final PaymentReader paymentReader;
 
-    public void approveRefund(Long refundId) {
+    public void approveRefund(String idempotencyKey, Long refundId) {
         Refund refund = adminRefundService.approveRefund(refundId);
 
         Order order = refund.getOrderItem().getOrder();
@@ -35,7 +34,7 @@ public class AdminRefundFacade {
 
         PaymentsResponse response = paymentsCancelClient.cancelPayments(
                 authorizationHeader,
-                UUID.randomUUID().toString(),
+                idempotencyKey,
                 payment.getPaymentKey(),
                 new CancelPaymentsRequest(refund.getRefundReason(), refund.getRefundAmount())
         );

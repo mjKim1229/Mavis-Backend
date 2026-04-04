@@ -28,8 +28,10 @@ public class AdminRefundController {
 
     @Operation(summary = "환불 승인 (반품 → Toss cancel)")
     @PostMapping("/{refundId}/approve")
-    public void approveRefund(@PathVariable Long refundId) {
-        adminRefundFacade.approveRefund(refundId);
+    public void approveRefund(
+            @RequestHeader("Idempotency-Key") String idempotencyKey,
+            @PathVariable Long refundId) {
+        adminRefundFacade.approveRefund(idempotencyKey, refundId);
     }
 
     @Operation(summary = "환불 거절")
