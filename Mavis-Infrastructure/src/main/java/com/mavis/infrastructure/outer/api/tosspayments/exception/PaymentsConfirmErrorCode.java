@@ -37,7 +37,26 @@ public enum PaymentsConfirmErrorCode implements BaseErrorCode {
     INVALID_ACCOUNT_INFO_RE_REGISTER(400, "유효하지 않은 계좌입니다. 계좌 재등록 후 시도해주세요.", "PAYMENTS_CONFIRM_400_27"),
     NOT_AVAILABLE_PAYMENT(400, "결제가 불가능한 시간대입니다.", "PAYMENTS_CONFIRM_400_28"),
     UNAPPROVED_ORDER_ID(400, "아직 승인되지 않은 주문번호입니다.", "PAYMENTS_CONFIRM_400_29"),
-    EXCEED_MAX_MONTHLY_PAYMENT_AMOUNT(400, "당월 결제 가능금액인 1,000,000원을 초과 하셨습니다.", "PAYMENTS_CONFIRM_400_30");
+    EXCEED_MAX_MONTHLY_PAYMENT_AMOUNT(400, "당월 결제 가능금액인 1,000,000원을 초과 하셨습니다.", "PAYMENTS_CONFIRM_400_30"),
+
+    // 403
+    REJECT_ACCOUNT_PAYMENT(403, "잔액부족으로 결제에 실패했습니다.", "PAYMENTS_CONFIRM_403_1"),
+    REJECT_CARD_PAYMENT(403, "한도초과 혹은 잔액부족으로 결제에 실패했습니다.", "PAYMENTS_CONFIRM_403_2"),
+    REJECT_CARD_COMPANY(403, "결제 승인이 거절되었습니다.", "PAYMENTS_CONFIRM_403_3"),
+    REJECT_TOSSPAY_INVALID_ACCOUNT(403, "선택하신 출금 계좌가 출금이체 등록이 되어 있지 않아요. 계좌를 다시 등록해 주세요.", "PAYMENTS_CONFIRM_403_4"),
+    EXCEED_MAX_AUTH_COUNT(403, "최대 인증 횟수를 초과했습니다. 카드사로 문의해주세요.", "PAYMENTS_CONFIRM_403_5"),
+    EXCEED_MAX_ONE_DAY_AMOUNT(403, "일일 한도를 초과했습니다.", "PAYMENTS_CONFIRM_403_6"),
+    NOT_AVAILABLE_BANK(403, "은행 서비스 시간이 아닙니다.", "PAYMENTS_CONFIRM_403_7"),
+    INVALID_PASSWORD(403, "결제 비밀번호가 일치하지 않습니다.", "PAYMENTS_CONFIRM_403_8"),
+    FDS_ERROR(403, "[토스페이먼츠] 위험거래가 감지되어 결제가 제한됩니다. 발송된 문자에 포함된 링크를 통해 본인인증 후 결제가 가능합니다. (고객센터: 1644-8051)", "PAYMENTS_CONFIRM_403_9"),
+
+    // 404
+    NOT_FOUND_PAYMENT(404, "존재하지 않는 결제 정보 입니다.", "PAYMENTS_CONFIRM_404_1"),
+    NOT_FOUND_PAYMENT_SESSION(404, "결제 시간이 만료되어 결제 진행 데이터가 존재하지 않습니다.", "PAYMENTS_CONFIRM_404_2"),
+
+    // 500
+    FAILED_PAYMENT_INTERNAL_SYSTEM_PROCESSING(500, "결제가 완료되지 않았어요. 다시 시도해주세요.", "PAYMENTS_CONFIRM_500_1"),
+    UNKNOWN_PAYMENT_ERROR(500, "결제에 실패했어요. 같은 문제가 반복된다면 은행이나 카드사로 문의해주세요.", "PAYMENTS_CONFIRM_500_2");
 
     private final Integer status;
     private final String message;

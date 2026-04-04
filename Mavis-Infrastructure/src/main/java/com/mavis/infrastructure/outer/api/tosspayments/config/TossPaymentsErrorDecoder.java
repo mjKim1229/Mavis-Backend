@@ -10,7 +10,6 @@ import com.mavis.infrastructure.outer.api.tosspayments.exception.TossPaymentsExc
 import feign.Response;
 import feign.codec.ErrorDecoder;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -38,7 +37,7 @@ public class TossPaymentsErrorDecoder implements ErrorDecoder {
             String tossCode = errorResponse.error().code();
             BaseErrorCode errorCode = ERROR_CODE_MAP.getOrDefault(tossCode, GlobalErrorCode.INTERNAL_SERVER_ERROR);
             return new TossPaymentsException(errorCode);
-        } catch (IOException e) {
+        } catch (Exception e) {
             return new TossPaymentsException(GlobalErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
