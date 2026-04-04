@@ -18,6 +18,7 @@ public interface PaymentsConfirmClient {
     PaymentsResponse confirmPayments(
             @RequestHeader(name = "Authorization") String authorization,
             @RequestHeader(name = "Idempotency-Key") String idempotencyKey,
+            @RequestHeader(name = "TossPayments-Test-Code", required = false) String testCode,
             @RequestBody TossConfirmRequest request
     );
 }

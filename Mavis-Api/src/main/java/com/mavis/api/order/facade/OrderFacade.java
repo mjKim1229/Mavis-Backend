@@ -40,7 +40,7 @@ OrderFacade {
     private final PaymentReader paymentReader;
     private final RefundAppender refundAppender;
 
-    public void confirmPayments(String idempotencyKey, ConfirmPaymentRequest request) {
+    public void confirmPayments(String idempotencyKey, String testCode, ConfirmPaymentRequest request) {
         if (paymentReader.existsByPaymentKey(request.paymentKey())) {
             throw DuplicatePaymentException.EXCEPTION;
         }
@@ -51,7 +51,7 @@ OrderFacade {
         TossConfirmRequest tossConfirmRequest = TossConfirmRequest.of(request.paymentKey(), request.tossOrderId(), request.amount());
         PaymentsResponse response;
         try {
-            response = paymentsConfirmClient.confirmPayments(authorizationHeader, idempotencyKey, tossConfirmRequest);
+            response = paymentsConfirmClient.confirmPayments(authorizationHeader, idempotencyKey, testCode, tossConfirmRequest);
         } catch (Exception e) {
             log.error("토스 결제 승인 API 호출 실패", e);
             throw e;

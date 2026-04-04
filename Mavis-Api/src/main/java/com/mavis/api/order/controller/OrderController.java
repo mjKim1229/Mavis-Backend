@@ -47,8 +47,9 @@ public class OrderController {
     @PostMapping("/toss/confirm")
     public void confirmPayments(
             @RequestHeader("Idempotency-Key") String idempotencyKey,
+            @RequestHeader(value = "TossPayments-Test-Code", required = false) String testCode,
             @RequestBody ConfirmPaymentRequest request) {
-        orderFacade.confirmPayments(idempotencyKey, request);
+        orderFacade.confirmPayments(idempotencyKey, testCode, request);
     }
 
     @Operation(summary = "주문 취소 (배송전)")
