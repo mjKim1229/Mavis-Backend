@@ -132,7 +132,11 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public Order findOrderToCancel(Long orderId) {
+        User currentUser = userReader.getCurrentUser();
         Order order = orderReader.findOrderById(orderId);
+        if (!order.getUser().equals(currentUser)) {
+            throw InvalidOrderInfoException.EXCEPTION;
+        }
         if (!order.getOrderStatus().equals(OrderStatus.PAYMENT_CONFIRMED)) {
             throw CannotCancelOrderException.EXCEPTION;
         }
