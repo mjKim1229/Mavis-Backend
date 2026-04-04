@@ -38,7 +38,7 @@ public class TossPaymentsErrorDecoder implements ErrorDecoder {
             byte[] bodyBytes = response.body().asInputStream().readAllBytes();
             String body = new String(bodyBytes, StandardCharsets.UTF_8);
             TossErrorResponse errorResponse = objectMapper.readValue(body, TossErrorResponse.class);
-            String tossCode = errorResponse.error().code();
+            String tossCode = errorResponse.code();
             BaseErrorCode errorCode = ERROR_CODE_MAP.getOrDefault(tossCode, GlobalErrorCode.INTERNAL_SERVER_ERROR);
             return new TossPaymentsException(errorCode);
         } catch (Exception e) {
