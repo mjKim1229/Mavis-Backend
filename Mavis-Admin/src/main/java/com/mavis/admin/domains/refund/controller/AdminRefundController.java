@@ -30,8 +30,9 @@ public class AdminRefundController {
     @PostMapping("/{refundId}/approve")
     public void approveRefund(
             @RequestHeader("Idempotency-Key") String idempotencyKey,
+            @RequestHeader(value = "TossPayments-Test-Code", required = false) String testCode,
             @PathVariable Long refundId) {
-        adminRefundFacade.approveRefund(idempotencyKey, refundId);
+        adminRefundFacade.approveRefund(idempotencyKey, testCode, refundId);
     }
 
     @Operation(summary = "환불 거절")

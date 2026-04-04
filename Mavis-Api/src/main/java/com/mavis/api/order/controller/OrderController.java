@@ -56,9 +56,10 @@ public class OrderController {
     @PostMapping("/{orderId}/cancel")
     public void cancelPayments(
             @RequestHeader("Idempotency-Key") String idempotencyKey,
+            @RequestHeader(value = "TossPayments-Test-Code", required = false) String testCode,
             @PathVariable Long orderId,
             @RequestBody CancelOrderRequest request) {
-        orderFacade.cancelPayments(idempotencyKey, orderId, request);
+        orderFacade.cancelPayments(idempotencyKey, testCode, orderId, request);
     }
 
     @Operation(summary = "토스 PG 가상계좌 입금 콜백")

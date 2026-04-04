@@ -19,6 +19,7 @@ public interface PaymentsCancelClient {
     PaymentsResponse cancelPayments(
             @RequestHeader(name = "Authorization") String authorization,
             @RequestHeader(name = "Idempotency-Key") String idempotencyKey,
+            @RequestHeader(name = "TossPayments-Test-Code", required = false) String testCode,
             @PathVariable String paymentKey,
             @RequestBody CancelPaymentsRequest cancelPaymentsRequest);
 }

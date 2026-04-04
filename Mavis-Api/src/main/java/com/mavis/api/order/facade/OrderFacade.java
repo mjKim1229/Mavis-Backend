@@ -64,6 +64,7 @@ OrderFacade {
             paymentsCancelClient.cancelPayments(
                     authorizationHeader,
                     UUID.randomUUID().toString(),
+                    null,
                     request.paymentKey(),
                     CancelPaymentsRequest.of("결제 실패로 인한 자동 취소")
             );
@@ -71,13 +72,13 @@ OrderFacade {
         }
     }
 
-    public void cancelPayments(String idempotencyKey, Long orderId, CancelOrderRequest request) {
+    public void cancelPayments(String idempotencyKey, String testCode, Long orderId, CancelOrderRequest request) {
         Order order = orderService.findOrderToCancel(orderId);
         Payment payment = paymentReader.findByOrder(order);
 
         String authorizationHeader = tossPaymentsProperties.getAuthorizationHeader();
         PaymentsResponse paymentsResponse = paymentsCancelClient.cancelPayments(
-                authorizationHeader, idempotencyKey, payment.getPaymentKey(),
+                authorizationHeader, idempotencyKey, testCode, payment.getPaymentKey(),
                 CancelPaymentsRequest.of(request.refundReason()));
         log.info("주문 취소 요청에 대한 응답 : {}", paymentsResponse);
 

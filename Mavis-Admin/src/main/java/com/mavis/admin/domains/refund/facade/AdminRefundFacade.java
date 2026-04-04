@@ -24,7 +24,7 @@ public class AdminRefundFacade {
     private final AdminRefundService adminRefundService;
     private final PaymentReader paymentReader;
 
-    public void approveRefund(String idempotencyKey, Long refundId) {
+    public void approveRefund(String idempotencyKey, String testCode, Long refundId) {
         Refund refund = adminRefundService.approveRefund(refundId);
 
         Order order = refund.getOrderItem().getOrder();
@@ -35,6 +35,7 @@ public class AdminRefundFacade {
         PaymentsResponse response = paymentsCancelClient.cancelPayments(
                 authorizationHeader,
                 idempotencyKey,
+                testCode,
                 payment.getPaymentKey(),
                 new CancelPaymentsRequest(refund.getRefundReason(), refund.getRefundAmount())
         );
