@@ -9,16 +9,20 @@ import com.mavis.infrastructure.outer.api.tosspayments.exception.PaymentsConfirm
 import com.mavis.infrastructure.outer.api.tosspayments.exception.TossPaymentsException;
 import feign.Response;
 import feign.codec.ErrorDecoder;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
+@RequiredArgsConstructor
 public class TossPaymentsErrorDecoder implements ErrorDecoder {
 
     private static final Map<String, BaseErrorCode> ERROR_CODE_MAP = new HashMap<>();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     static {
         // cancel 먼저 등록 후 confirm이 중복 키를 덮어씀 (INVALID_REQUEST, PROVIDER_ERROR)
@@ -38,6 +42,7 @@ public class TossPaymentsErrorDecoder implements ErrorDecoder {
             BaseErrorCode errorCode = ERROR_CODE_MAP.getOrDefault(tossCode, GlobalErrorCode.INTERNAL_SERVER_ERROR);
             return new TossPaymentsException(errorCode);
         } catch (Exception e) {
+            log.error("Toss 에러 응답 파싱 실패", e);
             return new TossPaymentsException(GlobalErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
