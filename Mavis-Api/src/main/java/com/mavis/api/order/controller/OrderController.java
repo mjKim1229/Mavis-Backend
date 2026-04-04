@@ -45,8 +45,10 @@ public class OrderController {
 
     @Operation(summary = "토스 PG 결제 승인")
     @PostMapping("/toss/confirm")
-    public void confirmPayments(@RequestBody ConfirmPaymentRequest request) {
-        orderFacade.confirmPayments(request);
+    public void confirmPayments(
+            @RequestHeader("Idempotency-Key") String idempotencyKey,
+            @RequestBody ConfirmPaymentRequest request) {
+        orderFacade.confirmPayments(idempotencyKey, request);
     }
 
     @Operation(summary = "주문 취소 (배송전)")
