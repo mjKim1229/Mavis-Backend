@@ -7,7 +7,6 @@ import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.Payment;
 import com.mavis.domain.domains.order.domain.PaymentApiType;
 import com.mavis.domain.domains.order.domain.PaymentIdempotency;
-import com.mavis.domain.domains.order.exception.DuplicatePaymentException;
 import com.mavis.domain.domains.order.exception.PaymentAlreadyProcessingException;
 import com.mavis.domain.domains.order.exception.PreviousPaymentFailedException;
 import com.mavis.domain.domains.order.implement.OrderReader;
@@ -40,14 +39,14 @@ OrderFacade {
     private final PaymentIdempotencyManager paymentIdempotencyManager;
 
     public void confirmPayments(String idempotencyKey, String testCode, ConfirmPaymentRequest request) {
-        paymentIdempotencyManager.findExisting(idempotencyKey, PaymentApiType.CONFIRM)
-                .ifPresent(h -> {
-                    switch (h.getStatus()) {
-                        case SUCCESS -> throw DuplicatePaymentException.EXCEPTION;
-                        case FAILURE -> throw PreviousPaymentFailedException.EXCEPTION;
-                        case PROCESSING -> throw PaymentAlreadyProcessingException.EXCEPTION;
-                    }
-                });
+        PaymentIdempotency existing = paymentIdempotencyManager.findExisting(idempotencyKey, PaymentApiType.CONFIRM).orElse(null);
+        if (existing != null) {
+            switch (existing.getStatus()) {
+                case SUCCESS -> { return; }
+                case FAILURE -> throw PreviousPaymentFailedException.EXCEPTION;
+                case PROCESSING -> throw PaymentAlreadyProcessingException.EXCEPTION;
+            }
+        }
 
         PaymentIdempotency idempotency = paymentIdempotencyManager.startProcessing(idempotencyKey, PaymentApiType.CONFIRM);
 
@@ -81,14 +80,14 @@ OrderFacade {
     }
 
     public void cancelPayments(String idempotencyKey, String testCode, Long orderId, CancelOrderRequest request) {
-        paymentIdempotencyManager.findExisting(idempotencyKey, PaymentApiType.CANCEL)
-                .ifPresent(h -> {
-                    switch (h.getStatus()) {
-                        case SUCCESS -> throw DuplicatePaymentException.EXCEPTION;
-                        case FAILURE -> throw PreviousPaymentFailedException.EXCEPTION;
-                        case PROCESSING -> throw PaymentAlreadyProcessingException.EXCEPTION;
-                    }
-                });
+        PaymentIdempotency existing = paymentIdempotencyManager.findExisting(idempotencyKey, PaymentApiType.CANCEL).orElse(null);
+        if (existing != null) {
+            switch (existing.getStatus()) {
+                case SUCCESS -> { return; }
+                case FAILURE -> throw PreviousPaymentFailedException.EXCEPTION;
+                case PROCESSING -> throw PaymentAlreadyProcessingException.EXCEPTION;
+            }
+        }
 
         PaymentIdempotency idempotency = paymentIdempotencyManager.startProcessing(idempotencyKey, PaymentApiType.CANCEL);
 
