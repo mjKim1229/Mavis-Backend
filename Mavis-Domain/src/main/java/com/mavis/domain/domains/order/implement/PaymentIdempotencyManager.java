@@ -40,6 +40,7 @@ public class PaymentIdempotencyManager {
         }
     }
 
+    @Transactional
     public void markSuccess(PaymentIdempotency idempotency) {
         idempotency.success();
         paymentIdempotencyRepository.save(idempotency);
