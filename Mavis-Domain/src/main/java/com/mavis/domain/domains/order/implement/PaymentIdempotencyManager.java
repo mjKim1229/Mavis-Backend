@@ -2,7 +2,6 @@ package com.mavis.domain.domains.order.implement;
 
 import com.mavis.domain.domains.order.domain.PaymentApiType;
 import com.mavis.domain.domains.order.domain.PaymentIdempotency;
-import com.mavis.domain.domains.order.exception.DuplicatePaymentException;
 import com.mavis.domain.domains.order.exception.IdempotencyNotFoundException;
 import com.mavis.domain.domains.order.exception.PaymentAlreadyProcessingException;
 import com.mavis.domain.domains.order.exception.PreviousPaymentFailedException;
@@ -40,8 +39,8 @@ public class PaymentIdempotencyManager {
 
             switch (existing.getStatus()) {
                 case PROCESSING -> throw PaymentAlreadyProcessingException.EXCEPTION;
-                case SUCCESS -> throw DuplicatePaymentException.EXCEPTION;
                 case FAILURE -> throw PreviousPaymentFailedException.EXCEPTION;
+                case SUCCESS -> { return existing; }
             }
             throw IdempotencyNotFoundException.EXCEPTION;
         }

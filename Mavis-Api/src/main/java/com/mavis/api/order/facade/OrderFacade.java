@@ -3,6 +3,7 @@ package com.mavis.api.order.facade;
 import com.mavis.api.order.dto.CancelOrderRequest;
 import com.mavis.api.order.service.OrderService;
 import com.mavis.common.properties.TossPaymentsProperties;
+import com.mavis.domain.domains.order.domain.IdempotencyStatus;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.Payment;
 import com.mavis.domain.domains.order.domain.PaymentApiType;
@@ -50,6 +51,9 @@ OrderFacade {
         }
 
         PaymentIdempotency idempotency = paymentIdempotencyManager.startProcessing(idempotencyKey, PaymentApiType.CONFIRM);
+        if (idempotency.getStatus() == IdempotencyStatus.SUCCESS) {
+            return;
+        }
 
         Order order = orderService.validateOrderForPayment(request.tossOrderId(), request.amount());
 
@@ -91,6 +95,9 @@ OrderFacade {
         }
 
         PaymentIdempotency idempotency = paymentIdempotencyManager.startProcessing(idempotencyKey, PaymentApiType.CANCEL);
+        if (idempotency.getStatus() == IdempotencyStatus.SUCCESS) {
+            return;
+        }
 
         Order order = orderService.findOrderToCancel(orderId);
         Payment payment = paymentReader.findByOrder(order);
