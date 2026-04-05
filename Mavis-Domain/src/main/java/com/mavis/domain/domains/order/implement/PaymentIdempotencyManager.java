@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -21,11 +20,6 @@ public class PaymentIdempotencyManager {
     private static final int EXPIRY_DAYS = 15;
 
     private final PaymentIdempotencyRepository paymentIdempotencyRepository;
-
-    public Optional<PaymentIdempotency> findExisting(String idempotencyKey, PaymentApiType apiType) {
-        return paymentIdempotencyRepository.findByIdempotencyKeyAndApiType(idempotencyKey, apiType)
-                .filter(h -> h.getExpiredAt().isAfter(LocalDateTime.now()));
-    }
 
     public PaymentIdempotency startProcessing(String idempotencyKey, PaymentApiType apiType) {
         try {

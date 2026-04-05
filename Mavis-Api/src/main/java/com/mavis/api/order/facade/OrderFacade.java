@@ -8,8 +8,6 @@ import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.Payment;
 import com.mavis.domain.domains.order.domain.PaymentApiType;
 import com.mavis.domain.domains.order.domain.PaymentIdempotency;
-import com.mavis.domain.domains.order.exception.PaymentAlreadyProcessingException;
-import com.mavis.domain.domains.order.exception.PreviousPaymentFailedException;
 import com.mavis.domain.domains.order.implement.OrderReader;
 import com.mavis.domain.domains.order.implement.PaymentIdempotencyManager;
 import com.mavis.domain.domains.order.implement.PaymentReader;
@@ -23,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -41,15 +38,6 @@ OrderFacade {
     private final PaymentIdempotencyManager paymentIdempotencyManager;
 
     public void confirmPayments(String idempotencyKey, String testCode, ConfirmPaymentRequest request) {
-        Optional<PaymentIdempotency> existingConfirm = paymentIdempotencyManager.findExisting(idempotencyKey, PaymentApiType.CONFIRM);
-        if (existingConfirm.isPresent()) {
-            switch (existingConfirm.get().getStatus()) {
-                case SUCCESS -> { return; }
-                case FAILURE -> throw PreviousPaymentFailedException.EXCEPTION;
-                case PROCESSING -> throw PaymentAlreadyProcessingException.EXCEPTION;
-            }
-        }
-
         PaymentIdempotency idempotency = paymentIdempotencyManager.startProcessing(idempotencyKey, PaymentApiType.CONFIRM);
         if (idempotency.getStatus() == IdempotencyStatus.SUCCESS) {
             return;
@@ -85,15 +73,6 @@ OrderFacade {
     }
 
     public void cancelPayments(String idempotencyKey, String testCode, Long orderId, CancelOrderRequest request) {
-        Optional<PaymentIdempotency> existingCancel = paymentIdempotencyManager.findExisting(idempotencyKey, PaymentApiType.CANCEL);
-        if (existingCancel.isPresent()) {
-            switch (existingCancel.get().getStatus()) {
-                case SUCCESS -> { return; }
-                case FAILURE -> throw PreviousPaymentFailedException.EXCEPTION;
-                case PROCESSING -> throw PaymentAlreadyProcessingException.EXCEPTION;
-            }
-        }
-
         PaymentIdempotency idempotency = paymentIdempotencyManager.startProcessing(idempotencyKey, PaymentApiType.CANCEL);
         if (idempotency.getStatus() == IdempotencyStatus.SUCCESS) {
             return;
