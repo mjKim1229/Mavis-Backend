@@ -4,17 +4,15 @@ import com.mavis.api.order.dto.CancelOrderRequest;
 import com.mavis.api.order.service.OrderService;
 import com.mavis.common.properties.TossPaymentsProperties;
 import com.mavis.domain.domains.order.domain.Order;
-import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.domain.Payment;
 import com.mavis.domain.domains.order.domain.PaymentApiType;
 import com.mavis.domain.domains.order.domain.PaymentIdempotency;
+import com.mavis.domain.domains.order.exception.DuplicatePaymentException;
+import com.mavis.domain.domains.order.exception.PaymentAlreadyProcessingException;
+import com.mavis.domain.domains.order.exception.PreviousPaymentFailedException;
 import com.mavis.domain.domains.order.implement.OrderReader;
 import com.mavis.domain.domains.order.implement.PaymentIdempotencyManager;
 import com.mavis.domain.domains.order.implement.PaymentReader;
-import com.mavis.domain.domains.refund.domain.Refund;
-import com.mavis.domain.domains.refund.domain.RefundStatus;
-import com.mavis.domain.domains.refund.domain.RefundType;
-import com.mavis.domain.domains.refund.implement.RefundAppender;
 import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsCancelClient;
 import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsConfirmClient;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.CancelPaymentsRequest;
@@ -25,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -40,7 +37,6 @@ OrderFacade {
     private final OrderService orderService;
     private final OrderReader orderReader;
     private final PaymentReader paymentReader;
-    private final RefundAppender refundAppender;
     private final PaymentIdempotencyManager paymentIdempotencyManager;
 
     public void confirmPayments(String idempotencyKey, String testCode, ConfirmPaymentRequest request) {
@@ -48,8 +44,8 @@ OrderFacade {
                 .ifPresent(h -> {
                     switch (h.getStatus()) {
                         case SUCCESS -> throw DuplicatePaymentException.EXCEPTION;
-                        case FAILURE -> throw com.mavis.domain.domains.order.exception.PreviousPaymentFailedException.EXCEPTION;
-                        case PROCESSING -> throw com.mavis.domain.domains.order.exception.PaymentAlreadyProcessingException.EXCEPTION;
+                        case FAILURE -> throw PreviousPaymentFailedException.EXCEPTION;
+                        case PROCESSING -> throw PaymentAlreadyProcessingException.EXCEPTION;
                     }
                 });
 
@@ -69,8 +65,7 @@ OrderFacade {
         }
 
         try {
-            orderService.processPaymentSuccess(order, response);
-            paymentIdempotencyManager.markSuccess(idempotency);
+            orderService.processPaymentSuccess(order, response, idempotency);
         } catch (Exception e) {
             log.error("결제 후 처리 실패, 결제 취소 시도", e);
             paymentIdempotencyManager.markFailure(idempotency, e.getMessage());
@@ -90,8 +85,8 @@ OrderFacade {
                 .ifPresent(h -> {
                     switch (h.getStatus()) {
                         case SUCCESS -> throw DuplicatePaymentException.EXCEPTION;
-                        case FAILURE -> throw com.mavis.domain.domains.order.exception.PreviousPaymentFailedException.EXCEPTION;
-                        case PROCESSING -> throw com.mavis.domain.domains.order.exception.PaymentAlreadyProcessingException.EXCEPTION;
+                        case FAILURE -> throw PreviousPaymentFailedException.EXCEPTION;
+                        case PROCESSING -> throw PaymentAlreadyProcessingException.EXCEPTION;
                     }
                 });
 
@@ -117,22 +112,7 @@ OrderFacade {
             String cancelTransactionKey = paymentsResponse.cancels() != null && !paymentsResponse.cancels().isEmpty()
                     ? paymentsResponse.cancels().get(0).transactionKey()
                     : null;
-
-            List<Refund> refunds = order.getOrderItems().stream()
-                    .map(orderItem -> Refund.builder()
-                            .orderItem(orderItem)
-                            .refundReason(request.refundReason())
-                            .refundQuantity(orderItem.getQuantity())
-                            .refundAmount(orderItem.getPrice() * orderItem.getQuantity())
-                            .refundStatus(RefundStatus.COMPLETED)
-                            .refundType(RefundType.CANCEL)
-                            .cancelTransactionKey(cancelTransactionKey)
-                            .build())
-                    .toList();
-            refundAppender.saveAll(refunds);
-
-            orderService.cancelOrder(order);
-            paymentIdempotencyManager.markSuccess(idempotency);
+            orderService.processCancelSuccess(order, cancelTransactionKey, request.refundReason(), idempotency);
         } catch (Exception e) {
             log.error("주문 취소 후 처리 실패", e);
             paymentIdempotencyManager.markFailure(idempotency, e.getMessage());

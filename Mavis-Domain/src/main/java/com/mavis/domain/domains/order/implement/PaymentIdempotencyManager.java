@@ -10,6 +10,7 @@ import com.mavis.domain.domains.order.repository.PaymentIdempotencyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -50,6 +51,7 @@ public class PaymentIdempotencyManager {
         paymentIdempotencyRepository.save(idempotency);
     }
 
+    @Transactional
     public void markFailure(PaymentIdempotency idempotency, String reason) {
         idempotency.fail(reason);
         paymentIdempotencyRepository.save(idempotency);

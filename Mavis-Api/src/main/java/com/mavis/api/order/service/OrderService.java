@@ -6,11 +6,18 @@ import com.mavis.api.order.dto.*;
 import com.mavis.api.order.implement.OrderItemAppender;
 import com.mavis.common.util.OrderNumberGenerator;
 import com.mavis.domain.domains.order.domain.*;
+import com.mavis.domain.domains.refund.domain.Refund;
+import com.mavis.domain.domains.refund.domain.RefundStatus;
+import com.mavis.domain.domains.refund.domain.RefundType;
+import com.mavis.domain.domains.refund.implement.RefundAppender;
+
+import java.util.List;
 import com.mavis.domain.domains.order.exception.CannotCancelOrderException;
 import com.mavis.domain.domains.order.exception.InvalidOrderInfoException;
 import com.mavis.domain.domains.order.exception.OrderNotFoundException;
 import com.mavis.domain.domains.order.exception.PriceMismatchException;
 import com.mavis.domain.domains.order.implement.OrderReader;
+import com.mavis.domain.domains.order.implement.PaymentIdempotencyManager;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.order.repository.PaymentRepository;
 import com.mavis.domain.domains.user.domain.User;
@@ -37,6 +44,8 @@ public class OrderService {
     private final PaymentRepository paymentRepository;
     private static final int DELIVERY_FEE = 4000;
     private final OrderReader orderReader;
+    private final RefundAppender refundAppender;
+    private final PaymentIdempotencyManager paymentIdempotencyManager;
 
     @Transactional
     @Retryable(
@@ -84,7 +93,7 @@ public class OrderService {
     }
 
     @Transactional
-    public void processPaymentSuccess(Order order, PaymentsResponse response) {
+    public void processPaymentSuccess(Order order, PaymentsResponse response, PaymentIdempotency idempotency) {
         if (response.totalAmount() != order.getTotalPrice()) {
             throw PriceMismatchException.EXCEPTION;
         }
@@ -112,6 +121,29 @@ public class OrderService {
             order.confirmPayment();
         }
         orderRepository.save(order);
+
+        paymentIdempotencyManager.markSuccess(idempotency);
+    }
+
+    @Transactional
+    public void processCancelSuccess(Order order, String cancelTransactionKey, String refundReason, PaymentIdempotency idempotency) {
+        List<Refund> refunds = order.getOrderItems().stream()
+                .map(orderItem -> Refund.builder()
+                        .orderItem(orderItem)
+                        .refundReason(refundReason)
+                        .refundQuantity(orderItem.getQuantity())
+                        .refundAmount(orderItem.getPrice() * orderItem.getQuantity())
+                        .refundStatus(RefundStatus.COMPLETED)
+                        .refundType(RefundType.CANCEL)
+                        .cancelTransactionKey(cancelTransactionKey)
+                        .build())
+                .toList();
+        refundAppender.saveAll(refunds);
+
+        order.cancel();
+        orderRepository.save(order);
+
+        paymentIdempotencyManager.markSuccess(idempotency);
     }
 
     @Transactional
