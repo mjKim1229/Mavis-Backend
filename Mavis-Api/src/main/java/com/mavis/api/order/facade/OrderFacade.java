@@ -6,8 +6,10 @@ import com.mavis.common.properties.TossPaymentsProperties;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.domain.Payment;
-import com.mavis.domain.domains.order.exception.DuplicatePaymentException;
+import com.mavis.domain.domains.order.domain.PaymentApiType;
+import com.mavis.domain.domains.order.domain.PaymentIdempotency;
 import com.mavis.domain.domains.order.implement.OrderReader;
+import com.mavis.domain.domains.order.implement.PaymentIdempotencyManager;
 import com.mavis.domain.domains.order.implement.PaymentReader;
 import com.mavis.domain.domains.refund.domain.Refund;
 import com.mavis.domain.domains.refund.domain.RefundStatus;
@@ -39,11 +41,19 @@ OrderFacade {
     private final OrderReader orderReader;
     private final PaymentReader paymentReader;
     private final RefundAppender refundAppender;
+    private final PaymentIdempotencyManager paymentIdempotencyManager;
 
     public void confirmPayments(String idempotencyKey, String testCode, ConfirmPaymentRequest request) {
-        if (paymentReader.existsByPaymentKey(request.paymentKey())) {
-            throw DuplicatePaymentException.EXCEPTION;
-        }
+        paymentIdempotencyManager.findExisting(idempotencyKey, PaymentApiType.CONFIRM)
+                .ifPresent(h -> {
+                    switch (h.getStatus()) {
+                        case SUCCESS -> throw DuplicatePaymentException.EXCEPTION;
+                        case FAILURE -> throw com.mavis.domain.domains.order.exception.PreviousPaymentFailedException.EXCEPTION;
+                        case PROCESSING -> throw com.mavis.domain.domains.order.exception.PaymentAlreadyProcessingException.EXCEPTION;
+                    }
+                });
+
+        PaymentIdempotency idempotency = paymentIdempotencyManager.startProcessing(idempotencyKey, PaymentApiType.CONFIRM);
 
         Order order = orderService.validateOrderForPayment(request.tossOrderId(), request.amount());
 
@@ -54,13 +64,16 @@ OrderFacade {
             response = paymentsConfirmClient.confirmPayments(authorizationHeader, idempotencyKey, testCode, tossConfirmRequest);
         } catch (Exception e) {
             log.error("토스 결제 승인 API 호출 실패", e);
+            paymentIdempotencyManager.markFailure(idempotency, e.getMessage());
             throw e;
         }
 
         try {
             orderService.processPaymentSuccess(order, response);
+            paymentIdempotencyManager.markSuccess(idempotency);
         } catch (Exception e) {
             log.error("결제 후 처리 실패, 결제 취소 시도", e);
+            paymentIdempotencyManager.markFailure(idempotency, e.getMessage());
             paymentsCancelClient.cancelPayments(
                     authorizationHeader,
                     UUID.randomUUID().toString(),
@@ -73,32 +86,57 @@ OrderFacade {
     }
 
     public void cancelPayments(String idempotencyKey, String testCode, Long orderId, CancelOrderRequest request) {
+        paymentIdempotencyManager.findExisting(idempotencyKey, PaymentApiType.CANCEL)
+                .ifPresent(h -> {
+                    switch (h.getStatus()) {
+                        case SUCCESS -> throw DuplicatePaymentException.EXCEPTION;
+                        case FAILURE -> throw com.mavis.domain.domains.order.exception.PreviousPaymentFailedException.EXCEPTION;
+                        case PROCESSING -> throw com.mavis.domain.domains.order.exception.PaymentAlreadyProcessingException.EXCEPTION;
+                    }
+                });
+
+        PaymentIdempotency idempotency = paymentIdempotencyManager.startProcessing(idempotencyKey, PaymentApiType.CANCEL);
+
         Order order = orderService.findOrderToCancel(orderId);
         Payment payment = paymentReader.findByOrder(order);
 
         String authorizationHeader = tossPaymentsProperties.getAuthorizationHeader();
-        PaymentsResponse paymentsResponse = paymentsCancelClient.cancelPayments(
-                authorizationHeader, idempotencyKey, testCode, payment.getPaymentKey(),
-                CancelPaymentsRequest.of(request.refundReason()));
-        log.info("주문 취소 요청에 대한 응답 : {}", paymentsResponse);
+        PaymentsResponse paymentsResponse;
+        try {
+            paymentsResponse = paymentsCancelClient.cancelPayments(
+                    authorizationHeader, idempotencyKey, testCode, payment.getPaymentKey(),
+                    CancelPaymentsRequest.of(request.refundReason()));
+            log.info("주문 취소 요청에 대한 응답 : {}", paymentsResponse);
+        } catch (Exception e) {
+            log.error("토스 결제 취소 API 호출 실패", e);
+            paymentIdempotencyManager.markFailure(idempotency, e.getMessage());
+            throw e;
+        }
 
-        String cancelTransactionKey = paymentsResponse.cancels() != null && !paymentsResponse.cancels().isEmpty()
-                ? paymentsResponse.cancels().get(0).transactionKey()
-                : null;
+        try {
+            String cancelTransactionKey = paymentsResponse.cancels() != null && !paymentsResponse.cancels().isEmpty()
+                    ? paymentsResponse.cancels().get(0).transactionKey()
+                    : null;
 
-        List<Refund> refunds = order.getOrderItems().stream()
-                .map(orderItem -> Refund.builder()
-                        .orderItem(orderItem)
-                        .refundReason(request.refundReason())
-                        .refundQuantity(orderItem.getQuantity())
-                        .refundAmount(orderItem.getPrice() * orderItem.getQuantity())
-                        .refundStatus(RefundStatus.COMPLETED)
-                        .refundType(RefundType.CANCEL)
-                        .cancelTransactionKey(cancelTransactionKey)
-                        .build())
-                .toList();
-        refundAppender.saveAll(refunds);
+            List<Refund> refunds = order.getOrderItems().stream()
+                    .map(orderItem -> Refund.builder()
+                            .orderItem(orderItem)
+                            .refundReason(request.refundReason())
+                            .refundQuantity(orderItem.getQuantity())
+                            .refundAmount(orderItem.getPrice() * orderItem.getQuantity())
+                            .refundStatus(RefundStatus.COMPLETED)
+                            .refundType(RefundType.CANCEL)
+                            .cancelTransactionKey(cancelTransactionKey)
+                            .build())
+                    .toList();
+            refundAppender.saveAll(refunds);
 
-        orderService.cancelOrder(order);
+            orderService.cancelOrder(order);
+            paymentIdempotencyManager.markSuccess(idempotency);
+        } catch (Exception e) {
+            log.error("주문 취소 후 처리 실패", e);
+            paymentIdempotencyManager.markFailure(idempotency, e.getMessage());
+            throw e;
+        }
     }
 }

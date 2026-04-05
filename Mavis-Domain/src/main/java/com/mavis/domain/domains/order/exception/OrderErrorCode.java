@@ -13,7 +13,10 @@ public enum OrderErrorCode implements BaseErrorCode {
     PRICE_MISMATCH(400, "주문 금액이 일치하지 않습니다.", "ORDER_400_2"),
     UNSUPPORTED_PAYMENT_METHOD(400, "지원하지 않는 결제 수단입니다.", "ORDER_400_4"),
     CANNOT_CANCEL_ORDER(400, "주문 취소가 불가능한 상태입니다. 고객센터에 문의하세요", "ORDER_400_5"),
-    DUPLICATE_PAYMENT(409, "이미 처리된 결제입니다.", "ORDER_409_1");
+    DUPLICATE_PAYMENT(409, "이미 처리된 결제입니다.", "ORDER_409_1"),
+    PAYMENT_ALREADY_PROCESSING(409, "결제가 처리 중입니다. 잠시 후 다시 시도해주세요.", "ORDER_409_2"),
+    PREVIOUS_PAYMENT_FAILED(409, "이전 결제 시도가 실패했습니다.", "ORDER_409_3"),
+    IDEMPOTENCY_NOT_FOUND(500, "멱등키 조회에 실패했습니다.", "ORDER_500_1");
 
     private final Integer status;
     private final String message;
