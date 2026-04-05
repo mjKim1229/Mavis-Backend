@@ -38,11 +38,12 @@ public class PaymentIdempotencyManager {
                     .findByIdempotencyKeyAndApiType(idempotencyKey, apiType)
                     .orElseThrow(() -> IdempotencyNotFoundException.EXCEPTION);
 
-            return switch (existing.getStatus()) {
+            switch (existing.getStatus()) {
                 case PROCESSING -> throw PaymentAlreadyProcessingException.EXCEPTION;
                 case SUCCESS -> throw DuplicatePaymentException.EXCEPTION;
                 case FAILURE -> throw PreviousPaymentFailedException.EXCEPTION;
-            };
+            }
+            throw IdempotencyNotFoundException.EXCEPTION;
         }
     }
 
