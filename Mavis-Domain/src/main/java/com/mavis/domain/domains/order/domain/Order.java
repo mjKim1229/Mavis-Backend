@@ -49,6 +49,10 @@ public class Order extends BaseEntity {
         this.totalPrice = totalPrice;
     }
 
+    public void paymentRequested() {
+        this.orderStatus = OrderStatus.PAYMENT_REQUESTED;
+    }
+
     public void waitingForDeposit() {
         this.orderStatus = OrderStatus.WAITING_FOR_DEPOSIT;
     }

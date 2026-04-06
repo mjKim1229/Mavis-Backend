@@ -72,6 +72,13 @@ public class OrderService {
         return CreateOrderResponse.from(order.getOrderId());
     }
 
+    @Transactional
+    public void markPaymentRequested(String orderId) {
+        Order order = orderRepository.findByOrderIdAndIsDeletedFalse(orderId)
+                .orElseThrow(() -> OrderNotFoundException.EXCEPTION);
+        order.paymentRequested();
+    }
+
     @Transactional(readOnly = true)
     public Order validateOrderForPayment(String orderId, Long amount) {
         Order order = orderRepository.findByOrderIdAndIsDeletedFalse(orderId)

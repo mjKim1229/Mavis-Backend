@@ -44,6 +44,7 @@ OrderFacade {
         }
 
         Order order = orderService.validateOrderForPayment(request.tossOrderId(), request.amount());
+        orderService.markPaymentRequested(request.tossOrderId());
 
         String authorizationHeader = tossPaymentsProperties.getAuthorizationHeader();
         TossConfirmRequest tossConfirmRequest = TossConfirmRequest.of(request.paymentKey(), request.tossOrderId(), request.amount());
