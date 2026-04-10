@@ -7,7 +7,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum CartErrorCode implements BaseErrorCode {
 
-    CART_ITEM_NOT_FOUND(404, "장바구니가 존재하지 않습니다", "CART_404_1");
+    CART_ITEM_NOT_FOUND(404, "장바구니가 존재하지 않습니다", "CART_404_1"),
+    UNAUTHORIZED_CART(403, "본인의 장바구니만 수정/삭제할 수 있습니다.", "CART_403_1");
 
     private final Integer status;
     private final String message;

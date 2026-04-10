@@ -38,6 +38,7 @@ public class SecurityConfig {
                                 .requestMatchers("/v1/api/review/user/**").hasRole("USER")
                                 .requestMatchers("/v1/api/inquiry/user/**").hasRole("USER")
                                 .requestMatchers(HttpMethod.POST, "/v1/api/inquiry/product/**").hasRole("USER")
+                                .requestMatchers("/v1/api/refund/**").hasRole("USER")
                                 .requestMatchers("/v1/api/order/**").hasRole("USER")
                                 .requestMatchers("/v1/api/cart/**").hasRole("USER")
                                 .requestMatchers("/v1/api/favorites/**").hasRole("USER")

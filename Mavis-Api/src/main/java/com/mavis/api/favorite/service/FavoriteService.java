@@ -6,6 +6,7 @@ import com.mavis.api.favorite.dto.GetUserFavoriteResponse;
 import com.mavis.api.favorite.implement.FavoriteReader;
 import com.mavis.api.product.dto.GetProductPreviewResponse;
 import com.mavis.domain.domains.favorite.domain.Favorite;
+import com.mavis.domain.domains.favorite.exception.UnauthorizedFavoriteException;
 import com.mavis.domain.domains.favorite.repository.FavoriteRepository;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.product.domain.ProductColor;
@@ -69,7 +70,11 @@ public class FavoriteService {
 
     @Transactional
     public void deleteFavorite(Long favoriteId) {
+        User currentUser = userReader.getCurrentUser();
         Favorite favorite = favoriteReader.readById(favoriteId);
+        if (!favorite.getUser().getId().equals(currentUser.getId())) {
+            throw UnauthorizedFavoriteException.EXCEPTION;
+        }
         favorite.delete();
     }
 }

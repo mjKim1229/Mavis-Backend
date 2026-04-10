@@ -7,6 +7,7 @@ import com.mavis.api.cart.dto.UpdateCartRequest;
 import com.mavis.api.cart.implement.CartReader;
 import com.mavis.domain.domains.product.implement.ProductReader;
 import com.mavis.domain.domains.cart.domain.CartItem;
+import com.mavis.domain.domains.cart.exception.UnauthorizedCartException;
 import com.mavis.domain.domains.cart.repository.CartItemRepository;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.user.domain.User;
@@ -41,13 +42,21 @@ public class CartService {
 
     @Transactional
     public void updateCartItem(Long id, UpdateCartRequest request) {
+        User currentUser = userReader.getCurrentUser();
         CartItem cartItem = cartReader.findById(id);
+        if (!cartItem.getUser().getId().equals(currentUser.getId())) {
+            throw UnauthorizedCartException.EXCEPTION;
+        }
         cartItem.update(request.quantity(), request.color());
     }
 
     @Transactional
     public void delete(Long id) {
+        User currentUser = userReader.getCurrentUser();
         CartItem cartItem = cartReader.findById(id);
+        if (!cartItem.getUser().getId().equals(currentUser.getId())) {
+            throw UnauthorizedCartException.EXCEPTION;
+        }
         cartItem.delete();
     }
 
