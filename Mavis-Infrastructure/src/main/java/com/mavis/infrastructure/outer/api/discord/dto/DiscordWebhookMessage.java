@@ -1,6 +1,5 @@
-package com.mavis.infrastructure.outer.discord.dto;
+package com.mavis.infrastructure.outer.api.discord.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 
 import java.util.List;

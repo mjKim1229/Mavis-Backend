@@ -1,9 +1,9 @@
 package com.mavis.infrastructure.outer.discord;
 
-import com.mavis.infrastructure.outer.discord.client.DiscordWebhookClient;
-import com.mavis.infrastructure.outer.discord.dto.DiscordWebhookMessage;
-import com.mavis.infrastructure.outer.discord.dto.DiscordWebhookMessage.Embed;
-import com.mavis.infrastructure.outer.discord.dto.DiscordWebhookMessage.Field;
+import com.mavis.infrastructure.outer.api.discord.DiscordWebhookClient;
+import com.mavis.infrastructure.outer.api.discord.dto.DiscordWebhookMessage;
+import com.mavis.infrastructure.outer.api.discord.dto.DiscordWebhookMessage.Embed;
+import com.mavis.infrastructure.outer.api.discord.dto.DiscordWebhookMessage.Field;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
