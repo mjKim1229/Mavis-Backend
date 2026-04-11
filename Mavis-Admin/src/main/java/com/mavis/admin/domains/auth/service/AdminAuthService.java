@@ -7,6 +7,7 @@ import com.mavis.domain.domains.admin.domain.Admin;
 import com.mavis.domain.domains.admin.exception.AdminLoginException;
 import com.mavis.domain.domains.admin.repository.AdminRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,12 +16,13 @@ public class AdminAuthService {
 
     private final AdminRepository adminRepository;
     private final JwtTokenUtil jwtTokenUtil;
+    private final PasswordEncoder passwordEncoder;
 
     public AdminLoginResponse adminLogin(AdminLoginRequest request) {
         Admin admin = adminRepository.findByUsernameAndIsDeletedFalse(request.username())
                 .orElseThrow(() -> AdminLoginException.EXCEPTION);
 
-        if (!admin.getPassword().equals(request.password())) {
+        if (!passwordEncoder.matches(request.password(), admin.getPassword())) {
             throw AdminLoginException.EXCEPTION;
         }
 
