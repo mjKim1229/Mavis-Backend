@@ -14,6 +14,14 @@ import java.util.List;
 
 
 import static com.mavis.domain.domains.delivery.domain.QDelivery.delivery;
+import static com.mavis.domain.domains.order.domain.QOrder.order;
+import static com.mavis.domain.domains.order.domain.QOrderItem.orderItem;
+import static com.mavis.domain.domains.product.domain.QProduct.product;
+import static com.mavis.domain.domains.user.domain.QUser.user;
+import static com.mavis.domain.domains.order.domain.QOrder.order;
+import static com.mavis.domain.domains.order.domain.QOrderItem.orderItem;
+import static com.mavis.domain.domains.product.domain.QProduct.product;
+import static com.mavis.domain.domains.user.domain.QUser.user;
 
 @RequiredArgsConstructor
 public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
@@ -40,12 +48,17 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
     @Override
     public List<Delivery> findDeliveriesByStatusAndDateRange(DeliveryStatus deliveryStatus, LocalDate startDate, LocalDate endDate) {
         return queryFactory.selectFrom(delivery)
+                .join(delivery.order, order).fetchJoin()
+                .join(order.user, user).fetchJoin()
+                .join(order.orderItems, orderItem).fetchJoin()
+                .join(orderItem.product, product).fetchJoin()
                 .where(
                         delivery.deliveryStatus.eq(deliveryStatus),
-                        delivery.order.createdAt.goe(startDate.atStartOfDay()),
-                        delivery.order.createdAt.lt(endDate.plusDays(1).atStartOfDay())
+                        order.createdAt.goe(startDate.atStartOfDay()),
+                        order.createdAt.lt(endDate.plusDays(1).atStartOfDay())
                 )
                 .orderBy(delivery.id.desc())
+                .distinct()
                 .fetch();
     }
 }
