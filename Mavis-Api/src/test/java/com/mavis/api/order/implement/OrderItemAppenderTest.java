@@ -1,6 +1,6 @@
 package com.mavis.api.order.implement;
 
-import com.mavis.api.order.dto.OrderProduct;
+import com.mavis.api.order.dto.OrderItemRequest;
 import com.mavis.domain.domains.order.domain.OrderOption;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.repository.OrderItemRepository;
@@ -35,8 +35,8 @@ class OrderItemAppenderTest {
         Product productA = Product.builder().id(1L).price(10000).build();
         Product productB = Product.builder().id(2L).price(5000).build();
 
-        OrderProduct itemA = new OrderProduct(null, 1L, "상품A", new OrderOption("black", 2), 0, null);
-        OrderProduct itemB = new OrderProduct(null, 2L, "상품B", new OrderOption("white", 3), 0, null);
+        OrderItemRequest itemA = new OrderItemRequest(1L, new OrderOption("black", 2));
+        OrderItemRequest itemB = new OrderItemRequest(2L, new OrderOption("white", 3));
 
         Order order = Order.builder().build();
 

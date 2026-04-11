@@ -1,6 +1,6 @@
 package com.mavis.api.order.implement;
 
-import com.mavis.api.order.dto.OrderProduct;
+import com.mavis.api.order.dto.OrderItemRequest;
 import com.mavis.domain.domains.product.implement.ProductReader;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderItem;
@@ -21,10 +21,10 @@ public class OrderItemAppender {
     private final OrderItemRepository orderItemRepository;
     private final ProductReader productReader;
 
-    public int saveOrderItems(List<OrderProduct> orderItemRequests, Order order) {
+    public int saveOrderItems(List<OrderItemRequest> orderItemRequests, Order order) {
         int totalPrice = 0;
         List<OrderItem> orderItems = new ArrayList<>();
-        for (OrderProduct orderItemRequest : orderItemRequests) {
+        for (OrderItemRequest orderItemRequest : orderItemRequests) {
             Product product = productReader.readById(orderItemRequest.productId());
             OrderOption option = orderItemRequest.option();
             int orderItemPrice = countPrice(option.quantity(), product.getPrice());

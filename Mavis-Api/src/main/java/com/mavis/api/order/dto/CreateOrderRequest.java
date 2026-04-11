@@ -5,6 +5,6 @@ import java.util.List;
 public record CreateOrderRequest(
         int amount,
         OrderAddressRequest orderAddressRequest,
-        List<OrderProduct> orderItems
+        List<OrderItemRequest> orderItems
 ) {
 }
