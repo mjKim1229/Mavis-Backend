@@ -1,6 +1,7 @@
 package com.mavis.domain.domains.delivery.repository;
 
 import com.mavis.domain.domains.delivery.domain.Delivery;
+import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
 import com.mavis.domain.domains.order.domain.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -11,4 +12,5 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long>, Deliv
     List<Delivery> findByIdIn(List<Long> ids);
 
     Optional<Delivery> findByOrder(Order order);
+    long countByDeliveryStatus(DeliveryStatus deliveryStatus);
 }

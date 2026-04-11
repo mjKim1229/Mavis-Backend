@@ -2,6 +2,7 @@ package com.mavis.admin.domains.order.controller;
 
 import com.mavis.admin.common.page.PageResponse;
 import com.mavis.admin.domains.order.dto.AdminOrderConfirmRequest;
+import com.mavis.admin.domains.order.dto.AdminOrderCountResponse;
 import com.mavis.admin.domains.order.dto.GetAdminOrderResponse;
 import com.mavis.admin.domains.order.service.AdminOrderService;
 import com.mavis.domain.domains.order.domain.OrderStatus;
@@ -18,6 +19,12 @@ import org.springframework.web.bind.annotation.*;
 public class AdminOrderController {
 
     private final AdminOrderService adminOrderService;
+
+    @Operation(summary = "주문 상태별 카운트 조회 (결제 완료, 발주 완료, 배송중, 배송 완료)")
+    @GetMapping("/counts")
+    public AdminOrderCountResponse getOrderCounts() {
+        return adminOrderService.getOrderCounts();
+    }
 
     @Operation(summary = "상태별 주문 목록 조회 (결제 완료, 발주 완료)")
     @GetMapping

@@ -13,4 +13,5 @@ public interface OrderRepository extends JpaRepository<Order, Long>, OrderCustom
     List<Order> findByIdInAndIsDeletedFalse(List<Long> orderIds);
     Optional<Order> findByOrderIdAndIsDeletedFalse(String orderId);
     List<Order> findByOrderStatusAndCreatedAtBefore(OrderStatus orderStatus, LocalDateTime threshold);
+    long countByOrderStatusAndIsDeletedFalse(OrderStatus orderStatus);
 }

@@ -2,6 +2,7 @@ package com.mavis.admin.domains.order.service;
 
 import com.mavis.admin.common.page.PageResponse;
 import com.mavis.admin.domains.order.dto.AdminOrderConfirmRequest;
+import com.mavis.admin.domains.order.dto.AdminOrderCountResponse;
 import com.mavis.admin.domains.order.dto.GetAdminOrderResponse;
 import com.mavis.admin.domains.order.dto.OrderItemInfo;
 import com.mavis.domain.domains.delivery.domain.Delivery;
@@ -48,6 +49,15 @@ public class AdminOrderService {
                 }
         );
         return PageResponse.of(orderInfoPages);
+    }
+
+    @Transactional(readOnly = true)
+    public AdminOrderCountResponse getOrderCounts() {
+        long paymentConfirmedCount = orderRepository.countByOrderStatusAndIsDeletedFalse(OrderStatus.PAYMENT_CONFIRMED);
+        long orderedCount = orderRepository.countByOrderStatusAndIsDeletedFalse(OrderStatus.ORDERED);
+        long shippedCount = deliveryRepository.countByDeliveryStatus(DeliveryStatus.SHIPPED);
+        long deliveredCount = deliveryRepository.countByDeliveryStatus(DeliveryStatus.DELIVERED);
+        return AdminOrderCountResponse.of(paymentConfirmedCount, orderedCount, shippedCount, deliveredCount);
     }
 
     @Transactional
