@@ -64,7 +64,7 @@ class OrderServiceTest {
         given(userReader.getCurrentUser()).willReturn(currentUser);
 
         // when & then
-        assertThatThrownBy(() -> orderService.validateOrderForPayment(orderId, requestAmount))
+        assertThatThrownBy(() -> orderService.validateAndMarkPaymentRequested(orderId, requestAmount))
                 .isInstanceOf(InvalidOrderInfoException.class);
     }
 
@@ -88,7 +88,7 @@ class OrderServiceTest {
         given(userReader.getCurrentUser()).willReturn(orderOwner);
 
         // when & then
-        assertThatThrownBy(() -> orderService.validateOrderForPayment(orderId, requestAmount))
+        assertThatThrownBy(() -> orderService.validateAndMarkPaymentRequested(orderId, requestAmount))
                 .isInstanceOf(PriceMismatchException.class);
     }
 }

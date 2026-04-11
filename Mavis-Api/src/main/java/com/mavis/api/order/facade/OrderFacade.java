@@ -36,8 +36,7 @@ public class OrderFacade {
             return;
         }
 
-        Order order = orderService.validateOrderForPayment(request.tossOrderId(), request.amount());
-        orderService.markPaymentRequested(request.tossOrderId());
+        Order order = orderService.validateAndMarkPaymentRequested(request.tossOrderId(), request.amount());
 
         String authorizationHeader = tossPaymentsProperties.getAuthorizationHeader();
         TossConfirmRequest tossConfirmRequest = TossConfirmRequest.of(request.paymentKey(), request.tossOrderId(), request.amount());
