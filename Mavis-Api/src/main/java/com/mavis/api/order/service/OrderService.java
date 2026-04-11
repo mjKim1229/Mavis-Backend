@@ -80,7 +80,7 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public Order validateOrderForPayment(String orderId, Long amount) {
+    public Order validateOrderForPayment(String orderId, int amount) {
         Order order = orderRepository.findByOrderIdAndIsDeletedFalse(orderId)
                 .orElseThrow(() -> OrderNotFoundException.EXCEPTION);
 
