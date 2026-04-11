@@ -4,7 +4,9 @@ import com.mavis.common.dto.ErrorReason;
 import com.mavis.common.dto.ErrorResponse;
 import com.mavis.common.exception.GlobalErrorCode;
 import com.mavis.common.exception.MavisCodeException;
+import com.mavis.infrastructure.outer.discord.DiscordNotificationService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -16,8 +18,11 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @Slf4j
+@RequiredArgsConstructor
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
+    private final DiscordNotificationService discordNotificationService;
 
     @ExceptionHandler(exception = MavisCodeException.class)
     public ResponseEntity<ErrorResponse> handleMavisCodeException(
@@ -26,6 +31,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ErrorReason errorReason = e.getErrorReason();
         if (errorReason.status() >= 500) {
             log.error("MavisCodeException 5xx [{}]", request.getRequestURI(), e);
+            discordNotificationService.sendErrorNotification(e, request.getRequestURI(), request.getMethod());
         }
         ErrorResponse errorResponse = new ErrorResponse(errorReason, request.getRequestURI());
         return ResponseEntity.status(
@@ -55,9 +61,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(exception = Exception.class)
-    public ResponseEntity<Object> handleAllException(Exception e) {
+    public ResponseEntity<Object> handleAllException(Exception e, HttpServletRequest request) {
         GlobalErrorCode errorCode = GlobalErrorCode.INTERNAL_SERVER_ERROR;
         log.error("INTERNAL_SERVER_ERROR", e);
+        discordNotificationService.sendErrorNotification(e, request.getRequestURI(), request.getMethod());
         return ResponseEntity.status(errorCode.getStatus())
                 .body(errorCode.getErrorReason());
     }
