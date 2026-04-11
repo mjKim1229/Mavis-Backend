@@ -5,6 +5,7 @@ import com.mavis.api.order.implement.OrderItemAppender;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderStatus;
 import com.mavis.domain.domains.order.exception.InvalidOrderInfoException;
+import com.mavis.domain.domains.order.exception.PriceMismatchException;
 import com.mavis.domain.domains.order.implement.OrderReader;
 import com.mavis.domain.domains.order.implement.PaymentIdempotencyManager;
 import com.mavis.domain.domains.order.repository.OrderRepository;
@@ -65,5 +66,29 @@ class OrderServiceTest {
         // when & then
         assertThatThrownBy(() -> orderService.validateOrderForPayment(orderId, requestAmount))
                 .isInstanceOf(InvalidOrderInfoException.class);
+    }
+
+    @Test
+    void 요청_금액이_주문_금액과_다르면_PriceMismatchException을_던진다() {
+        // given
+        String orderId = "ORDER-001";
+        int orderTotalPrice = 10000;
+        int requestAmount = 99999;
+
+        User orderOwner = User.builder().id(1L).build();
+
+        Order order = Order.builder()
+                .orderId(orderId)
+                .user(orderOwner)
+                .orderStatus(OrderStatus.READY)
+                .build();
+        order.setTotalPrice(orderTotalPrice);
+
+        given(orderRepository.findByOrderIdAndIsDeletedFalse(orderId)).willReturn(Optional.of(order));
+        given(userReader.getCurrentUser()).willReturn(orderOwner);
+
+        // when & then
+        assertThatThrownBy(() -> orderService.validateOrderForPayment(orderId, requestAmount))
+                .isInstanceOf(PriceMismatchException.class);
     }
 }
