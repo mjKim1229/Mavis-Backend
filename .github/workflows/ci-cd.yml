@@ -77,8 +77,8 @@ jobs:
           key: ${{ secrets.SSH_KEY_DEV }}
           script: |
             cd /home/ubuntu
-            sudo docker rm -f $(docker ps -qa)
             sudo docker pull ${{ secrets.DOCKER_REPO }}/backend
             sudo docker pull ${{ secrets.DOCKER_REPO }}/admin
-            sudo docker-compose -f docker-compose.yml up -d
+            sudo docker-compose -f docker-compose.yml up -d --no-deps backend admin
+            sudo docker exec nginx nginx -s reload
             sudo docker image prune -f
