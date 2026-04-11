@@ -3,12 +3,7 @@ package com.mavis.api.order.facade;
 import com.mavis.api.order.dto.CancelOrderRequest;
 import com.mavis.api.order.service.OrderService;
 import com.mavis.common.properties.TossPaymentsProperties;
-import com.mavis.domain.domains.order.domain.IdempotencyStatus;
-import com.mavis.domain.domains.order.domain.Order;
-import com.mavis.domain.domains.order.domain.Payment;
-import com.mavis.domain.domains.order.domain.PaymentApiType;
-import com.mavis.domain.domains.order.domain.PaymentIdempotency;
-import com.mavis.domain.domains.order.implement.OrderReader;
+import com.mavis.domain.domains.order.domain.*;
 import com.mavis.domain.domains.order.implement.PaymentIdempotencyManager;
 import com.mavis.domain.domains.order.implement.PaymentReader;
 import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsCancelClient;
@@ -26,14 +21,12 @@ import java.util.UUID;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class
-OrderFacade {
+public class OrderFacade {
 
     private final TossPaymentsProperties tossPaymentsProperties;
     private final PaymentsConfirmClient paymentsConfirmClient;
     private final PaymentsCancelClient paymentsCancelClient;
     private final OrderService orderService;
-    private final OrderReader orderReader;
     private final PaymentReader paymentReader;
     private final PaymentIdempotencyManager paymentIdempotencyManager;
 
