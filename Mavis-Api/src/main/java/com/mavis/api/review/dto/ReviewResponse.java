@@ -8,7 +8,6 @@ import lombok.Builder;
 
 import java.util.List;
 
-//TODO 이름 마스킹
 @Builder
 public record ReviewResponse(
         Long reviewId,
@@ -18,7 +17,7 @@ public record ReviewResponse(
         int quantity,
         String content,
         List<String> imageUrls,
-        String username
+        String name
 ) {
     public static ReviewResponse of(Review review, User user, OrderItem orderItem, List<String> imageUrls) {
         return ReviewResponse.builder()
@@ -27,9 +26,14 @@ public record ReviewResponse(
                 .createdAt(review.getCreatedAt().format(DateFormatters.DATE_FORMATTER))
                 .imageUrls(imageUrls)
                 .content(review.getContentForPublic())
-                .username(user.getName())
+                .name(maskName(user.getName()))
                 .quantity(orderItem.getQuantity())
                 .color(orderItem.getColor())
                 .build();
+    }
+
+    private static String maskName(String name) {
+        if (name == null || name.isEmpty()) return name;
+        return name.charAt(0) + "*".repeat(name.length() - 1);
     }
 }
