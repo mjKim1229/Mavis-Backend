@@ -34,6 +34,12 @@ public class ReviewController {
         reviewService.createReview(request, images);
     }
 
+    @Operation(summary = "리뷰 삭제", description = "사용자가 작성한 리뷰를 삭제합니다.")
+    @DeleteMapping("/user/{reviewId}")
+    public void deleteReview(@PathVariable Long reviewId) {
+        reviewService.deleteReview(reviewId);
+    }
+
     @Operation(summary = "사용자 리뷰 목록 조회", description = "사용자가 작성한 리뷰 목록을 조회합니다.")
     @GetMapping("/user")
     public PageResponse<UserReviewResponse> getUserReviewList(Pageable pageable) {

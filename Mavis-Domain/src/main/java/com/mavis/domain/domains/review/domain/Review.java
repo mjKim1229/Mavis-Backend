@@ -34,7 +34,11 @@ public class Review extends BaseEntity {
     private List<ReviewImage> images;
 
     @Builder.Default
-    private final boolean isDeleted = false;
+    private boolean isDeleted = false;
+
+    public void delete() {
+        this.isDeleted = true;
+    }
 
     public String getContentForPublic() {
         if (isPrivate) {

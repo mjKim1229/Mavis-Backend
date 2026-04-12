@@ -15,6 +15,8 @@ import com.mavis.domain.domains.product.domain.ProductImage;
 import com.mavis.domain.domains.product.implement.ProductReader;
 import com.mavis.domain.domains.review.domain.Review;
 import com.mavis.domain.domains.review.domain.ReviewImage;
+import com.mavis.domain.domains.review.exception.ReviewNotFoundException;
+import com.mavis.domain.domains.review.exception.UnauthorizedReviewException;
 import com.mavis.domain.domains.review.repository.ReviewRepository;
 import com.mavis.domain.domains.review.vo.ProductReviewTotal;
 import com.mavis.domain.domains.user.domain.User;
@@ -46,6 +48,17 @@ public class ReviewService {
         Review review = request.toEntity(orderItem, user);
         Review savedReview = reviewRepository.save(review);
         reviewImageUploader.saveReviewImages(images, savedReview);
+    }
+
+    @Transactional
+    public void deleteReview(Long reviewId) {
+        User user = userReader.getCurrentUser();
+        Review review = reviewRepository.findByIdAndIsDeletedFalse(reviewId)
+                .orElseThrow(() -> ReviewNotFoundException.EXCEPTION);
+        if (!review.getUser().getId().equals(user.getId())) {
+            throw UnauthorizedReviewException.EXCEPTION;
+        }
+        review.delete();
     }
 
     @Transactional(readOnly = true)
