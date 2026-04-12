@@ -69,7 +69,7 @@ public class InquiryCustomRepositoryImpl implements InquiryCustomRepository {
                 .from(inquiry)
                 .join(inquiry.product, product).fetchJoin()
                 .join(inquiry.user, user).fetchJoin()
-                .leftJoin(inquiry.inquiryAnswer, inquiryAnswer)
+                .leftJoin(inquiry.inquiryAnswer, inquiryAnswer).fetchJoin()
                 .where(inquiry.isDeleted.eq(false)
                         .and(answerStatusCondition(status))
                 )

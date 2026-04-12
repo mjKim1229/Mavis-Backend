@@ -11,7 +11,6 @@ import com.mavis.common.util.DateFormatters;
 import com.mavis.domain.domains.inquiry.domain.Inquiry;
 import com.mavis.domain.domains.inquiry.domain.InquiryAnswer;
 import com.mavis.domain.domains.inquiry.exception.InquiryAlreadyAnsweredCannotDeleteException;
-import com.mavis.domain.domains.inquiry.exception.InquiryAlreadyAnsweredCannotDeleteException;
 import com.mavis.domain.domains.inquiry.exception.UnauthorizedInquiryException;
 import com.mavis.domain.domains.inquiry.repository.InquiryRepository;
 import com.mavis.domain.domains.product.domain.Product;
