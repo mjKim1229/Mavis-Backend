@@ -1,5 +1,6 @@
 package com.mavis.admin.global.security;
 
+import com.mavis.common.exception.InvalidTokenException;
 import com.mavis.common.jwt.JwtTokenUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -54,8 +55,13 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private Authentication getAuthentication(String token) {
         Long id = jwtTokenUtil.parseAccessToken(token);
+        String role = jwtTokenUtil.getRoleFromToken(token);
 
-        UserDetails userDetails = new AuthDetails(id.toString(), "USER");
+        if (!"ADMIN".equals(role)) {
+            throw InvalidTokenException.EXCEPTION;
+        }
+
+        UserDetails userDetails = new AuthDetails(id.toString(), "ADMIN");
 
         return new UsernamePasswordAuthenticationToken(
                 userDetails, "user", userDetails.getAuthorities()

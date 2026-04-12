@@ -1,5 +1,6 @@
 package com.mavis.api.global.security;
 
+import com.mavis.common.exception.InvalidTokenException;
 import com.mavis.common.jwt.JwtTokenUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -54,6 +55,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private Authentication getAuthentication(String token) {
         Long id = jwtTokenUtil.parseAccessToken(token);
+        String role = jwtTokenUtil.getRoleFromToken(token);
+
+        if (!"USER".equals(role)) {
+            throw InvalidTokenException.EXCEPTION;
+        }
 
         UserDetails userDetails = new AuthDetails(id.toString(), "USER");
 

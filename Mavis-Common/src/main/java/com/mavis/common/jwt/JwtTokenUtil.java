@@ -42,7 +42,7 @@ public class JwtTokenUtil {
         return Keys.hmacShaKeyFor(jwtProperties.secretKey().getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateAccessToken(Long id) {
+    public String generateAccessToken(Long id, String role) {
         final Key encodedKey = getSecretKey();
         final Date issuedAt = new Date();
         final Date accessTokenExpiresIn =
@@ -53,6 +53,7 @@ public class JwtTokenUtil {
                 .issuedAt(issuedAt)
                 .subject(id.toString())
                 .claim(TOKEN_TYPE, ACCESS_TOKEN)
+                .claim(TOKEN_ROLE, role)
                 .expiration(accessTokenExpiresIn)
                 .signWith(encodedKey)
                 .compact();
@@ -91,6 +92,11 @@ public class JwtTokenUtil {
             return Long.valueOf(id);
         }
         throw InvalidTokenException.EXCEPTION;
+    }
+
+    public String getRoleFromToken(String token) {
+        Claims payload = getJws(token).getPayload();
+        return payload.get(TOKEN_ROLE, String.class);
     }
 
     public Long parseRefreshToken(String token) {

@@ -26,7 +26,7 @@ public class AdminAuthService {
             throw AdminLoginException.EXCEPTION;
         }
 
-        String accessToken = jwtTokenUtil.generateAccessToken(admin.getId());
+        String accessToken = jwtTokenUtil.generateAccessToken(admin.getId(), "ADMIN");
         return new AdminLoginResponse(accessToken);
     }
 }

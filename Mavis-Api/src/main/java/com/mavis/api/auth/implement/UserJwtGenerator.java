@@ -11,7 +11,7 @@ public class UserJwtGenerator {
     private final JwtTokenUtil jwtTokenUtil;
 
     public JwtPair getJwtPair(Long id) {
-        String accessToken = jwtTokenUtil.generateAccessToken(id);
+        String accessToken = jwtTokenUtil.generateAccessToken(id, "USER");
         String refreshToken = jwtTokenUtil.generateRefreshToken(id);
         return new JwtPair(accessToken, refreshToken);
     }

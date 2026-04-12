@@ -42,7 +42,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/v1/**")
                                 .permitAll()
                                 .anyRequest()
-                                .hasRole("USER")
+                                .hasRole("ADMIN")
                 );
 
         return http.build();
