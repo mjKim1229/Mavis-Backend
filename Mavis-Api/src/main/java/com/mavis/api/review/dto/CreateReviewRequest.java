@@ -16,6 +16,7 @@ public record CreateReviewRequest(
                 .score(score)
                 .content(content)
                 .orderItem(orderItem)
+                .isPrivate(isPrivate)
                 .build();
     }
 }
