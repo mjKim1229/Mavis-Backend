@@ -46,6 +46,9 @@ public class Inquiry extends BaseEntity {
 
     public void delete() {
         this.isDeleted = true;
+        if (this.inquiryAnswer != null) {
+            this.inquiryAnswer.delete();
+        }
     }
 
 }
