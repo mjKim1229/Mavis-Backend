@@ -15,6 +15,8 @@ import java.util.List;
 
 import static com.mavis.domain.domains.inquiry.domain.QInquiry.inquiry;
 import static com.mavis.domain.domains.inquiry.domain.QInquiryAnswer.inquiryAnswer;
+import static com.mavis.domain.domains.product.domain.QProduct.product;
+import static com.mavis.domain.domains.user.domain.QUser.user;
 
 @RequiredArgsConstructor
 public class InquiryCustomRepositoryImpl implements InquiryCustomRepository {
@@ -65,6 +67,8 @@ public class InquiryCustomRepositoryImpl implements InquiryCustomRepository {
     public Page<Inquiry> findAllInquiries(AnswerStatus status, Pageable pageable) {
         List<Inquiry> inquiryList = queryFactory.select(inquiry)
                 .from(inquiry)
+                .join(inquiry.product, product).fetchJoin()
+                .join(inquiry.user, user).fetchJoin()
                 .leftJoin(inquiry.inquiryAnswer, inquiryAnswer)
                 .where(inquiry.isDeleted.eq(false)
                         .and(answerStatusCondition(status))
