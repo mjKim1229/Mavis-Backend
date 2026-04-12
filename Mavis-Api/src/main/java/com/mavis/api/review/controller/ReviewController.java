@@ -12,6 +12,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -54,7 +56,7 @@ public class ReviewController {
     @GetMapping("/product/{productId}")
     public PageResponse<ReviewResponse> getProductReviews(@PathVariable Long productId,
                                                           @RequestParam(defaultValue = "false") boolean photoOnly,
-                                                          @ParameterObject Pageable pageable) {
+                                                          @ParameterObject @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return reviewService.getProductReviews(productId, photoOnly, pageable);
     }
 }
