@@ -4,6 +4,7 @@ import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.favorite.dto.GetUserFavoriteResponse;
 import com.mavis.api.favorite.service.FavoriteService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/api/favorites")
+@Tag(name = "즐겨찾기 API")
 public class FavoriteController {
 
     private final FavoriteService favoriteService;
