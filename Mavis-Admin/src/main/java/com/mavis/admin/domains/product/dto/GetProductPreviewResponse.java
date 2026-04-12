@@ -13,6 +13,7 @@ public record GetProductPreviewResponse(
         Long id,
         String name,
         Integer price,
+        boolean isClearance,
         ProductSubCategory subCategory,
         List<String> colors,
         String previewImage,
@@ -24,6 +25,7 @@ public record GetProductPreviewResponse(
                 .id(product.getId())
                 .name(product.getName())
                 .price(product.getPrice())
+                .isClearance(product.isClearance())
                 .subCategory(product.getSubCategory())
                 .colors(colors)
                 .previewImage(previewImage)
