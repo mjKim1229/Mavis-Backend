@@ -5,12 +5,14 @@ import com.mavis.admin.domains.order.dto.AdminOrderConfirmRequest;
 import com.mavis.admin.domains.order.dto.AdminOrderCountResponse;
 import com.mavis.admin.domains.order.dto.GetAdminOrderResponse;
 import com.mavis.admin.domains.order.service.AdminOrderService;
-import com.mavis.domain.domains.order.domain.OrderStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,10 +28,20 @@ public class AdminOrderController {
         return adminOrderService.getOrderCounts();
     }
 
-    @Operation(summary = "상태별 주문 목록 조회 (결제 완료, 발주 완료)")
-    @GetMapping
-    public PageResponse<GetAdminOrderResponse> getOrderInfoLists(Pageable pageable, OrderStatus orderStatus) {
-        return adminOrderService.getOrderLists(pageable, orderStatus);
+    @Operation(summary = "결제 완료 주문 목록 조회")
+    @GetMapping("/payment-confirmed")
+    public PageResponse<GetAdminOrderResponse> getPaymentConfirmedOrderLists(Pageable pageable) {
+        return adminOrderService.getPaymentConfirmedOrderLists(pageable);
+    }
+
+    @Operation(summary = "발주 완료 주문 목록 조회 (기간 필터)")
+    @GetMapping("/ordered")
+    public PageResponse<GetAdminOrderResponse> getOrderedOrderLists(
+            Pageable pageable,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
+        return adminOrderService.getOrderedOrderLists(pageable, startDate, endDate);
     }
 
     @PostMapping("/confirm")

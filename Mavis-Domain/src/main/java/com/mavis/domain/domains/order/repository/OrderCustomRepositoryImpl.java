@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static com.mavis.domain.domains.delivery.domain.QDelivery.delivery;
@@ -28,10 +29,10 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<Order> findOrderPages(Pageable pageable, OrderStatus orderStatus) {
+    public Page<Order> findPaymentConfirmedOrderPages(Pageable pageable) {
         List<Order> orders = queryFactory.selectFrom(order)
                 .where(order.isDeleted.eq(false)
-                        .and(order.orderStatus.eq(orderStatus)))
+                        .and(order.orderStatus.eq(OrderStatus.PAYMENT_CONFIRMED)))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(order.id.desc())
@@ -40,7 +41,29 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
         JPAQuery<Long> countQuery = queryFactory.select(order.count())
                 .from(order)
                 .where(order.isDeleted.eq(false)
-                        .and(order.orderStatus.eq(orderStatus)));
+                        .and(order.orderStatus.eq(OrderStatus.PAYMENT_CONFIRMED)));
+
+        return PageableExecutionUtils.getPage(orders, pageable, countQuery::fetchOne);
+    }
+
+    @Override
+    public Page<Order> findOrderedOrderPages(Pageable pageable, LocalDate startDate, LocalDate endDate) {
+        List<Order> orders = queryFactory.selectFrom(order)
+                .where(order.isDeleted.eq(false)
+                        .and(order.orderStatus.eq(OrderStatus.ORDERED))
+                        .and(order.createdAt.goe(startDate.atStartOfDay()))
+                        .and(order.createdAt.lt(endDate.plusDays(1).atStartOfDay())))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .orderBy(order.id.desc())
+                .fetch();
+
+        JPAQuery<Long> countQuery = queryFactory.select(order.count())
+                .from(order)
+                .where(order.isDeleted.eq(false)
+                        .and(order.orderStatus.eq(OrderStatus.ORDERED))
+                        .and(order.createdAt.goe(startDate.atStartOfDay()))
+                        .and(order.createdAt.lt(endDate.plusDays(1).atStartOfDay())));
 
         return PageableExecutionUtils.getPage(orders, pageable, countQuery::fetchOne);
     }

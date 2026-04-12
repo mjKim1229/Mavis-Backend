@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static com.mavis.admin.domains.delivery.service.AdminDeliveryService.EXCEL_DATE_FORMATTER;
@@ -31,24 +32,29 @@ public class AdminOrderService {
     private final DeliveryRepository deliveryRepository;
 
     @Transactional(readOnly = true)
-    public PageResponse<GetAdminOrderResponse> getOrderLists(Pageable pageable, OrderStatus orderStatus) {
-        Page<Order> orderPages = orderRepository.findOrderPages(pageable, orderStatus);
-        Page<GetAdminOrderResponse> orderInfoPages = orderPages.map(order -> {
-                    OrderAddress orderAddress = order.getOrderAddress();
-                    User user = order.getUser();
-                    List<OrderItem> orderItems = order.getOrderItems();
-                    List<OrderItemInfo> orderItemInfoList = orderItems.stream().map(
-                            orderItem -> OrderItemInfo.builder()
-                                    .productName(orderItem.getProduct().getName())
-                                    .color(orderItem.getColor())
-                                    .quantity(orderItem.getQuantity())
-                                    .build()
-                    ).toList();
-                    String orderedAt = order.getCreatedAt().format(EXCEL_DATE_FORMATTER);
-                    return GetAdminOrderResponse.from(order, orderAddress, orderedAt, orderItemInfoList, user);
-                }
-        );
-        return PageResponse.of(orderInfoPages);
+    public PageResponse<GetAdminOrderResponse> getPaymentConfirmedOrderLists(Pageable pageable) {
+        Page<Order> orderPages = orderRepository.findPaymentConfirmedOrderPages(pageable);
+        return PageResponse.of(orderPages.map(this::toOrderResponse));
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<GetAdminOrderResponse> getOrderedOrderLists(Pageable pageable, LocalDate startDate, LocalDate endDate) {
+        Page<Order> orderPages = orderRepository.findOrderedOrderPages(pageable, startDate, endDate);
+        return PageResponse.of(orderPages.map(this::toOrderResponse));
+    }
+
+    private GetAdminOrderResponse toOrderResponse(Order order) {
+        OrderAddress orderAddress = order.getOrderAddress();
+        User user = order.getUser();
+        List<OrderItemInfo> orderItemInfoList = order.getOrderItems().stream().map(
+                orderItem -> OrderItemInfo.builder()
+                        .productName(orderItem.getProduct().getName())
+                        .color(orderItem.getColor())
+                        .quantity(orderItem.getQuantity())
+                        .build()
+        ).toList();
+        String orderedAt = order.getCreatedAt().format(EXCEL_DATE_FORMATTER);
+        return GetAdminOrderResponse.from(order, orderAddress, orderedAt, orderItemInfoList, user);
     }
 
     @Transactional(readOnly = true)
