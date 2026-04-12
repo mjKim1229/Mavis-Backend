@@ -1,10 +1,9 @@
 package com.mavis.api.order.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.mavis.common.util.DateFormatters;
 import com.mavis.domain.domains.order.domain.Order;
 import lombok.Builder;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.mavis.common.util.OrderNumberGenerator.DOMAIN_PREFIX;
@@ -19,8 +18,7 @@ public record UserOrderInfo(
         String addressInfo,
         int totalPrice,
         String userName,
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-        LocalDateTime createdAt
+        String createdAt
 ) {
     public static UserOrderInfo from(Order order) {
         return UserOrderInfo.builder()
@@ -32,7 +30,7 @@ public record UserOrderInfo(
                 .addressInfo(order.getOrderAddress().getAddressDetail())
                 .totalPrice(order.getTotalPrice())
                 .userName(order.getUser().getName())
-                .createdAt(order.getCreatedAt())
+                .createdAt(order.getCreatedAt().format(DateFormatters.DATE_FORMATTER))
                 .build();
     }
 }

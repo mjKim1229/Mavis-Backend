@@ -1,11 +1,11 @@
 package com.mavis.api.review.dto;
 
+import com.mavis.common.util.DateFormatters;
 import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.review.domain.Review;
 import com.mavis.domain.domains.user.domain.User;
 import lombok.Builder;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 //TODO 이름 마스킹
@@ -13,7 +13,7 @@ import java.util.List;
 public record ReviewResponse(
         Long reviewId,
         int score,
-        LocalDateTime createdAt,
+        String createdAt,
         String color,
         int quantity,
         String content,
@@ -24,7 +24,7 @@ public record ReviewResponse(
         return ReviewResponse.builder()
                 .reviewId(review.getId())
                 .score(review.getScore())
-                .createdAt(review.getCreatedAt())
+                .createdAt(review.getCreatedAt().format(DateFormatters.DATE_FORMATTER))
                 .imageUrls(imageUrls)
                 .content(review.getContentForPublic())
                 .username(user.getName())

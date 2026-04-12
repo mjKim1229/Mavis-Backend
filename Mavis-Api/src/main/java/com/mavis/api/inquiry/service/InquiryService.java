@@ -7,6 +7,7 @@ import com.mavis.api.inquiry.dto.GetProductInquiryResponse;
 import com.mavis.api.inquiry.dto.GetUserInquiryResponse;
 import com.mavis.api.inquiry.implement.InquiryImageAppender;
 import com.mavis.api.inquiry.implement.InquiryReader;
+import com.mavis.common.util.DateFormatters;
 import com.mavis.domain.domains.inquiry.domain.Inquiry;
 import com.mavis.domain.domains.inquiry.domain.InquiryAnswer;
 import com.mavis.domain.domains.inquiry.repository.InquiryRepository;
@@ -53,11 +54,13 @@ public class InquiryService {
         Page<Inquiry> userInquiryPages = inquiryRepository.findInquiryByUser(user, pageable);
         Page<GetUserInquiryResponse> getUserInquiryResponsePage = userInquiryPages.map(
                 inquiry -> {
+                    String questionCreatedAt = inquiry.getCreatedAt().format(DateFormatters.DATE_FORMATTER);
                     if (inquiry.getInquiryAnswer() == null) {
-                        return new GetUserInquiryResponse(inquiry.getQuestion(), inquiry.getCreatedAt(), null, null);
+                        return new GetUserInquiryResponse(inquiry.getQuestion(), questionCreatedAt, null, null);
                     }
                     InquiryAnswer inquiryAnswer = inquiry.getInquiryAnswer();
-                    return new GetUserInquiryResponse(inquiry.getQuestion(), inquiry.getCreatedAt(), inquiryAnswer.getAnswer(), inquiryAnswer.getCreatedAt());
+                    String answerCreatedAt = inquiryAnswer.getCreatedAt().format(DateFormatters.DATE_FORMATTER);
+                    return new GetUserInquiryResponse(inquiry.getQuestion(), questionCreatedAt, inquiryAnswer.getAnswer(), answerCreatedAt);
                 }
         );
         return PageResponse.of(getUserInquiryResponsePage);
