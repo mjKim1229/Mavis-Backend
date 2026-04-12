@@ -1,19 +1,13 @@
 package com.mavis.api.inquiry.dto;
 
-import com.mavis.domain.domains.inquiry.domain.Inquiry;
-import com.mavis.domain.domains.inquiry.domain.InquiryAnswer;
+import com.mavis.domain.domains.inquiry.domain.AnswerStatus;
 import lombok.Builder;
 
-//TODO Admin, User 닉네임
 @Builder
 public record GetProductInquiryResponse(
         InquiryResponse inquiry,
         InquiryAnswerResponse inquiryAnswer,
-        boolean isPrivate
+        boolean isPrivate,
+        AnswerStatus answerStatus
 ) {
-    public static GetProductInquiryResponse from(Inquiry inquiry, InquiryAnswer answer) {
-        return GetProductInquiryResponse.builder()
-                .isPrivate(inquiry.isPrivate())
-                .build();
-    }
 }

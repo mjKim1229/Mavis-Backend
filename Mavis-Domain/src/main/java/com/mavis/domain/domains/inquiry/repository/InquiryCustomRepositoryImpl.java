@@ -24,23 +24,33 @@ public class InquiryCustomRepositoryImpl implements InquiryCustomRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<Inquiry> findInquiryByProductId(Long productId, Pageable pageable) {
+    public Page<Inquiry> findInquiryByProductId(Long productId, boolean onlyUnanswered, Pageable pageable) {
         List<Inquiry> inquiryList = queryFactory.select(inquiry)
                 .from(inquiry)
+                .join(inquiry.user, user).fetchJoin()
+                .leftJoin(inquiry.inquiryAnswer, inquiryAnswer).fetchJoin()
                 .where(inquiry.product.id.eq(productId)
                         .and(inquiry.isDeleted.eq(false))
+                        .and(onlyUnanswered ? unansweredCondition() : null)
                 )
+                .orderBy(inquiry.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
         JPAQuery<Long> countQuery = queryFactory.select(inquiry.count())
                 .from(inquiry)
+                .leftJoin(inquiry.inquiryAnswer, inquiryAnswer)
                 .where(inquiry.product.id.eq(productId)
                         .and(inquiry.isDeleted.eq(false))
+                        .and(onlyUnanswered ? unansweredCondition() : null)
                 );
 
         return PageableExecutionUtils.getPage(inquiryList, pageable, countQuery::fetchOne);
+    }
+
+    private BooleanExpression unansweredCondition() {
+        return inquiryAnswer.isNull().or(inquiryAnswer.isDeleted.eq(true));
     }
 
     @Override

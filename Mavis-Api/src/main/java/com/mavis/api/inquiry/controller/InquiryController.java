@@ -25,8 +25,11 @@ public class InquiryController {
 
     @Operation(summary = "상품 문의 목록 조회")
     @GetMapping("/product/{id}")
-    public PageResponse<GetProductInquiryResponse> getProductInquiries(@PathVariable Long id, @ParameterObject Pageable pageable) {
-        return inquiryService.getProductInquiries(id, pageable);
+    public PageResponse<GetProductInquiryResponse> getProductInquiries(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "false") boolean onlyUnanswered,
+            @ParameterObject Pageable pageable) {
+        return inquiryService.getProductInquiries(id, onlyUnanswered, pageable);
     }
 
     @Operation(summary = "상품 문의 등록")

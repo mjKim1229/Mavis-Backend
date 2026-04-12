@@ -4,7 +4,9 @@ import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.inquiry.dto.GetProductInquiryResponse;
 import com.mavis.api.inquiry.dto.InquiryAnswerResponse;
 import com.mavis.api.inquiry.dto.InquiryResponse;
+import com.mavis.domain.domains.inquiry.domain.AnswerStatus;
 import com.mavis.domain.domains.inquiry.domain.Inquiry;
+import com.mavis.domain.domains.inquiry.domain.InquiryAnswer;
 import com.mavis.domain.domains.inquiry.exception.InquiryNotFoundException;
 import com.mavis.domain.domains.inquiry.repository.InquiryRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,34 +25,35 @@ public class InquiryReader {
                 .orElseThrow(() -> InquiryNotFoundException.EXCEPTION);
     }
 
-    public PageResponse<GetProductInquiryResponse> readProductInquiries(Long productId, Pageable pageable) {
-        Page<Inquiry> inquiries = inquiryRepository.findInquiryByProductId(productId, pageable);
+    public PageResponse<GetProductInquiryResponse> readProductInquiries(Long productId, boolean onlyUnanswered, Pageable pageable) {
+        Page<Inquiry> inquiries = inquiryRepository.findInquiryByProductId(productId, onlyUnanswered, pageable);
         Page<GetProductInquiryResponse> inquiryPages = inquiries.map(this::toProductInquiryResponse);
         return PageResponse.of(inquiryPages);
     }
 
     private GetProductInquiryResponse toProductInquiryResponse(Inquiry inquiry) {
-        InquiryResponse inquiryResponse = toInquiryResponse(inquiry);
-        InquiryAnswerResponse inquiryAnswerResponse = toInquiryAnswerResponse(inquiry);
+        InquiryResponse inquiryResponse = inquiry.isPrivate() ? null : InquiryResponse.from(inquiry, inquiry.getUser());
+        InquiryAnswerResponse inquiryAnswerResponse = resolveAnswerResponse(inquiry);
+        AnswerStatus answerStatus = resolveAnswerStatus(inquiry);
 
         return GetProductInquiryResponse.builder()
                 .inquiry(inquiryResponse)
                 .inquiryAnswer(inquiryAnswerResponse)
                 .isPrivate(inquiry.isPrivate())
+                .answerStatus(answerStatus)
                 .build();
     }
 
-    private InquiryResponse toInquiryResponse(Inquiry inquiry) {
-        if (inquiry.isPrivate()) {
-            return null;
-        }
-        return InquiryResponse.from(inquiry, inquiry.getUser());
+    private InquiryAnswerResponse resolveAnswerResponse(Inquiry inquiry) {
+        if (inquiry.isPrivate()) return null;
+        InquiryAnswer answer = inquiry.getInquiryAnswer();
+        if (answer == null || answer.isDeleted()) return null;
+        return InquiryAnswerResponse.from(answer);
     }
 
-    private InquiryAnswerResponse toInquiryAnswerResponse(Inquiry inquiry) {
-        if (inquiry.isPrivate() || inquiry.getInquiryAnswer() == null) {
-            return null;
-        }
-        return InquiryAnswerResponse.from(inquiry.getInquiryAnswer());
+    private AnswerStatus resolveAnswerStatus(Inquiry inquiry) {
+        InquiryAnswer answer = inquiry.getInquiryAnswer();
+        if (answer != null && !answer.isDeleted()) return AnswerStatus.ANSWERED;
+        return AnswerStatus.UNANSWERED;
     }
 }

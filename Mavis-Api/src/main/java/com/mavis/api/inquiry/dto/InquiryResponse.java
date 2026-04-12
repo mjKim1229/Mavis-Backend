@@ -15,7 +15,12 @@ public record InquiryResponse(
                 return InquiryResponse.builder()
                         .question(inquiry.getQuestion())
                         .createdAt(inquiry.getCreatedAt().format(DateFormatters.DATE_FORMATTER))
-                        .userName(user.getName())
+                        .userName(maskName(user.getName()))
                         .build();
+        }
+
+        private static String maskName(String name) {
+                if (name == null || name.length() <= 1) return name;
+                return name.charAt(0) + "*".repeat(name.length() - 1);
         }
 }

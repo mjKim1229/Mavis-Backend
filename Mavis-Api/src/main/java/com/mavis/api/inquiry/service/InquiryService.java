@@ -36,9 +36,9 @@ public class InquiryService {
     private final InquiryImageAppender inquiryImageAppender;
 
     @Transactional(readOnly = true)
-    public PageResponse<GetProductInquiryResponse> getProductInquiries(Long productId, Pageable pageable) {
+    public PageResponse<GetProductInquiryResponse> getProductInquiries(Long productId, boolean onlyUnanswered, Pageable pageable) {
         Product product = productReader.readById(productId);
-        return inquiryReader.readProductInquiries(product.getId(), pageable);
+        return inquiryReader.readProductInquiries(product.getId(), onlyUnanswered, pageable);
     }
 
     @Transactional
