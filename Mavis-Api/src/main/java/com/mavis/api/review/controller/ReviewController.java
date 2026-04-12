@@ -4,6 +4,7 @@ import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.review.dto.CreateReviewRequest;
 import com.mavis.api.review.dto.GetWritableUserOrderItemResponse;
 import com.mavis.api.review.dto.ReviewResponse;
+import com.mavis.api.review.dto.UpdateReviewRequest;
 import com.mavis.api.review.dto.UserReviewResponse;
 import com.mavis.api.review.service.ReviewService;
 import com.mavis.domain.domains.review.vo.ProductReviewTotal;
@@ -32,6 +33,14 @@ public class ReviewController {
     public void createReview(@RequestPart CreateReviewRequest request,
                              @RequestPart List<MultipartFile> images) {
         reviewService.createReview(request, images);
+    }
+
+    @Operation(summary = "리뷰 수정", description = "사용자가 작성한 리뷰를 수정합니다.")
+    @PatchMapping("/user/{reviewId}")
+    public void updateReview(@PathVariable Long reviewId,
+                             @RequestPart UpdateReviewRequest request,
+                             @RequestPart(required = false) List<MultipartFile> images) {
+        reviewService.updateReview(reviewId, request, images);
     }
 
     @Operation(summary = "리뷰 삭제", description = "사용자가 작성한 리뷰를 삭제합니다.")

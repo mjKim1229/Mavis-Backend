@@ -40,6 +40,12 @@ public class Review extends BaseEntity {
         this.isDeleted = true;
     }
 
+    public void update(int score, String content, boolean isPrivate) {
+        this.score = score;
+        this.content = content;
+        this.isPrivate = isPrivate;
+    }
+
     public String getContentForPublic() {
         if (isPrivate) {
             return null;

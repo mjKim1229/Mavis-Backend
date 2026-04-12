@@ -5,6 +5,7 @@ import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.review.dto.CreateReviewRequest;
 import com.mavis.api.review.dto.GetWritableUserOrderItemResponse;
 import com.mavis.api.review.dto.ReviewResponse;
+import com.mavis.api.review.dto.UpdateReviewRequest;
 import com.mavis.api.review.dto.UserReviewResponse;
 import com.mavis.api.review.implement.ReviewImageUploader;
 import com.mavis.api.review.implement.ReviewValidator;
@@ -48,6 +49,24 @@ public class ReviewService {
         Review review = request.toEntity(orderItem, user);
         Review savedReview = reviewRepository.save(review);
         reviewImageUploader.saveReviewImages(images, savedReview);
+    }
+
+    @Transactional
+    public void updateReview(Long reviewId, UpdateReviewRequest request, List<MultipartFile> images) {
+        User user = userReader.getCurrentUser();
+        Review review = reviewRepository.findByIdAndIsDeletedFalse(reviewId)
+                .orElseThrow(() -> ReviewNotFoundException.EXCEPTION);
+        if (!review.getUser().getId().equals(user.getId())) {
+            throw UnauthorizedReviewException.EXCEPTION;
+        }
+        review.update(request.score(), request.content(), request.isPrivate());
+
+        List<String> keepImageUrls = request.keepImageUrls() != null ? request.keepImageUrls() : List.of();
+        reviewImageUploader.deleteRemovedImages(review, keepImageUrls);
+
+        if (images != null && !images.isEmpty()) {
+            reviewImageUploader.saveReviewImages(images, review);
+        }
     }
 
     @Transactional
