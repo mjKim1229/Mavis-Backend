@@ -1,5 +1,6 @@
 package com.mavis.admin.domains.refund.dto;
 
+import com.mavis.admin.domains.order.dto.OrderItemInfo;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.refund.domain.Refund;
@@ -19,18 +20,18 @@ public record GetAdminRefundResponse(
 ) {
     public record OrderInfo(
             String tossOrderId,
-            String userName,
+            String receiverName,
+            String receiverPhoneNumber,
             Long orderItemId,
-            String productName,
-            String color
+            OrderItemInfo orderItemInfo
     ) {}
 
     public record RefundInfo(
             Long refundId,
-            int refundQuantity,
             int refundAmount,
             String refundReason,
             RefundStatus refundStatus,
+            String carrier,
             String trackingNumber,
             List<String> imageUrls,
             LocalDateTime requestedAt
@@ -42,17 +43,17 @@ public record GetAdminRefundResponse(
         return GetAdminRefundResponse.builder()
                 .orderInfo(new OrderInfo(
                         order.getOrderId().substring(DOMAIN_PREFIX.length()),
-                        order.getUser().getName(),
+                        order.getOrderAddress().getReceiverName(),
+                        order.getOrderAddress().getReceiverPhone(),
                         orderItem.getId(),
-                        orderItem.getProduct().getName(),
-                        orderItem.getColor()
+                        new OrderItemInfo(orderItem.getProduct().getName(), orderItem.getColor(), orderItem.getQuantity())
                 ))
                 .refundInfo(new RefundInfo(
                         refund.getId(),
-                        refund.getRefundQuantity(),
                         refund.getRefundAmount(),
                         refund.getRefundReason(),
                         refund.getRefundStatus(),
+                        refund.getCarrier(),
                         refund.getTrackingNumber(),
                         refund.getImages().stream().map(RefundImage::getImageUrl).toList(),
                         refund.getCreatedAt()

@@ -133,7 +133,6 @@ public class OrderService {
                 .map(orderItem -> Refund.builder()
                         .orderItem(orderItem)
                         .refundReason(refundReason)
-                        .refundQuantity(orderItem.getQuantity())
                         .refundAmount(orderItem.getPrice() * orderItem.getQuantity())
                         .refundStatus(RefundStatus.COMPLETED)
                         .refundType(RefundType.CANCEL)

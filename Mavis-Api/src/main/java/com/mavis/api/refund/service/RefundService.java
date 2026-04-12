@@ -57,8 +57,8 @@ public class RefundService {
         Refund refund = Refund.builder()
                 .orderItem(orderItem)
                 .refundReason(request.refundReason())
-                .refundQuantity(orderItem.getQuantity())
                 .refundAmount(refundAmount)
+                .carrier(request.carrier())
                 .trackingNumber(request.trackingNumber())
                 .refundType(RefundType.RETURN)
                 .build();

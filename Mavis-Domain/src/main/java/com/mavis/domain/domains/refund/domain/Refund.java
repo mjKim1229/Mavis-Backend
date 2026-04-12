@@ -35,11 +35,11 @@ public class Refund extends BaseEntity {
 
     private String refundReason;
 
-    private int refundQuantity;
-
     private int refundAmount;
 
     private String cancelTransactionKey;
+
+    private String carrier;
 
     private String trackingNumber;
 
