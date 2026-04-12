@@ -106,7 +106,7 @@ public class UserService {
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw UserNotFoundException.EXCEPTION;
         }
-        String accessToken = jwtTokenUtil.generateAccessToken(user.getId());
+        String accessToken = jwtTokenUtil.generateAccessToken(user.getId(), "USER");
         String refreshToken = jwtTokenUtil.generateRefreshToken(user.getId());
         return new UserOauthResponse(
                 user.getId(),
@@ -116,7 +116,7 @@ public class UserService {
 
     public UserOauthResponse tokenRefresh(String refreshToken) {
         Long id = jwtTokenUtil.parseRefreshToken(refreshToken);
-        String accessToken = jwtTokenUtil.generateAccessToken(id);
+        String accessToken = jwtTokenUtil.generateAccessToken(id, "USER");
         refreshToken = jwtTokenUtil.generateRefreshToken(id);
         return new UserOauthResponse(
                 id,
