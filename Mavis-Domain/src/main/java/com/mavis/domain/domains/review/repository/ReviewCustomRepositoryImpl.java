@@ -58,7 +58,7 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                 .limit(pageable.getPageSize());
 
         if (photoOnly) {
-            query.join(reviewImage).on(reviewImage.review.eq(review));
+            query.distinct().join(review.images, reviewImage);
         }
 
         for (Sort.Order order : pageable.getSort()) {
@@ -71,14 +71,14 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
 
         List<Review> reviews = query.fetch();
 
-        JPAQuery<Long> countQuery = queryFactory.select(review.count())
+        JPAQuery<Long> countQuery = queryFactory.select(review.countDistinct())
                 .from(review)
                 .join(review.orderItem, orderItem)
                 .where(orderItem.product.id.eq(productId)
                         .and(review.isDeleted.eq(false)));
 
         if (photoOnly) {
-            countQuery.join(reviewImage).on(reviewImage.review.eq(review));
+            countQuery.join(review.images, reviewImage);
         }
 
         return PageableExecutionUtils.getPage(reviews, pageable, countQuery::fetchOne);
