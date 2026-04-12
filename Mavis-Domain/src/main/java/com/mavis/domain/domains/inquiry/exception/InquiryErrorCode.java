@@ -8,7 +8,8 @@ import lombok.RequiredArgsConstructor;
 public enum InquiryErrorCode implements BaseErrorCode {
     INQUIRY_NOT_FOUND(404, "존재하지 않는 문의사항입니다.", "INQUIRY_404_1"),
     INQUIRY_ANSWER_NOT_FOUND(404, "존재하지 않는 문의 답변입니다.", "INQUIRY_404_2"),
-    INQUIRY_ALREADY_ANSWERED(400, "이미 답변한 문의사항입니다.", "INQUIRY_400_1");
+    INQUIRY_ALREADY_ANSWERED(400, "이미 답변한 문의사항입니다.", "INQUIRY_400_1"),
+    UNAUTHORIZED_INQUIRY(403, "문의 삭제 권한이 없습니다.", "INQUIRY_403_1");
     private final Integer status;
     private final String message;
     private final String code;

@@ -44,4 +44,8 @@ public class Inquiry extends BaseEntity {
     @Builder.Default
     private boolean isDeleted = false;
 
+    public void delete() {
+        this.isDeleted = true;
+    }
+
 }

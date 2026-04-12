@@ -40,4 +40,10 @@ public class InquiryController {
     public PageResponse<GetUserInquiryResponse> getUserInquiries(Pageable pageable) {
         return inquiryService.getProductInquiriesByUser(pageable);
     }
+
+    @Operation(summary = "문의 삭제")
+    @DeleteMapping("/{id}")
+    public void deleteInquiry(@PathVariable Long id) {
+        inquiryService.deleteInquiry(id);
+    }
 }

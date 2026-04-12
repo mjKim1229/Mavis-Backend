@@ -10,6 +10,7 @@ import com.mavis.api.inquiry.implement.InquiryReader;
 import com.mavis.common.util.DateFormatters;
 import com.mavis.domain.domains.inquiry.domain.Inquiry;
 import com.mavis.domain.domains.inquiry.domain.InquiryAnswer;
+import com.mavis.domain.domains.inquiry.exception.UnauthorizedInquiryException;
 import com.mavis.domain.domains.inquiry.repository.InquiryRepository;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.product.implement.ProductReader;
@@ -37,6 +38,16 @@ public class InquiryService {
     public PageResponse<GetProductInquiryResponse> getProductInquiries(Long productId, Pageable pageable) {
         Product product = productReader.readById(productId);
         return inquiryReader.readProductInquiries(product.getId(), pageable);
+    }
+
+    @Transactional
+    public void deleteInquiry(Long inquiryId) {
+        User user = userReader.getCurrentUser();
+        Inquiry inquiry = inquiryReader.findById(inquiryId);
+        if (!inquiry.getUser().getId().equals(user.getId())) {
+            throw UnauthorizedInquiryException.EXCEPTION;
+        }
+        inquiry.delete();
     }
 
     @Transactional
