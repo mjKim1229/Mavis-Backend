@@ -52,7 +52,9 @@ public class ReviewController {
 
     @Operation(summary = "상품 리뷰 목록 조회", description = "특정 상품에 작성된 리뷰 목록을 조회합니다.")
     @GetMapping("/product/{productId}")
-    public PageResponse<ReviewResponse> getProductReviews(@PathVariable Long productId, @ParameterObject Pageable pageable) {
-        return reviewService.getProductReviews(productId, pageable);
+    public PageResponse<ReviewResponse> getProductReviews(@PathVariable Long productId,
+                                                          @RequestParam(defaultValue = "false") boolean photoOnly,
+                                                          @ParameterObject Pageable pageable) {
+        return reviewService.getProductReviews(productId, photoOnly, pageable);
     }
 }

@@ -10,7 +10,7 @@ import org.springframework.data.domain.Pageable;
 public interface ReviewCustomRepository {
     ProductReviewTotal queryProductReviewTotal(Long productId);
 
-    Page<Review> queryProductReviews(Long productId, Pageable pageable);
+    Page<Review> queryProductReviews(Long productId, boolean photoOnly, Pageable pageable);
 
     Page<Review> queryProductReviewsByUser(User user, Pageable pageable);
 

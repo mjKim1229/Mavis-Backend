@@ -26,6 +26,8 @@ import static com.mavis.domain.domains.order.domain.QOrderItem.orderItem;
 import static com.mavis.domain.domains.product.domain.QProduct.product; // QProduct import 추가
 import static com.mavis.domain.domains.product.domain.QProductImage.productImage; // QProductImage import 추가
 import static com.mavis.domain.domains.review.domain.QReview.review;
+import static com.mavis.domain.domains.review.domain.QReviewImage.reviewImage;
+import static com.mavis.domain.domains.review.domain.QReviewImage.reviewImage;
 
 @RequiredArgsConstructor
 public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
@@ -47,13 +49,18 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                 .fetchOne();
     }
 
-    public Page<Review> queryProductReviews(Long productId, Pageable pageable) {
+    public Page<Review> queryProductReviews(Long productId, boolean photoOnly, Pageable pageable) {
         JPAQuery<Review> query = queryFactory
                 .selectFrom(review)
+                .join(review.orderItem, orderItem)
                 .where(orderItem.product.id.eq(productId)
                         .and(review.isDeleted.eq(false)))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize());
+
+        if (photoOnly) {
+            query.join(reviewImage).on(reviewImage.review.eq(review));
+        }
 
         for (Sort.Order order : pageable.getSort()) {
             PathBuilder<Review> entityPath = new PathBuilder<>(Review.class, "review");
@@ -67,9 +74,13 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
 
         JPAQuery<Long> countQuery = queryFactory.select(review.count())
                 .from(review)
+                .join(review.orderItem, orderItem)
                 .where(orderItem.product.id.eq(productId)
-                        .and(review.isDeleted.eq(false)))
-                .where(orderItem.product.id.eq(productId));
+                        .and(review.isDeleted.eq(false)));
+
+        if (photoOnly) {
+            countQuery.join(reviewImage).on(reviewImage.review.eq(review));
+        }
 
         return PageableExecutionUtils.getPage(reviews, pageable, countQuery::fetchOne);
     }

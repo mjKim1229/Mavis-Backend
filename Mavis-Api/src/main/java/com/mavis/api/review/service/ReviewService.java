@@ -55,9 +55,9 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<ReviewResponse> getProductReviews(Long productId, Pageable pageable) {
+    public PageResponse<ReviewResponse> getProductReviews(Long productId, boolean photoOnly, Pageable pageable) {
         Product product = productReader.readById(productId);
-        Page<ReviewResponse> reviewPages = reviewRepository.queryProductReviews(product.getId(), pageable)
+        Page<ReviewResponse> reviewPages = reviewRepository.queryProductReviews(product.getId(), photoOnly, pageable)
                 .map(review -> {
                     List<String> reviewImages = extractReviewImages(review);
                     return ReviewResponse.of(review, review.getUser(), review.getOrderItem(), reviewImages);
