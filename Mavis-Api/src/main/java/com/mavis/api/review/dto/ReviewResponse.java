@@ -34,6 +34,6 @@ public record ReviewResponse(
 
     private static String maskName(String name) {
         if (name == null || name.isEmpty()) return name;
-        return name.charAt(0) + "*".repeat(name.length() - 1);
+        return name.charAt(0) + "*".repeat(Math.max(name.length() - 1, 1));
     }
 }
