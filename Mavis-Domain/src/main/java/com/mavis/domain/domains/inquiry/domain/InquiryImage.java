@@ -1,5 +1,6 @@
 package com.mavis.domain.domains.inquiry.domain;
 
+import com.mavis.domain.domains.common.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,7 +9,7 @@ import lombok.*;
 @Entity
 @Builder
 @AllArgsConstructor
-public class InquiryImage {
+public class InquiryImage extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;

@@ -72,7 +72,7 @@ public class ReviewService {
         Page<UserReviewResponse> reviewPages = reviewRepository.queryProductReviewsByUser(user, pageable)
                 .map(review -> {
                     List<String> imageUrls = extractReviewImages(review);
-                    return UserReviewResponse.of(review, review.getUser(), review.getOrderItem(), imageUrls);
+                    return UserReviewResponse.of(review, review.getOrderItem(), imageUrls);
                 });
         return PageResponse.of(reviewPages);
     }
