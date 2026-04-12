@@ -31,11 +31,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import com.mavis.common.util.DateFormatters;
+
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -45,7 +45,6 @@ public class AdminDeliveryService {
 
     private final DeliveryRepository deliveryRepository;
     private final OrderReader orderReader;
-    public static final DateTimeFormatter EXCEL_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd(E)", Locale.KOREAN);
 
     @Transactional(readOnly = true)
     public PageResponse<GetAdminDeliveryResponse> getAdminDeliveryLists(Pageable pageable, DeliveryStatus deliveryStatus) {
@@ -62,7 +61,7 @@ public class AdminDeliveryService {
                                     .quantity(orderItem.getQuantity())
                                     .build()
                     ).toList();
-                    String orderedAt = order.getCreatedAt().format(EXCEL_DATE_FORMATTER);
+                    String orderedAt = order.getCreatedAt().format(DateFormatters.DATE_FORMATTER);
                     return GetAdminDeliveryResponse.from(delivery, order, orderedAt, orderAddress, orderItemInfoList, user);
                 }
         );
@@ -85,7 +84,7 @@ public class AdminDeliveryService {
                         .map(orderItem -> OrderItemExcelInfo.from(orderItem.getProduct().getName(), orderItem.getColor(), orderItem.getQuantity()))
                         .toList();
 
-                String orderedAt = order.getCreatedAt().format(EXCEL_DATE_FORMATTER);
+                String orderedAt = order.getCreatedAt().format(DateFormatters.DATE_FORMATTER);
                 return GetAdminOrderExcelResponse.from(order, orderAddress, orderItemInfoList, user, orderedAt);
             }).toList();
 

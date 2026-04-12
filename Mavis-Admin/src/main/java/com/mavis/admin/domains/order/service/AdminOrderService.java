@@ -20,10 +20,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.mavis.common.util.DateFormatters;
+
 import java.time.LocalDate;
 import java.util.List;
-
-import static com.mavis.admin.domains.delivery.service.AdminDeliveryService.EXCEL_DATE_FORMATTER;
 
 @Service
 @RequiredArgsConstructor
@@ -53,7 +53,7 @@ public class AdminOrderService {
                         .quantity(orderItem.getQuantity())
                         .build()
         ).toList();
-        String orderedAt = order.getCreatedAt().format(EXCEL_DATE_FORMATTER);
+        String orderedAt = order.getCreatedAt().format(DateFormatters.DATE_FORMATTER);
         return GetAdminOrderResponse.from(order, orderAddress, orderedAt, orderItemInfoList, user);
     }
 
