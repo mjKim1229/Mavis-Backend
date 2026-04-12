@@ -27,7 +27,6 @@ import static com.mavis.domain.domains.product.domain.QProduct.product; // QProd
 import static com.mavis.domain.domains.product.domain.QProductImage.productImage; // QProductImage import 추가
 import static com.mavis.domain.domains.review.domain.QReview.review;
 import static com.mavis.domain.domains.review.domain.QReviewImage.reviewImage;
-import static com.mavis.domain.domains.review.domain.QReviewImage.reviewImage;
 
 @RequiredArgsConstructor
 public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
