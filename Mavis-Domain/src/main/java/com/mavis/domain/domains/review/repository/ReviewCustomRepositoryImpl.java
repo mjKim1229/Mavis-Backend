@@ -23,8 +23,7 @@ import java.util.List;
 import static com.mavis.domain.domains.delivery.domain.QDelivery.delivery;
 import static com.mavis.domain.domains.order.domain.QOrder.order;
 import static com.mavis.domain.domains.order.domain.QOrderItem.orderItem;
-import static com.mavis.domain.domains.product.domain.QProduct.product; // QProduct import 추가
-import static com.mavis.domain.domains.product.domain.QProductImage.productImage; // QProductImage import 추가
+import static com.mavis.domain.domains.product.domain.QProduct.product;
 import static com.mavis.domain.domains.review.domain.QReview.review;
 import static com.mavis.domain.domains.review.domain.QReviewImage.reviewImage;
 
@@ -109,7 +108,6 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                 .from(orderItem)
                 .join(orderItem.order, order).fetchJoin()
                 .join(orderItem.product, product).fetchJoin()
-                .leftJoin(product.images, productImage).fetchJoin()
                 .join(delivery).on(delivery.order.eq(order))
                 .leftJoin(review).on(review.orderItem.eq(orderItem))
                 .where(review.id.isNull()
@@ -124,8 +122,6 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                 .select(orderItem.count())
                 .from(orderItem)
                 .join(orderItem.order, order)
-                .join(orderItem.product, product) // Product join 추가
-                .leftJoin(product.images, productImage) // ProductImage join 추가
                 .join(delivery).on(delivery.order.eq(order))
                 .leftJoin(review).on(review.orderItem.eq(orderItem))
                 .where(review.id.isNull()
