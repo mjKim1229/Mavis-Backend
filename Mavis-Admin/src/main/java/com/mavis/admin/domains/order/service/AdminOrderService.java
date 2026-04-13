@@ -13,6 +13,8 @@ import com.mavis.domain.domains.order.domain.OrderAddress;
 import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.domain.OrderStatus;
 import com.mavis.domain.domains.order.repository.OrderRepository;
+import com.mavis.domain.domains.refund.domain.RefundStatus;
+import com.mavis.domain.domains.refund.repository.RefundRepository;
 import com.mavis.domain.domains.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,6 +32,7 @@ import java.util.List;
 public class AdminOrderService {
     private final OrderRepository orderRepository;
     private final DeliveryRepository deliveryRepository;
+    private final RefundRepository refundRepository;
 
     @Transactional(readOnly = true)
     public PageResponse<GetAdminOrderResponse> getPaymentConfirmedOrderLists(Pageable pageable) {
@@ -63,7 +66,8 @@ public class AdminOrderService {
         long orderedCount = orderRepository.countByOrderStatusAndIsDeletedFalse(OrderStatus.ORDERED);
         long shippedCount = deliveryRepository.countByDeliveryStatus(DeliveryStatus.SHIPPED);
         long deliveredCount = deliveryRepository.countByDeliveryStatus(DeliveryStatus.DELIVERED);
-        return AdminOrderCountResponse.of(paymentConfirmedCount, orderedCount, shippedCount, deliveredCount);
+        long refundRequestedCount = refundRepository.countByRefundStatus(RefundStatus.REQUESTED);
+        return AdminOrderCountResponse.of(paymentConfirmedCount, orderedCount, shippedCount, deliveredCount, refundRequestedCount);
     }
 
     @Transactional

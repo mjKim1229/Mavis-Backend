@@ -14,4 +14,5 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
     boolean existsByOrderItemAndRefundStatusIn(OrderItem orderItem, List<RefundStatus> statuses);
     Optional<Refund> findByOrderItem(OrderItem orderItem);
     Page<Refund> findByRefundStatus(RefundStatus refundStatus, Pageable pageable);
+    long countByRefundStatus(RefundStatus refundStatus);
 }
