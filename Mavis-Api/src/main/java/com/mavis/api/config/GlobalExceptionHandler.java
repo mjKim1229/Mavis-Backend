@@ -64,7 +64,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleAllException(Exception e, HttpServletRequest request) {
         GlobalErrorCode errorCode = GlobalErrorCode.INTERNAL_SERVER_ERROR;
         log.error("INTERNAL_SERVER_ERROR", e);
-        discordNotificationService.sendErrorNotification(e, request.getRequestURI(), request.getMethod());
+        //discordNotificationService.sendErrorNotification(e, request.getRequestURI(), request.getMethod());
         return ResponseEntity.status(errorCode.getStatus())
                 .body(errorCode.getErrorReason());
     }
