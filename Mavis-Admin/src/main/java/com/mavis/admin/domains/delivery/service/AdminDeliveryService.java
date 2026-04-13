@@ -252,6 +252,9 @@ public class AdminDeliveryService {
     public void completeDelivery(AdminCompleteDeliveryRequest request) {
         List<Long> deliverIds = request.deliverIds();
         List<Delivery> deliveries = deliveryRepository.findByIdIn(deliverIds);
+        if (deliveries.size() != deliverIds.size()) {
+            throw DeliveryNotFoundException.EXCEPTION;
+        }
         deliveries.forEach(delivery -> {
             if (delivery.getDeliveryStatus() != DeliveryStatus.SHIPPED) {
                 throw DeliveryCannotBeCompleteException.EXCEPTION;

@@ -14,6 +14,7 @@ import static com.mavis.common.util.OrderNumberGenerator.DOMAIN_PREFIX;
 
 @Builder
 public record GetAdminDeliveryResponse(
+        Long deliveryId,
         String orderId,
         String carrier,
         String trackingNumber,
@@ -36,6 +37,7 @@ public record GetAdminDeliveryResponse(
             User user
     ) {
         return GetAdminDeliveryResponse.builder()
+                .deliveryId(delivery.getId())
                 .orderItemInfos(orderItemInfos)
                 .orderId(order.getOrderId().substring(DOMAIN_PREFIX.length()))
                 .orderedAt(orderedAt)
