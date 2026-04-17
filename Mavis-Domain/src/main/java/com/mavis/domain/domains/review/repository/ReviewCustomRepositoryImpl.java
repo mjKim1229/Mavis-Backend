@@ -104,18 +104,19 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
 
     @Override
     public Page<OrderItem> queryWritableOrderItemsByUser(User user, Pageable pageable) {
-        List<OrderItem> orderItems = queryFactory.select(orderItem)
-                .from(orderItem)
+        List<OrderItem> orderItems = queryFactory.selectFrom(orderItem)
                 .join(orderItem.order, order).fetchJoin()
                 .join(orderItem.product, product).fetchJoin()
                 .join(delivery).on(delivery.order.eq(order))
                 .leftJoin(review).on(review.orderItem.eq(orderItem))
-                .where(review.id.isNull()
-                        .and(delivery.deliveryStatus.eq(DeliveryStatus.DELIVERED))
-                        .and(order.user.eq(user))
-                        .and(orderItem.isDeleted.eq(false)))
-                .limit(pageable.getPageSize())
+                .where(
+                        order.user.eq(user),
+                        delivery.deliveryStatus.eq(DeliveryStatus.DELIVERED),
+                        review.id.isNull(),
+                        orderItem.isDeleted.eq(false)
+                )
                 .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
 
         JPAQuery<Long> countQuery = queryFactory
@@ -124,10 +125,12 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                 .join(orderItem.order, order)
                 .join(delivery).on(delivery.order.eq(order))
                 .leftJoin(review).on(review.orderItem.eq(orderItem))
-                .where(review.id.isNull()
-                        .and(delivery.deliveryStatus.eq(DeliveryStatus.DELIVERED))
-                        .and(order.user.eq(user))
-                        .and(orderItem.isDeleted.eq(false)));
+                .where(
+                        order.user.eq(user),
+                        delivery.deliveryStatus.eq(DeliveryStatus.DELIVERED),
+                        review.id.isNull(),
+                        orderItem.isDeleted.eq(false)
+                );
 
         return PageableExecutionUtils.getPage(orderItems, pageable, countQuery::fetchOne);
     }
