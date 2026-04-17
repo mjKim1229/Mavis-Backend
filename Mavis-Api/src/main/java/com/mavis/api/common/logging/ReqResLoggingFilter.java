@@ -31,6 +31,10 @@ public class ReqResLoggingFilter extends OncePerRequestFilter {
         String requestId = UUID.randomUUID().toString().substring(0, 8);
         MDC.put(REQUEST_ID, requestId);
 
+        if (!isSkipLogURI(request.getRequestURI())) {
+            log.info("[{}] {} {}", requestId, request.getMethod(), request.getRequestURI());
+        }
+
         long startTime = System.currentTimeMillis();
         filterChain.doFilter(cachingRequestWrapper, cachingResponseWrapper);
         long endTime = System.currentTimeMillis();
