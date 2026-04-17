@@ -1,3 +1,4 @@
+
 name: CI-CD
 
 on:
@@ -47,15 +48,17 @@ jobs:
         run: |
           cd Mavis-Api
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}/backend .
+          docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}/backend:local -t ${{ secrets.DOCKER_REPO }}/backend .
+          docker push ${{ secrets.DOCKER_REPO }}/backend:local
           docker push ${{ secrets.DOCKER_REPO }}/backend
-          
+
       - name: docker build and push to dev [admin]
         if: contains(github.ref, 'dev')
         run: |
           cd Mavis-Admin
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}/admin .
+          docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}/admin:local -t ${{ secrets.DOCKER_REPO }}/admin .
+          docker push ${{ secrets.DOCKER_REPO }}/admin:local
           docker push ${{ secrets.DOCKER_REPO }}/admin
 
       - name: Copy docker-compose.yml to EC2 DEV
