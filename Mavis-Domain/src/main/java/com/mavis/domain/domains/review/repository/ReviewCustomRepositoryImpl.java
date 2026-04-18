@@ -1,10 +1,12 @@
 package com.mavis.domain.domains.review.repository;
 
 import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
-import com.mavis.domain.domains.order.domain.OrderItem;
+import com.mavis.domain.domains.product.domain.ProductImageType;
 import com.mavis.domain.domains.review.domain.Review;
 import com.mavis.domain.domains.review.vo.ProductReviewTotal;
+import com.mavis.domain.domains.review.vo.WritableOrderItemView;
 import com.mavis.domain.domains.user.domain.User;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -24,6 +26,7 @@ import static com.mavis.domain.domains.delivery.domain.QDelivery.delivery;
 import static com.mavis.domain.domains.order.domain.QOrder.order;
 import static com.mavis.domain.domains.order.domain.QOrderItem.orderItem;
 import static com.mavis.domain.domains.product.domain.QProduct.product;
+import static com.mavis.domain.domains.product.domain.QProductImage.productImage;
 import static com.mavis.domain.domains.review.domain.QReview.review;
 import static com.mavis.domain.domains.review.domain.QReviewImage.reviewImage;
 
@@ -103,10 +106,26 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
     }
 
     @Override
-    public Page<OrderItem> queryWritableOrderItemsByUser(User user, Pageable pageable) {
-        List<OrderItem> orderItems = queryFactory.selectFrom(orderItem)
-                .join(orderItem.order, order).fetchJoin()
-                .join(orderItem.product, product).fetchJoin()
+    public Page<WritableOrderItemView> queryWritableOrderItemsByUser(User user, Pageable pageable) {
+        List<WritableOrderItemView> orderItems = queryFactory
+                .select(Projections.constructor(WritableOrderItemView.class,
+                        orderItem.id,
+                        product.name,
+                        orderItem.price,
+                        orderItem.color,
+                        orderItem.quantity,
+                        JPAExpressions.select(productImage.imageUrl)
+                                .from(productImage)
+                                .where(
+                                        productImage.product.eq(product),
+                                        productImage.imageType.eq(ProductImageType.MAIN),
+                                        productImage.isDeleted.eq(false)
+                                )
+                                .limit(1)
+                ))
+                .from(orderItem)
+                .join(orderItem.order, order)
+                .join(orderItem.product, product)
                 .join(delivery).on(delivery.order.eq(order))
                 .leftJoin(review).on(review.orderItem.eq(orderItem))
                 .where(

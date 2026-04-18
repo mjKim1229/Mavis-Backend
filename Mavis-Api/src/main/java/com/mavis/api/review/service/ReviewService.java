@@ -12,7 +12,6 @@ import com.mavis.api.review.implement.ReviewValidator;
 import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.implement.OrderReader;
 import com.mavis.domain.domains.product.domain.Product;
-import com.mavis.domain.domains.product.domain.ProductImage;
 import com.mavis.domain.domains.product.implement.ProductReader;
 import com.mavis.domain.domains.review.domain.Review;
 import com.mavis.domain.domains.review.domain.ReviewImage;
@@ -119,15 +118,8 @@ public class ReviewService {
     @Transactional(readOnly = true)
     public PageResponse<GetWritableUserOrderItemResponse> getWritableOrderItems(Pageable pageable) {
         User user = userReader.getCurrentUser();
-        Page<OrderItem> orderItemPages = reviewRepository.queryWritableOrderItemsByUser(user, pageable);
-        Page<GetWritableUserOrderItemResponse> dtoList = orderItemPages.map(orderItem -> {
-            Product product = orderItem.getProduct();
-            String previewImage = product.getImages().stream()
-                    .map(ProductImage::getImageUrl)
-                    .findFirst()
-                    .orElse(null);
-            return GetWritableUserOrderItemResponse.from(orderItem, product, previewImage);
-        });
+        Page<GetWritableUserOrderItemResponse> dtoList = reviewRepository.queryWritableOrderItemsByUser(user, pageable)
+                .map(GetWritableUserOrderItemResponse::from);
         return PageResponse.of(dtoList);
     }
 }

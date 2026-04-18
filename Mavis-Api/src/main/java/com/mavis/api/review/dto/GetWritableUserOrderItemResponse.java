@@ -1,7 +1,6 @@
 package com.mavis.api.review.dto;
 
-import com.mavis.domain.domains.order.domain.OrderItem;
-import com.mavis.domain.domains.product.domain.Product;
+import com.mavis.domain.domains.review.vo.WritableOrderItemView;
 import lombok.Builder;
 
 @Builder
@@ -13,14 +12,14 @@ public record GetWritableUserOrderItemResponse(
         int quantity,
         String previewImage
 ) {
-    public static GetWritableUserOrderItemResponse from(OrderItem orderItem, Product product, String previewImage) {
+    public static GetWritableUserOrderItemResponse from(WritableOrderItemView view) {
         return GetWritableUserOrderItemResponse.builder()
-                .id(orderItem.getId())
-                .name(product.getName())
-                .price(orderItem.getPrice())
-                .color(orderItem.getColor())
-                .quantity(orderItem.getQuantity())
-                .previewImage(previewImage)
+                .id(view.id())
+                .name(view.productName())
+                .price(view.price())
+                .color(view.color())
+                .quantity(view.quantity())
+                .previewImage(view.previewImage())
                 .build();
     }
 }
