@@ -7,10 +7,12 @@ import com.mavis.domain.domains.delivery.domain.Delivery;
 import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderItem;
+import com.mavis.domain.domains.delivery.repository.DeliveryRepository;
 import com.mavis.domain.domains.order.implement.OrderReader;
 import com.mavis.domain.domains.refund.domain.Refund;
 import com.mavis.domain.domains.refund.domain.RefundType;
 import com.mavis.domain.domains.refund.exception.AlreadyRefundRequestedException;
+import com.mavis.domain.domains.delivery.exception.DeliveryNotFoundException;
 import com.mavis.domain.domains.refund.exception.CannotRefundException;
 import com.mavis.domain.domains.refund.exception.UnauthorizedRefundException;
 import com.mavis.domain.domains.refund.implement.RefundAppender;
@@ -32,6 +34,7 @@ public class RefundService {
     private final RefundReader refundReader;
     private final RefundAppender refundAppender;
     private final RefundImageUploader refundImageUploader;
+    private final DeliveryRepository deliveryRepository;
 
     @Transactional
     public void createReturnRefund(Long orderItemId, RequestReturnRequest request, List<MultipartFile> images) {
@@ -43,8 +46,9 @@ public class RefundService {
             throw UnauthorizedRefundException.EXCEPTION;
         }
 
-        Delivery delivery = order.getDelivery();
-        if (delivery == null || delivery.getDeliveryStatus() != DeliveryStatus.DELIVERED) {
+        Delivery delivery = deliveryRepository.findByOrder(order)
+                .orElseThrow(() -> DeliveryNotFoundException.EXCEPTION);
+        if (delivery.getDeliveryStatus() != DeliveryStatus.DELIVERED) {
             throw CannotRefundException.EXCEPTION;
         }
 

@@ -20,12 +20,12 @@ public record UserOrderInfo(
         String userName,
         String createdAt
 ) {
-    public static UserOrderInfo from(Order order) {
+    public static UserOrderInfo from(Order order, String orderStatus) {
         return UserOrderInfo.builder()
                 .orderId(order.getId())
                 .tossOrderId(order.getOrderId().substring(DOMAIN_PREFIX.length()))
                 .orderProductList(order.getOrderItems().stream().map(OrderProduct::from).toList())
-                .orderStatus(order.getDisplayStatus())
+                .orderStatus(orderStatus)
                 .address(order.getOrderAddress().getAddress())
                 .addressInfo(order.getOrderAddress().getAddressDetail())
                 .totalPrice(order.getTotalPrice())

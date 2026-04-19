@@ -1,7 +1,6 @@
 package com.mavis.domain.domains.order.domain;
 
 import com.mavis.domain.domains.common.jpa.BaseEntity;
-import com.mavis.domain.domains.delivery.domain.Delivery;
 import com.mavis.domain.domains.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -39,9 +38,6 @@ public class Order extends BaseEntity {
     @OneToMany(mappedBy = "order")
     private List<OrderItem> orderItems;
 
-    @OneToOne(mappedBy = "order") // Delivery 쪽에 FK가 있을 때
-    private Delivery delivery;
-
     @Builder.Default
     private boolean isDeleted = false;
 
@@ -69,10 +65,4 @@ public class Order extends BaseEntity {
         this.orderStatus = OrderStatus.ORDERED;
     }
 
-    public String getDisplayStatus() {
-        if (orderStatus == OrderStatus.CANCELED) {
-            return orderStatus.getTitle();
-        }
-        return delivery != null ? delivery.getDeliveryStatus().getTitle() : orderStatus.getTitle();
-    }
 }

@@ -4,7 +4,6 @@ import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.order.dto.CancelOrderRequest;
 import com.mavis.api.order.dto.CreateOrderRequest;
 import com.mavis.api.order.dto.CreateOrderResponse;
-import com.mavis.api.order.dto.GetOrderItemUserCanReviewResponse;
 import com.mavis.api.order.dto.UserOrderInfo;
 import com.mavis.api.order.facade.OrderFacade;
 import com.mavis.api.order.service.OrderService;
@@ -35,12 +34,6 @@ public class OrderController {
     @GetMapping
     public PageResponse<UserOrderInfo> getUserOrderList(Pageable pageable) {
         return orderService.getUserOrderList(pageable);
-    }
-
-    @Operation(summary = "리뷰 가능한 주문 & 배송 목록")
-    @GetMapping("/reviewable")
-    public PageResponse<GetOrderItemUserCanReviewResponse> getOrderItemUserCanReviewResponsePageResponse(Pageable pageable) {
-        return orderService.getUserCanReviewList(pageable);
     }
 
     @Operation(summary = "토스 PG 결제 승인")
