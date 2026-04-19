@@ -12,15 +12,10 @@ import com.mavis.domain.domains.refund.domain.RefundType;
 import com.mavis.domain.domains.refund.implement.RefundAppender;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import com.mavis.domain.domains.order.exception.CannotCancelOrderException;
 import com.mavis.domain.domains.order.exception.InvalidOrderInfoException;
 import com.mavis.domain.domains.order.exception.OrderNotFoundException;
 import com.mavis.domain.domains.order.exception.PriceMismatchException;
-import com.mavis.domain.domains.delivery.domain.Delivery;
-import com.mavis.domain.domains.delivery.repository.DeliveryRepository;
-import com.mavis.api.order.implement.OrderStatusResolver;
 import com.mavis.domain.domains.order.implement.OrderReader;
 import com.mavis.domain.domains.order.implement.PaymentIdempotencyManager;
 import com.mavis.domain.domains.order.repository.OrderRepository;
@@ -51,8 +46,6 @@ public class OrderService {
     private final OrderReader orderReader;
     private final RefundAppender refundAppender;
     private final PaymentIdempotencyManager paymentIdempotencyManager;
-    private final DeliveryRepository deliveryRepository;
-    private final OrderStatusResolver orderStatusResolver;
 
     @Transactional
     @Retryable(
@@ -187,12 +180,23 @@ public class OrderService {
     public PageResponse<UserOrderInfo> getUserOrderList(Pageable pageable) {
         User user = userReader.getCurrentUser();
         Page<Order> orderPages = orderRepository.findOrderPagesByUser(pageable, user);
-        Map<Long, Delivery> deliveryMap = deliveryRepository.findByOrderIn(orderPages.getContent())
-                .stream().collect(Collectors.toMap(d -> d.getOrder().getId(), d -> d));
-        return PageResponse.of(orderPages.map(order -> {
-            String status = orderStatusResolver.resolve(order, deliveryMap.get(order.getId()));
-            return UserOrderInfo.from(order, status);
-        }));
+        return PageResponse.of(orderPages.map(UserOrderInfo::from));
     }
 
+    @Transactional(readOnly = true)
+    public PageResponse<GetOrderItemUserCanReviewResponse> getUserCanReviewList(Pageable pageable) {
+        User user = userReader.getCurrentUser();
+        Page<OrderItem> orderItemPages = orderRepository.findUserOrderItemCanReview(pageable, user);
+        Page<GetOrderItemUserCanReviewResponse> getOrderItemUserCanReviewResponses = orderItemPages.map(
+                orderItem -> {
+                    OrderOption orderOption = new OrderOption(orderItem.getColor(), orderItem.getQuantity());
+                    return GetOrderItemUserCanReviewResponse.builder()
+                            .productName(orderItem.getProduct().getName())
+                            .orderItemId(orderItem.getId())
+                            .orderOption(orderOption)
+                            .build();
+                }
+        );
+        return PageResponse.of(getOrderItemUserCanReviewResponses);
+    }
 }
