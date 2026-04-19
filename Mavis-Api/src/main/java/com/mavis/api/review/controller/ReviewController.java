@@ -7,6 +7,7 @@ import com.mavis.api.review.dto.ReviewResponse;
 import com.mavis.api.review.dto.UpdateReviewRequest;
 import com.mavis.api.review.dto.UserReviewResponse;
 import com.mavis.api.review.service.ReviewService;
+import com.mavis.domain.domains.review.vo.GetWritableUserOrderItemResponseVO;
 import com.mavis.domain.domains.review.vo.ProductReviewTotal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -57,7 +58,7 @@ public class ReviewController {
 
     @Operation(summary = "사용자 리뷰 작성 가능 리스트 조회")
     @GetMapping("/user/review-writable")
-    public PageResponse<GetWritableUserOrderItemResponse> getWritableUserOrderItemResponsePageResponse(Pageable pageable) {
+    public PageResponse<GetWritableUserOrderItemResponseVO> getWritableUserOrderItemResponsePageResponse(Pageable pageable) {
         return reviewService.getWritableOrderItems(pageable);
     }
 

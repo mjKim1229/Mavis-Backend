@@ -2,7 +2,9 @@ package com.mavis.domain.domains.review.repository;
 
 import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
 import com.mavis.domain.domains.order.domain.OrderItem;
+import com.mavis.domain.domains.product.domain.ProductImageType;
 import com.mavis.domain.domains.review.domain.Review;
+import com.mavis.domain.domains.review.vo.GetWritableUserOrderItemResponseVO;
 import com.mavis.domain.domains.review.vo.ProductReviewTotal;
 import com.mavis.domain.domains.user.domain.User;
 import com.querydsl.core.types.Order;
@@ -10,6 +12,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.PathBuilder;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +27,7 @@ import static com.mavis.domain.domains.delivery.domain.QDelivery.delivery;
 import static com.mavis.domain.domains.order.domain.QOrder.order;
 import static com.mavis.domain.domains.order.domain.QOrderItem.orderItem;
 import static com.mavis.domain.domains.product.domain.QProduct.product;
+import static com.mavis.domain.domains.product.domain.QProductImage.productImage;
 import static com.mavis.domain.domains.review.domain.QReview.review;
 import static com.mavis.domain.domains.review.domain.QReviewImage.reviewImage;
 
@@ -102,19 +106,74 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
         return PageableExecutionUtils.getPage(reviews, pageable, countQuery::fetchOne);
     }
 
+//    @Override
+//    public Page<OrderItem> queryWritableOrderItemsByUser(User user, Pageable pageable) {
+//        List<OrderItem> orderItems = queryFactory.selectFrom(orderItem)
+//                .join(orderItem.order, order).fetchJoin()
+//                .join(orderItem.product, product).fetchJoin()
+//                .join(delivery).on(delivery.order.eq(order))
+//                .leftJoin(review).on(review.orderItem.eq(orderItem))
+//                .where(
+//                        order.user.eq(user),
+//                        delivery.deliveryStatus.eq(DeliveryStatus.DELIVERED),
+//                        review.id.isNull(),
+//                        orderItem.isDeleted.eq(false)
+//                )
+//                .offset(pageable.getOffset())
+//                .limit(pageable.getPageSize())
+//                .fetch();
+//
+//        JPAQuery<Long> countQuery = queryFactory
+//                .select(orderItem.count())
+//                .from(orderItem)
+//                .join(orderItem.order, order)
+//                .join(delivery).on(delivery.order.eq(order))
+//                .leftJoin(review).on(review.orderItem.eq(orderItem))
+//                .where(
+//                        order.user.eq(user),
+//                        delivery.deliveryStatus.eq(DeliveryStatus.DELIVERED),
+//                        review.id.isNull(),
+//                        orderItem.isDeleted.eq(false)
+//                );
+//
+//        return PageableExecutionUtils.getPage(orderItems, pageable, countQuery::fetchOne);
+//    }
+
     @Override
-    public Page<OrderItem> queryWritableOrderItemsByUser(User user, Pageable pageable) {
-        List<OrderItem> orderItems = queryFactory.selectFrom(orderItem)
-                .join(orderItem.order, order).fetchJoin()
-                .join(orderItem.product, product).fetchJoin()
-                .join(delivery).on(delivery.order.eq(order))
-                .leftJoin(review).on(review.orderItem.eq(orderItem))
+    public Page<GetWritableUserOrderItemResponseVO> queryWritableOrderItemsByUser(User user, Pageable pageable) {
+        List<GetWritableUserOrderItemResponseVO> content = queryFactory
+                .select(Projections.constructor(GetWritableUserOrderItemResponseVO.class,
+                        orderItem.id,
+                        product.name,
+                        orderItem.price,
+                        orderItem.color,
+                        orderItem.quantity,
+                        productImage.imageUrl
+                ))
+                .from(orderItem)
+                .join(orderItem.order, order)
+                .join(orderItem.product, product)
+                .leftJoin(productImage).on(
+                        productImage.product.eq(product),
+                        productImage.imageType.eq(ProductImageType.MAIN),
+                        productImage.id.eq(
+                                JPAExpressions.select(productImage.id.min())
+                                        .from(productImage)
+                                        .where(
+                                                productImage.product.eq(product),
+                                                productImage.imageType.eq(ProductImageType.MAIN)
+                                        )
+                        )
+                )
+                .join(delivery).on(delivery.order.id.eq(order.id))
+                .leftJoin(review).on(review.orderItem.id.eq(orderItem.id))
                 .where(
                         order.user.eq(user),
                         delivery.deliveryStatus.eq(DeliveryStatus.DELIVERED),
                         review.id.isNull(),
                         orderItem.isDeleted.eq(false)
                 )
+                .orderBy(orderItem.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -123,8 +182,8 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                 .select(orderItem.count())
                 .from(orderItem)
                 .join(orderItem.order, order)
-                .join(delivery).on(delivery.order.eq(order))
-                .leftJoin(review).on(review.orderItem.eq(orderItem))
+                .join(delivery).on(delivery.order.id.eq(order.id))
+                .leftJoin(review).on(review.orderItem.id.eq(orderItem.id))
                 .where(
                         order.user.eq(user),
                         delivery.deliveryStatus.eq(DeliveryStatus.DELIVERED),
@@ -132,6 +191,6 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                         orderItem.isDeleted.eq(false)
                 );
 
-        return PageableExecutionUtils.getPage(orderItems, pageable, countQuery::fetchOne);
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 }

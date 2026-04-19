@@ -19,6 +19,7 @@ import com.mavis.domain.domains.review.domain.ReviewImage;
 import com.mavis.domain.domains.review.exception.ReviewNotFoundException;
 import com.mavis.domain.domains.review.exception.UnauthorizedReviewException;
 import com.mavis.domain.domains.review.repository.ReviewRepository;
+import com.mavis.domain.domains.review.vo.GetWritableUserOrderItemResponseVO;
 import com.mavis.domain.domains.review.vo.ProductReviewTotal;
 import com.mavis.domain.domains.user.domain.User;
 import lombok.RequiredArgsConstructor;
@@ -116,18 +117,27 @@ public class ReviewService {
                 .toList();
     }
 
+    //    @Transactional(readOnly = true)
+//    public PageResponse<GetWritableUserOrderItemResponse> getWritableOrderItems(Pageable pageable) {
+//        User user = userReader.getCurrentUser();
+//        Page<OrderItem> orderItemPages = reviewRepository.queryWritableOrderItemsByUser(user, pageable);
+//        Page<GetWritableUserOrderItemResponse> dtoList = orderItemPages.map(orderItem -> {
+//            Product product = orderItem.getProduct();
+//            String previewImage = product.getImages().stream()
+//                    .map(ProductImage::getImageUrl)
+//                    .findFirst()
+//                    .orElse(null);
+//            return GetWritableUserOrderItemResponse.from(orderItem, product, previewImage);
+//        });
+//        return PageResponse.of(dtoList);
+//    }
     @Transactional(readOnly = true)
-    public PageResponse<GetWritableUserOrderItemResponse> getWritableOrderItems(Pageable pageable) {
+    public PageResponse<GetWritableUserOrderItemResponseVO> getWritableOrderItems(Pageable pageable) {
         User user = userReader.getCurrentUser();
-        Page<OrderItem> orderItemPages = reviewRepository.queryWritableOrderItemsByUser(user, pageable);
-        Page<GetWritableUserOrderItemResponse> dtoList = orderItemPages.map(orderItem -> {
-            Product product = orderItem.getProduct();
-            String previewImage = product.getImages().stream()
-                    .map(ProductImage::getImageUrl)
-                    .findFirst()
-                    .orElse(null);
-            return GetWritableUserOrderItemResponse.from(orderItem, product, previewImage);
-        });
+
+        Page<GetWritableUserOrderItemResponseVO> dtoList =
+                reviewRepository.queryWritableOrderItemsByUser(user, pageable);
+
         return PageResponse.of(dtoList);
     }
 }
