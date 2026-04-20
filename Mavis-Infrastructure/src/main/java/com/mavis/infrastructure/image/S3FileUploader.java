@@ -24,10 +24,10 @@ public class S3FileUploader {
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
 
-    public String uploadImageToS3(MultipartFile file) {
+    public String uploadImageToS3(MultipartFile file, ImageDirectory directory) {
         String originalFilename = file.getOriginalFilename();
         String extension = Objects.requireNonNull(originalFilename).substring(originalFilename.lastIndexOf(".") + 1);
-        String s3FileName = UUID.randomUUID().toString().substring(0, 10) + "_" + originalFilename;
+        String s3FileName = directory.getPath() + "/" + UUID.randomUUID().toString().substring(0, 10) + "_" + originalFilename;
 
         try (InputStream inputStream = file.getInputStream()) {
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
