@@ -125,6 +125,22 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
                 .fetch();
     }
 
+    @Override
+    public List<Product> searchProducts(String keyword, Pageable pageable) {
+        return queryFactory.selectFrom(product)
+                .where(product.isDeleted.eq(false),
+                        containsKeyword(keyword))
+                .orderBy(product.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+    }
+
+    private BooleanExpression containsKeyword(String keyword) {
+        if (keyword == null || keyword.isBlank()) return null;
+        return product.name.containsIgnoreCase(keyword);
+    }
+
     private BooleanExpression eqProductCategory(ProductCategory productCategory, ProductSubCategory productSubCategory) {
         if (productSubCategory == null) {
             return product.subCategory.in(productCategory.getSubCategories());

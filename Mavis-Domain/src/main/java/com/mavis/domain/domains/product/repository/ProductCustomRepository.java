@@ -19,4 +19,5 @@ public interface ProductCustomRepository {
     List<Product> getRecentCreatedProducts(Pageable pageable);
     List<Product> getProductsByCategory(ProductCategory productCategory, ProductSubCategory subCategory, Pageable pageable);
     List<Product> getClearanceProduct(Pageable pageable);
+    List<Product> searchProducts(String keyword, Pageable pageable);
 }
