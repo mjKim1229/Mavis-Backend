@@ -26,8 +26,7 @@ public class QueryDSLConfig {
         QProduct qProduct = QProduct.product;
         QProductImage qProductImage = QProductImage.productImage;
         QDelivery qDelivery = QDelivery.delivery;
-        log.debug("QueryDSLConfig initialized with QReview: {}, QOrderItem: {}, QProduct: {}, QProductImage: {}, QDelivery: {}",);
-                qReview, qOrderItem, qProduct, qProductImage, qDelivery);
+        log.debug("QueryDSLConfig initialized");
         return new JPAQueryFactory(entityManager);
     }
 }
