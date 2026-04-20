@@ -59,6 +59,14 @@ public class ProductController {
         return productService.getClearanceProduct(pageable);
     }
 
+    @Operation(summary = "상품 검색", description = "키워드로 상품명을 검색합니다.")
+    @GetMapping("/search")
+    public List<GetProductPreviewResponse> searchProducts(
+            @RequestParam String keyword,
+            Pageable pageable) {
+        return productService.searchProducts(keyword, pageable);
+    }
+
     @Operation(summary = "카테고리 및 하위 카테고리로 상품 미리보기 조회")
     @GetMapping("/category/products")
     public List<GetProductPreviewResponse> getProductPreviewsByCategory(
