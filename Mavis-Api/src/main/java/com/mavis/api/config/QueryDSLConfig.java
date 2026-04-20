@@ -21,12 +21,12 @@ public class QueryDSLConfig {
 
     @Bean
     public JPAQueryFactory jpaQueryFactory() {
-        QReview qReview = QReview.review;
-        QOrderItem qOrderItem = QOrderItem.orderItem;
-        QProduct qProduct = QProduct.product;
-        QProductImage qProductImage = QProductImage.productImage;
-        QDelivery qDelivery = QDelivery.delivery;
-        log.debug("QueryDSLConfig initialized");
+//        QReview qReview = QReview.review;
+//        QOrderItem qOrderItem = QOrderItem.orderItem;
+//        QProduct qProduct = QProduct.product;
+//        QProductImage qProductImage = QProductImage.productImage;
+//        QDelivery qDelivery = QDelivery.delivery;
+//        log.debug("QueryDSLConfig initialized");
         return new JPAQueryFactory(entityManager);
     }
 }
