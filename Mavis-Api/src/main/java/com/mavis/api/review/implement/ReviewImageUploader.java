@@ -3,6 +3,7 @@ package com.mavis.api.review.implement;
 import com.mavis.domain.domains.review.domain.Review;
 import com.mavis.domain.domains.review.domain.ReviewImage;
 import com.mavis.domain.domains.review.repository.ReviewImageRepository;
+import com.mavis.infrastructure.image.ImageDirectory;
 import com.mavis.infrastructure.image.S3FileUploader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -30,7 +31,7 @@ public class ReviewImageUploader {
         List<ReviewImage> reviewImages = images.stream()
                 .map(
                         image -> {
-                            String imageUrl = fileUploader.uploadImageToS3(image);
+                            String imageUrl = fileUploader.uploadImageToS3(image, ImageDirectory.REVIEW);
                             return ReviewImage.builder()
                                     .imageUrl(imageUrl)
                                     .review(review)

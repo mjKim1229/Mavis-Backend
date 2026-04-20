@@ -9,6 +9,7 @@ import com.mavis.domain.domains.product.repository.ProductImageRepository;
 import com.mavis.domain.domains.product.repository.ProductNoticeRepository;
 import com.mavis.domain.domains.product.repository.ProductRepository;
 import com.mavis.domain.domains.product.vo.ColorVO;
+import com.mavis.infrastructure.image.ImageDirectory;
 import com.mavis.infrastructure.image.S3FileUploader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -164,7 +165,7 @@ public class AdminProductService {
             if (multipartFile == null || multipartFile.isEmpty()) {
                 continue;
             }
-            String uploadImageUrl = s3FileUploader.uploadImageToS3(multipartFile);
+            String uploadImageUrl = s3FileUploader.uploadImageToS3(multipartFile, ImageDirectory.PRODUCT);
 
             ProductImage productImage = ProductImage.builder()
                     .product(product)

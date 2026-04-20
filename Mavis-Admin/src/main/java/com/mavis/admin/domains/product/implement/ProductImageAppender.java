@@ -4,6 +4,7 @@ import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.product.domain.ProductImage;
 import com.mavis.domain.domains.product.domain.ProductImageType;
 import com.mavis.domain.domains.product.repository.ProductImageRepository;
+import com.mavis.infrastructure.image.ImageDirectory;
 import com.mavis.infrastructure.image.S3FileUploader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -21,21 +22,21 @@ public class ProductImageAppender {
     public void saveImages(List<MultipartFile> mainImages, List<MultipartFile> productImages, List<MultipartFile> detailImages, Product product) {
         //메인
         List<String> uploadedMainImages = mainImages.stream()
-                .map(s3FileUploader::uploadImageToS3)
+                .map(image -> s3FileUploader.uploadImageToS3(image, ImageDirectory.PRODUCT))
                 .toList();
         List<ProductImage> mainProductImages = mapProductImagesInOrder(uploadedMainImages, product, ProductImageType.MAIN);
         productImageRepository.saveAll(mainProductImages);
 
         //상품
         List<String> uploadedProductImages = productImages.stream()
-                .map(s3FileUploader::uploadImageToS3)
+                .map(image -> s3FileUploader.uploadImageToS3(image, ImageDirectory.PRODUCT))
                 .toList();
         List<ProductImage> productImageEntities = mapProductImagesInOrder(uploadedProductImages, product, ProductImageType.PRODUCT);
         productImageRepository.saveAll(productImageEntities);
 
         //상품 상세
         List<String> detailProductImageUrls = detailImages.stream()
-                .map(s3FileUploader::uploadImageToS3)
+                .map(image -> s3FileUploader.uploadImageToS3(image, ImageDirectory.PRODUCT))
                 .toList();
         List<ProductImage> productDetailImages = mapProductImagesInOrder(detailProductImageUrls, product, ProductImageType.DETAIL);
         productImageRepository.saveAll(productDetailImages);
