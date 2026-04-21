@@ -22,6 +22,11 @@ public class RefundReader {
                 .orElseThrow(() -> RefundNotFoundException.EXCEPTION);
     }
 
+    public Refund findByIdWithOrderItemAndOrder(Long refundId) {
+        return refundRepository.findByIdWithOrderItemAndOrder(refundId)
+                .orElseThrow(() -> RefundNotFoundException.EXCEPTION);
+    }
+
     public boolean hasActiveRefund(OrderItem orderItem) {
         return refundRepository.existsByOrderItemAndRefundStatusIn(
                 orderItem,

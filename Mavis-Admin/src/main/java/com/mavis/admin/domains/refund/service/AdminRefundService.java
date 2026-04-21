@@ -30,7 +30,7 @@ public class AdminRefundService {
 
     @Transactional
     public Refund approveRefund(Long refundId) {
-        Refund refund = refundReader.findById(refundId);
+        Refund refund = refundReader.findByIdWithOrderItemAndOrder(refundId);
         if (refund.getRefundStatus() != RefundStatus.REQUESTED) {
             throw CannotRefundException.EXCEPTION;
         }

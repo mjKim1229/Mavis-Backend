@@ -6,6 +6,8 @@ import com.mavis.domain.domains.refund.domain.RefundStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,4 +17,7 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
     Optional<Refund> findByOrderItem(OrderItem orderItem);
     Page<Refund> findByRefundStatus(RefundStatus refundStatus, Pageable pageable);
     long countByRefundStatus(RefundStatus refundStatus);
+
+    @Query("SELECT r FROM Refund r JOIN FETCH r.orderItem oi JOIN FETCH oi.order WHERE r.id = :id")
+    Optional<Refund> findByIdWithOrderItemAndOrder(@Param("id") Long id);
 }
