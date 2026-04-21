@@ -71,11 +71,11 @@ public class InquiryService {
                 inquiry -> {
                     String questionCreatedAt = inquiry.getCreatedAt().format(DateFormatters.DATE_FORMATTER);
                     if (inquiry.getInquiryAnswer() == null) {
-                        return new GetUserInquiryResponse(inquiry.getQuestion(), questionCreatedAt, null, null);
+                        return new GetUserInquiryResponse(inquiry.getProduct().getId(), inquiry.getProduct().getName(), inquiry.getQuestion(), questionCreatedAt, null, null);
                     }
                     InquiryAnswer inquiryAnswer = inquiry.getInquiryAnswer();
                     String answerCreatedAt = inquiryAnswer.getCreatedAt().format(DateFormatters.DATE_FORMATTER);
-                    return new GetUserInquiryResponse(inquiry.getQuestion(), questionCreatedAt, inquiryAnswer.getAnswer(), answerCreatedAt);
+                    return new GetUserInquiryResponse(inquiry.getProduct().getId(), inquiry.getProduct().getName(), inquiry.getQuestion(), questionCreatedAt, inquiryAnswer.getAnswer(), answerCreatedAt);
                 }
         );
         return PageResponse.of(getUserInquiryResponsePage);

@@ -7,6 +7,7 @@ import lombok.Builder;
 @Builder
 public record GetAdminInquiryResponse(
         Long inquiryId,
+        Long productId,
         String productName,
         String question,
         String userName,
@@ -18,6 +19,7 @@ public record GetAdminInquiryResponse(
 
         return GetAdminInquiryResponse.builder()
                 .inquiryId(inquiry.getId())
+                .productId(inquiry.getProduct().getId())
                 .productName(inquiry.getProduct().getName())
                 .question(inquiry.getQuestion())
                 .userName(inquiry.getUser().getName())
