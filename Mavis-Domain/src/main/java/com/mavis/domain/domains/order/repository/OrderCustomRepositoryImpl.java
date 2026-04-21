@@ -49,8 +49,10 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
     @Override
     public Page<Order> findOrderedOrderPages(Pageable pageable, LocalDate startDate, LocalDate endDate) {
         List<Order> orders = queryFactory.selectFrom(order)
+                .join(order.delivery, delivery)
                 .where(order.isDeleted.eq(false)
                         .and(order.orderStatus.eq(OrderStatus.ORDERED))
+                        .and(delivery.deliveryStatus.eq(DeliveryStatus.READY))
                         .and(order.createdAt.goe(startDate.atStartOfDay()))
                         .and(order.createdAt.lt(endDate.plusDays(1).atStartOfDay())))
                 .offset(pageable.getOffset())
@@ -60,12 +62,26 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
 
         JPAQuery<Long> countQuery = queryFactory.select(order.count())
                 .from(order)
+                .join(order.delivery, delivery)
                 .where(order.isDeleted.eq(false)
                         .and(order.orderStatus.eq(OrderStatus.ORDERED))
+                        .and(delivery.deliveryStatus.eq(DeliveryStatus.READY))
                         .and(order.createdAt.goe(startDate.atStartOfDay()))
                         .and(order.createdAt.lt(endDate.plusDays(1).atStartOfDay())));
 
         return PageableExecutionUtils.getPage(orders, pageable, countQuery::fetchOne);
+    }
+
+    @Override
+    public long countOrderedWithReadyDelivery() {
+        Long count = queryFactory.select(order.count())
+                .from(order)
+                .join(order.delivery, delivery)
+                .where(order.isDeleted.eq(false)
+                        .and(order.orderStatus.eq(OrderStatus.ORDERED))
+                        .and(delivery.deliveryStatus.eq(DeliveryStatus.READY)))
+                .fetchOne();
+        return count != null ? count : 0L;
     }
 
     @Override

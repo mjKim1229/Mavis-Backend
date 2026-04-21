@@ -63,7 +63,7 @@ public class AdminOrderService {
     @Transactional(readOnly = true)
     public AdminOrderCountResponse getOrderCounts() {
         long paymentConfirmedCount = orderRepository.countByOrderStatusAndIsDeletedFalse(OrderStatus.PAYMENT_CONFIRMED);
-        long orderedCount = orderRepository.countByOrderStatusAndIsDeletedFalse(OrderStatus.ORDERED);
+        long orderedCount = orderRepository.countOrderedWithReadyDelivery();
         long shippedCount = deliveryRepository.countByDeliveryStatus(DeliveryStatus.SHIPPED);
         long deliveredCount = deliveryRepository.countByDeliveryStatus(DeliveryStatus.DELIVERED);
         long refundRequestedCount = refundRepository.countByRefundStatus(RefundStatus.REQUESTED);

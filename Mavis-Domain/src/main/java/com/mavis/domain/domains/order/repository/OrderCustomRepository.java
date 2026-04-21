@@ -16,4 +16,6 @@ public interface OrderCustomRepository {
     Page<Order> findOrderPagesByUser(Pageable pageable, User user);
 
     Page<OrderItem> findUserOrderItemCanReview(Pageable pageable, User user);
+
+    long countOrderedWithReadyDelivery();
 }
