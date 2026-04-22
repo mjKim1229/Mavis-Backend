@@ -11,10 +11,11 @@ import com.mavis.domain.domains.product.repository.ProductRepository;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.domain.domains.user.repository.UserRepository;
 import com.mavis.infrastructure.image.S3FileUploader;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 
@@ -38,8 +39,11 @@ class InquiryControllerTest extends ControllerTestSupport {
     @Autowired
     private InquiryAnswerRepository inquiryAnswerRepository;
 
-    @MockBean
+    @MockitoBean
     private S3FileUploader s3FileUploader;
+
+    @Autowired
+    private EntityManager em;
 
     private User savedUser;
     private Product savedProduct;
@@ -82,7 +86,7 @@ class InquiryControllerTest extends ControllerTestSupport {
 
         mockMvc.perform(get("/v1/api/inquiry/product/{id}", savedProduct.getId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.content[0].private").value(true))
+                .andExpect(jsonPath("$.data.content[0].isPrivate").value(true))
                 .andExpect(jsonPath("$.data.content[0].inquiry").isEmpty())
                 .andExpect(jsonPath("$.data.content[0].inquiryAnswer").isEmpty());
     }
@@ -187,6 +191,8 @@ class InquiryControllerTest extends ControllerTestSupport {
                 .answer("관리자 답변")
                 .inquiry(inquiry)
                 .build());
+        em.flush();
+        em.clear();
 
         mockMvc.perform(get("/v1/api/inquiry/user")
                         .with(user(savedUser.getId().toString()).roles("USER")))
@@ -251,6 +257,8 @@ class InquiryControllerTest extends ControllerTestSupport {
                 .answer("답변입니다")
                 .inquiry(inquiry)
                 .build());
+        em.flush();
+        em.clear();
 
         mockMvc.perform(delete("/v1/api/inquiry/{id}", inquiry.getId())
                         .with(user(savedUser.getId().toString()).roles("USER")))
@@ -315,6 +323,8 @@ class InquiryControllerTest extends ControllerTestSupport {
                 .build());
         deletedAnswer.delete();
         inquiryAnswerRepository.save(deletedAnswer);
+        em.flush();
+        em.clear();
 
         mockMvc.perform(delete("/v1/api/inquiry/{id}", inquiry.getId())
                         .with(user(savedUser.getId().toString()).roles("USER")))
