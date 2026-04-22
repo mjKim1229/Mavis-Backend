@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.mavis.common.util.DateFormatters;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -41,8 +40,8 @@ public class AdminOrderService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<GetAdminOrderResponse> getOrderedOrderLists(Pageable pageable, LocalDate startDate, LocalDate endDate) {
-        Page<Order> orderPages = orderRepository.findOrderedOrderPages(pageable, startDate, endDate);
+    public PageResponse<GetAdminOrderResponse> getOrderedOrderLists(Pageable pageable) {
+        Page<Order> orderPages = orderRepository.findOrderedOrderPages(pageable);
         return PageResponse.of(orderPages.map(this::toOrderResponse));
     }
 

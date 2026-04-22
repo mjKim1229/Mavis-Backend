@@ -47,14 +47,12 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
     }
 
     @Override
-    public Page<Order> findOrderedOrderPages(Pageable pageable, LocalDate startDate, LocalDate endDate) {
+    public Page<Order> findOrderedOrderPages(Pageable pageable) {
         List<Order> orders = queryFactory.selectFrom(order)
                 .join(order.delivery, delivery)
                 .where(order.isDeleted.eq(false)
                         .and(order.orderStatus.eq(OrderStatus.ORDERED))
-                        .and(delivery.deliveryStatus.eq(DeliveryStatus.READY))
-                        .and(order.createdAt.goe(startDate.atStartOfDay()))
-                        .and(order.createdAt.lt(endDate.plusDays(1).atStartOfDay())))
+                        .and(delivery.deliveryStatus.eq(DeliveryStatus.READY)))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(order.id.desc())
@@ -65,9 +63,7 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
                 .join(order.delivery, delivery)
                 .where(order.isDeleted.eq(false)
                         .and(order.orderStatus.eq(OrderStatus.ORDERED))
-                        .and(delivery.deliveryStatus.eq(DeliveryStatus.READY))
-                        .and(order.createdAt.goe(startDate.atStartOfDay()))
-                        .and(order.createdAt.lt(endDate.plusDays(1).atStartOfDay())));
+                        .and(delivery.deliveryStatus.eq(DeliveryStatus.READY)));
 
         return PageableExecutionUtils.getPage(orders, pageable, countQuery::fetchOne);
     }

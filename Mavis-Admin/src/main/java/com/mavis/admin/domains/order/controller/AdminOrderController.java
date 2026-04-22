@@ -9,10 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,14 +31,10 @@ public class AdminOrderController {
         return adminOrderService.getPaymentConfirmedOrderLists(pageable);
     }
 
-    @Operation(summary = "발주 완료 주문 목록 조회 (기간 필터)")
+    @Operation(summary = "발주 완료 주문 목록 조회")
     @GetMapping("/ordered")
-    public PageResponse<GetAdminOrderResponse> getOrderedOrderLists(
-            Pageable pageable,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
-    ) {
-        return adminOrderService.getOrderedOrderLists(pageable, startDate, endDate);
+    public PageResponse<GetAdminOrderResponse> getOrderedOrderLists(Pageable pageable) {
+        return adminOrderService.getOrderedOrderLists(pageable);
     }
 
     @PostMapping("/confirm")
