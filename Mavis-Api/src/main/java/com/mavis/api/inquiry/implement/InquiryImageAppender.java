@@ -19,6 +19,7 @@ public class InquiryImageAppender {
     private final S3FileUploader s3FileUploader;
 
     public void saveInquiryImages(Inquiry inquiry, List<MultipartFile> images) {
+        if (images == null || images.isEmpty()) return;
         List<InquiryImage> inquiryImages = images.stream()
                 .map(image -> {
                     String imageUrl = s3FileUploader.uploadImageToS3(image, ImageDirectory.INQUIRY);
