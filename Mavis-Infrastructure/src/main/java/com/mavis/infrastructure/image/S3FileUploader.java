@@ -27,7 +27,7 @@ public class S3FileUploader {
     public String uploadImageToS3(MultipartFile file, ImageDirectory directory) {
         String originalFilename = file.getOriginalFilename();
         String extension = Objects.requireNonNull(originalFilename).substring(originalFilename.lastIndexOf(".") + 1);
-        String s3FileName = directory.getPath() + "/" + UUID.randomUUID().toString().substring(0, 10) + "_" + originalFilename;
+        String s3FileName = "original/" + directory.getPath() + "/" + UUID.randomUUID().toString().substring(0, 10) + "_" + originalFilename;
 
         try (InputStream inputStream = file.getInputStream()) {
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
@@ -43,6 +43,7 @@ public class S3FileUploader {
             exception.printStackTrace();
         }
 
-        return s3Client.utilities().getUrl(url -> url.bucket(bucketName).key(s3FileName)).toString();
+        String resizedFileName = s3FileName.replace("original/", "resized/");
+        return s3Client.utilities().getUrl(url -> url.bucket(bucketName).key(resizedFileName)).toString();
     }
 }
