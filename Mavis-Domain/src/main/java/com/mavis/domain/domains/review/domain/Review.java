@@ -24,7 +24,7 @@ public class Review extends BaseEntity {
     @JoinColumn(name = "order_item_id")
     private OrderItem orderItem;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 

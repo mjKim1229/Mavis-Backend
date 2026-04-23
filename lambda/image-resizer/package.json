@@ -1,0 +1,10 @@
+{
+  "name": "image-resizer",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "S3 image resizing Lambda triggered on original/ prefix uploads",
+  "main": "index.mjs",
+  "dependencies": {
+    "sharp": "^0.33.5"
+  }
+}
