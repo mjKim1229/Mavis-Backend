@@ -2,6 +2,7 @@ package com.mavis.admin.domains.inquiry.controller;
 
 import com.mavis.admin.common.page.PageResponse;
 import com.mavis.admin.domains.inquiry.dto.CreateInquiryAnswerRequest;
+import com.mavis.admin.domains.inquiry.dto.GetAdminInquiryDetailResponse;
 import com.mavis.admin.domains.inquiry.dto.GetAdminInquiryResponse;
 import com.mavis.admin.domains.inquiry.dto.UpdateInquiryAnswerRequest;
 import com.mavis.admin.domains.inquiry.service.AdminInquiryService;
@@ -21,6 +22,12 @@ public class AdminInquiryController {
 
     private final InquiryAnswerService inquiryAnswerService;
     private final AdminInquiryService adminInquiryService;
+
+    @GetMapping("/{inquiryId}")
+    @Operation(summary = "문의 상세 조회")
+    public GetAdminInquiryDetailResponse getInquiry(@PathVariable Long inquiryId) {
+        return adminInquiryService.getInquiry(inquiryId);
+    }
 
     @GetMapping
     @Operation(summary = "문의 목록 조회")
