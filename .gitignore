@@ -42,3 +42,8 @@ out/
 ### yml ###
 *.yml
 !**/src/test/resources/*.yml
+
+.omc/
+
+### Local only ###
+scripts/
