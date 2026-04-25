@@ -58,7 +58,12 @@ public class UserFacade {
         NaverTokenResponse naverTokenResponse = naverOAuthClient.naverAuth(naverOAuthRequest);
         String bearerAccessToken = BEARER + naverTokenResponse.accessToken();
         NaverUserInfoResponse userInfo = naverInfoClient.getUserInfo(bearerAccessToken);
-        Long userId = userService.upsertNaverUser(userInfo.response(), naverTokenResponse.refreshToken(), request);
+        NaverAgreementResponse agreementResponse = naverInfoClient.getAgreements(bearerAccessToken);
+        boolean isEmailAgreed = agreementResponse.agreementInfos().stream()
+                .anyMatch(info -> "marketing_email".equals(info.termCode()));
+        boolean isSmsAgreed = agreementResponse.agreementInfos().stream()
+                .anyMatch(info -> "marketing_sms".equals(info.termCode()));
+        Long userId = userService.upsertNaverUser(userInfo.response(), naverTokenResponse.refreshToken(), isEmailAgreed, isSmsAgreed);
         JwtPair jwtPair = userJwtGenerator.getJwtPair(userId);
         return new UserOauthResponse(userId, jwtPair);
     }

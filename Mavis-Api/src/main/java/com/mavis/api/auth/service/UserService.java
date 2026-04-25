@@ -37,13 +37,13 @@ public class UserService {
     private static final DateTimeFormatter KAKAO_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     @Transactional
-    public Long upsertNaverUser(NaverProfile profile, String naverRefreshToken, OauthLoginRequest request) {
+    public Long upsertNaverUser(NaverProfile profile, String naverRefreshToken, boolean isEmailAgreed, boolean isSmsAgreed) {
         return userRepository.findBySnsTypeAndSnsIdAndIsDeletedFalse(SnsType.NAVER, profile.id())
-                .orElseGet(() -> saveNaverUser(profile, naverRefreshToken, request))
+                .orElseGet(() -> saveNaverUser(profile, naverRefreshToken, isEmailAgreed, isSmsAgreed))
                 .getId();
     }
 
-    private User saveNaverUser(NaverProfile profile, String naverRefreshToken, OauthLoginRequest request) {
+    private User saveNaverUser(NaverProfile profile, String naverRefreshToken, boolean isEmailAgreed, boolean isSmsAgreed) {
         User user = User.builder()
                 .snsId(profile.id())
                 .nickname(profile.nickname())
@@ -56,7 +56,7 @@ public class UserService {
                 .profileImage(profile.profileImage())
                 .snsType(SnsType.NAVER)
                 .naverRefreshToken(naverRefreshToken)
-                .marketingAgreement(MarketingAgreement.of(request.isEmailAgreed(), request.isSmsAgreed()))
+                .marketingAgreement(MarketingAgreement.of(isEmailAgreed, isSmsAgreed))
                 .build();
         return userRepository.save(user);
     }

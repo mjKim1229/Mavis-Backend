@@ -1,6 +1,7 @@
 package com.mavis.infrastructure.outer.api.oauth.client.naver;
 
 import com.mavis.infrastructure.outer.api.oauth.config.FeignConfig;
+import com.mavis.infrastructure.outer.api.oauth.dto.NaverAgreementResponse;
 import com.mavis.infrastructure.outer.api.oauth.dto.NaverUserInfoResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,4 +15,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 public interface NaverInfoClient {
     @GetMapping("/v1/nid/me")
     NaverUserInfoResponse getUserInfo(@RequestHeader("Authorization") String accessToken);
+
+    @GetMapping("/v1/nid/agreement")
+    NaverAgreementResponse getAgreements(@RequestHeader("Authorization") String accessToken);
 }
