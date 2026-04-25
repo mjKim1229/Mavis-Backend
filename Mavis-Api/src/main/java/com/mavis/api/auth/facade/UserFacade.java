@@ -13,15 +13,19 @@ import com.mavis.domain.domains.user.domain.SnsType;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.infrastructure.outer.api.oauth.client.kakao.KakaoInfoClient;
 import com.mavis.infrastructure.outer.api.oauth.client.kakao.KakaoOAuthClient;
+import com.mavis.infrastructure.outer.api.oauth.NaverAgreementService;
 import com.mavis.infrastructure.outer.api.oauth.client.naver.NaverInfoClient;
 import com.mavis.infrastructure.outer.api.oauth.client.naver.NaverOAuthClient;
 import com.mavis.infrastructure.outer.api.oauth.dto.*;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.mavis.common.consts.MavisStatic.BEARER;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class UserFacade {
@@ -32,6 +36,7 @@ public class UserFacade {
     private final UserJwtGenerator userJwtGenerator;
     private final KakaoProperties kakaoProperties;
     private final NaverInfoClient naverInfoClient;
+    private final NaverAgreementService naverAgreementService;
     private final NaverProperties naverProperties;
     private final UserService userService;
     private final UserReader userReader;
@@ -58,11 +63,9 @@ public class UserFacade {
         NaverTokenResponse naverTokenResponse = naverOAuthClient.naverAuth(naverOAuthRequest);
         String bearerAccessToken = BEARER + naverTokenResponse.accessToken();
         NaverUserInfoResponse userInfo = naverInfoClient.getUserInfo(bearerAccessToken);
-        NaverAgreementResponse agreementResponse = naverInfoClient.getAgreements(bearerAccessToken);
-        boolean isEmailAgreed = agreementResponse.agreementInfos().stream()
-                .anyMatch(info -> "marketing_email".equals(info.termCode()));
-        boolean isSmsAgreed = agreementResponse.agreementInfos().stream()
-                .anyMatch(info -> "marketing_sms".equals(info.termCode()));
+        List<NaverAgreementInfo> agreements = naverAgreementService.getAgreements(bearerAccessToken);
+        boolean isEmailAgreed = agreements.stream().anyMatch(info -> "marketing_email".equals(info.termCode()));
+        boolean isSmsAgreed = agreements.stream().anyMatch(info -> "marketing_sms".equals(info.termCode()));
         Long userId = userService.upsertNaverUser(userInfo.response(), naverTokenResponse.refreshToken(), isEmailAgreed, isSmsAgreed);
         JwtPair jwtPair = userJwtGenerator.getJwtPair(userId);
         return new UserOauthResponse(userId, jwtPair);
