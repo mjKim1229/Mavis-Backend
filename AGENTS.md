@@ -14,7 +14,7 @@ Mavis 이커머스 플랫폼의 백엔드 서버. Gradle 멀티 모듈 아키텍
 | `settings.gradle` | 멀티 프로젝트 모듈 등록 |
 | `docker-compose.yml` | 프로덕션 Docker 구성 |
 | `docker-compose.local.yml` | 로컬 개발용 Docker 구성 |
-| `CLAUDE.md` | Claude AI 작업 지침 (Discord webhook 등) |
+| `CLAUDE.md` | Claude Code 작업 지침 |
 | `discord_send.ps1` | Discord 알림 전송 PowerShell 스크립트 |
 
 ## Subdirectories
@@ -49,21 +49,36 @@ Mavis-Infrastructure     (External: OAuth, TossPayments, S3, Email, Discord)
 - 새 모듈 추가 시 `settings.gradle`에 등록 필요
 - 환경별 설정은 Mavis-Submodule을 통해 관리되므로 application.yml을 직접 수정하지 말 것
 
-### Testing Requirements
-- 각 모듈 단위: `./gradlew :<ModuleName>:test`
-- 전체 빌드: `./gradlew build`
+### Build & Run Commands
+
+```bash
+./gradlew build                      # 전체 빌드
+./gradlew clean build                # 클린 빌드
+./gradlew :Mavis-Api:test            # 모듈 단위 테스트
+./gradlew :Mavis-Domain:test         # 도메인 통합 테스트 (Testcontainers + MySQL)
+./gradlew :Mavis-Api:bootRun         # 사용자 API 실행 (port 8080)
+./gradlew :Mavis-Admin:bootRun       # 어드민 API 실행 (port 8081)
+```
 
 ### Common Patterns
-- 헥사고날 아키텍처: 도메인과 인프라를 명확히 분리
-- DDD: 비즈니스 도메인별 패키지 구조 (order, product, user, ...)
-- QueryDSL을 활용한 커스텀 리포지토리
-- Feign Client로 외부 API 호출 추상화
+- **예외 처리:** 모든 에러는 `MavisException(ErrorCode)` 패턴. `ErrorCode` enum은 도메인 패키지별로 정의
+- **리포지토리:** 복잡한 쿼리는 `*RepositoryCustom` 인터페이스 + `*RepositoryImpl` (JPAQueryFactory). Q클래스는 `MavisApiServerApplication` 시작 시 `Class.forName`으로 eager load
+- **서비스 분리:** `*Reader` (조회) / `*Appender`·`*Modifier` (쓰기) / `*Facade` (다중 서비스 조합)
+- **외부 API 에러:** Feign 에러 디코더 (예: `TossPaymentsErrorDecoder`)가 외부 HTTP 에러를 `MavisException`으로 변환
+- **민감 설정:** DB 자격증명, OAuth 키, TossPayments 키는 `Mavis-Submodule`에서 관리 — `application.yml` 직접 수정 금지
 
-## Dependencies
+### Tech Stack
 
-### External
-- Spring Boot 3.x
-- Gradle 8.14.3
-- Docker / Docker Compose
+| 분류 | 기술 | 버전 |
+|------|------|------|
+| Framework | Spring Boot | 3.5.4 |
+| JVM | Java | 21 |
+| Build | Gradle | 8.14.3 |
+| ORM | JPA/Hibernate + QueryDSL | 5.0.0 |
+| Auth | JJWT + Spring Security | 0.12.6 |
+| HTTP Client | Spring Cloud OpenFeign | 2025.0.0 |
+| Storage | AWS S3 SDK | 2.29.50 |
+| Testing | JUnit + Testcontainers | 1.20.4 |
+| DB | MySQL (prod) / H2 (local) | — |
 
 <!-- MANUAL: -->
