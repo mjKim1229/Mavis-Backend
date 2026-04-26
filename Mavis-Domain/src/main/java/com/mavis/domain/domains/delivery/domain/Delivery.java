@@ -17,7 +17,7 @@ public class Delivery extends BaseEntity {
     Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
     @Column(columnDefinition = "varchar(255)")

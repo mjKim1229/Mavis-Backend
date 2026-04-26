@@ -6,7 +6,8 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public enum ProductErrorCode implements BaseErrorCode {
-    PRODUCT_NOT_FOUND(404, "상품 정보를 찾을 수 없습니다", "PRODUCT_404_1");
+    PRODUCT_NOT_FOUND(404, "상품 정보를 찾을 수 없습니다", "PRODUCT_404_1"),
+    MAIN_IMAGE_REQUIRED(400, "메인 이미지는 1개여야 합니다", "PRODUCT_400_1");
     private final Integer status;
     private final String message;
     private final String code;

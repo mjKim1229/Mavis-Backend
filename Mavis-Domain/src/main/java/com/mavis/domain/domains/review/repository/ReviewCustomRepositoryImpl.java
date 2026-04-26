@@ -12,7 +12,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.PathBuilder;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -156,14 +155,7 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                 .leftJoin(productImage).on(
                         productImage.product.eq(product),
                         productImage.imageType.eq(ProductImageType.MAIN),
-                        productImage.id.eq(
-                                JPAExpressions.select(productImage.id.min())
-                                        .from(productImage)
-                                        .where(
-                                                productImage.product.eq(product),
-                                                productImage.imageType.eq(ProductImageType.MAIN)
-                                        )
-                        )
+                        productImage.isDeleted.eq(false)
                 )
                 .join(delivery).on(delivery.order.id.eq(order.id))
                 .leftJoin(review).on(review.orderItem.id.eq(orderItem.id))

@@ -3,6 +3,7 @@ package com.mavis.admin.domains.product.implement;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.product.domain.ProductImage;
 import com.mavis.domain.domains.product.domain.ProductImageType;
+import com.mavis.domain.domains.product.exception.MainImageRequiredException;
 import com.mavis.domain.domains.product.repository.ProductImageRepository;
 import com.mavis.infrastructure.image.ImageDirectory;
 import com.mavis.infrastructure.image.S3FileUploader;
@@ -20,6 +21,9 @@ public class ProductImageAppender {
     private final S3FileUploader s3FileUploader;
 
     public void saveImages(List<MultipartFile> mainImages, List<MultipartFile> productImages, List<MultipartFile> detailImages, Product product) {
+        if (mainImages == null || mainImages.size() != 1) {
+            throw MainImageRequiredException.EXCEPTION;
+        }
         //메인
         List<String> uploadedMainImages = mainImages.stream()
                 .map(image -> s3FileUploader.uploadImageToS3(image, ImageDirectory.PRODUCT))
