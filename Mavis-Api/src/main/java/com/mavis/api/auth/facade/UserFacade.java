@@ -13,7 +13,9 @@ import com.mavis.domain.domains.user.domain.SnsType;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.infrastructure.outer.api.oauth.client.kakao.KakaoInfoClient;
 import com.mavis.infrastructure.outer.api.oauth.client.kakao.KakaoOAuthClient;
+import com.mavis.infrastructure.outer.api.oauth.KakaoAgreementService;
 import com.mavis.infrastructure.outer.api.oauth.NaverAgreementService;
+import com.mavis.infrastructure.outer.api.oauth.dto.KakaoServiceTermsResponse.KakaoServiceTerm;
 import com.mavis.infrastructure.outer.api.oauth.client.naver.NaverInfoClient;
 import com.mavis.infrastructure.outer.api.oauth.client.naver.NaverOAuthClient;
 import com.mavis.infrastructure.outer.api.oauth.dto.*;
@@ -31,6 +33,7 @@ import static com.mavis.common.consts.MavisStatic.BEARER;
 public class UserFacade {
     private final KakaoOAuthClient kakaoOAuthClient;
     private final KakaoInfoClient kakaoInfoClient;
+    private final KakaoAgreementService kakaoAgreementService;
     private final NaverOAuthClient naverOAuthClient;
     private final UserMapper userMapper;
     private final UserJwtGenerator userJwtGenerator;
@@ -47,7 +50,12 @@ public class UserFacade {
 
         String bearerAccessToken = BEARER + kakaoTokenResponse.accessToken();
         KakaoUserInfoResponse userInfo = kakaoInfoClient.getUserInfo(bearerAccessToken);
-        Long userId = userService.upsertKakaouser(userInfo, request);
+        List<KakaoServiceTerm> serviceTerms = kakaoAgreementService.getAgreements(bearerAccessToken);
+        boolean isEmailAgreed = serviceTerms.stream()
+                .anyMatch(t -> "marketing_email".equals(t.tag()) && Boolean.TRUE.equals(t.agreed()));
+        boolean isSmsAgreed = serviceTerms.stream()
+                .anyMatch(t -> "marketing_sms".equals(t.tag()) && Boolean.TRUE.equals(t.agreed()));
+        Long userId = userService.upsertKakaouser(userInfo, isEmailAgreed, isSmsAgreed);
         JwtPair jwtPair = userJwtGenerator.getJwtPair(userId);
         return new UserOauthResponse(userId, jwtPair);
     }

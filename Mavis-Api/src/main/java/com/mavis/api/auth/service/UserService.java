@@ -1,6 +1,14 @@
 package com.mavis.api.auth.service;
 
-import com.mavis.api.auth.dto.*;
+import com.mavis.api.auth.dto.PasswordChangeRequest;
+import com.mavis.api.auth.dto.UserAddressRequest;
+import com.mavis.api.auth.dto.UserDetailResponse;
+import com.mavis.api.auth.dto.UserDetailUpdateRequest;
+import com.mavis.api.auth.dto.UserLoginRequest;
+import com.mavis.api.auth.dto.UserOauthResponse;
+import com.mavis.api.auth.dto.UserProfileResponse;
+import com.mavis.api.auth.dto.UserSignUpRequest;
+import com.mavis.api.auth.dto.UsernameCheckResponse;
 import com.mavis.api.auth.implement.UserReader;
 import com.mavis.api.order.dto.OrderAddressResponse;
 import com.mavis.common.dto.JwtPair;
@@ -62,14 +70,14 @@ public class UserService {
     }
 
     @Transactional
-    public Long upsertKakaouser(KakaoUserInfoResponse kakaoUserInfoResponse, OauthLoginRequest request) {
+    public Long upsertKakaouser(KakaoUserInfoResponse kakaoUserInfoResponse, boolean isEmailAgreed, boolean isSmsAgreed) {
         String kakaoSnsId = String.valueOf(kakaoUserInfoResponse.id());
         return userRepository.findBySnsTypeAndSnsIdAndIsDeletedFalse(SnsType.KAKAO, kakaoSnsId)
-                .orElseGet(() -> saveKakaoUser(kakaoUserInfoResponse, request))
+                .orElseGet(() -> saveKakaoUser(kakaoUserInfoResponse, isEmailAgreed, isSmsAgreed))
                 .getId();
     }
 
-    public User saveKakaoUser(KakaoUserInfoResponse kakaoUserInfoResponse, OauthLoginRequest request) {
+    private User saveKakaoUser(KakaoUserInfoResponse kakaoUserInfoResponse, boolean isEmailAgreed, boolean isSmsAgreed) {
         String snsId = String.valueOf(kakaoUserInfoResponse.id());
         KakaoUserInfoResponse.KakaoAccount account = kakaoUserInfoResponse.kakaoAccount();
 
@@ -83,7 +91,7 @@ public class UserService {
                 .nickname(account.profile() != null ? account.profile().nickname() : null)
                 .profileImage(account.profile() != null ? account.profile().image() : null)
                 .snsType(SnsType.KAKAO)
-                .marketingAgreement(MarketingAgreement.of(request.isEmailAgreed(), request.isSmsAgreed()))
+                .marketingAgreement(MarketingAgreement.of(isEmailAgreed, isSmsAgreed))
                 .build();
         return userRepository.save(user);
     }
