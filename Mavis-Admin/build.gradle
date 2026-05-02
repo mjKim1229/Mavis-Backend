@@ -18,14 +18,6 @@ dependencies {
     implementation project(':Mavis-Infrastructure')
     implementation project(':Mavis-Common')
     implementation project(':Mavis-Domain')
-}
 
-tasks.register('copySubmoduleYml', Copy) {
-    from "${rootProject.projectDir}/Mavis-Submodule/Mavis-Admin"
-    include "*.yml"
-    into "${projectDir}/src/main/resources"
-}
-
-tasks.named('processResources') {
-    dependsOn 'copySubmoduleYml'
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter-parameter-store'
 }

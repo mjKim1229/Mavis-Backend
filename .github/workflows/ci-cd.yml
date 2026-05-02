@@ -10,13 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          submodules: 'true'
-          token: ${{ secrets.ACTION_TOKEN }}
-
-      - name: Update submodules
-        id: update
-        run: git submodule update --remote --recursive
 
       - name: Set up JDK
         uses: actions/setup-java@v3

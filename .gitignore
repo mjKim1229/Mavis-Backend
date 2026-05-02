@@ -39,11 +39,10 @@ out/
 ### Claude Code ###
 .claude/settings.local.json
 
-### yml ###
-*.yml
-!**/src/test/resources/*.yml
 
 .omc/
 
 ### Local only ###
 scripts/
+docker-compose.local.yml
+docker-compose.mysql.yml

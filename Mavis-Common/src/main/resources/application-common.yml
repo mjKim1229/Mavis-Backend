@@ -1,0 +1,24 @@
+auth:
+  jwt:
+    access-exp: 3600000000000
+    refresh-exp: 604800
+  oauth:
+    kakao:
+      redirect-url: /v1/auths/oauth/kakao
+    naver:
+      redirect_uri: /v1/auths/oauth/naver
+      state: RANDOM
+
+spring:
+  mail:
+    host: smtp.naver.com
+    port: 465
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.ssl.enable: true
+      mail.smtp.ssl.trust: smtp.naver.com
+      mail.smtp.starttls.enable: true
+
+logging:
+  level:
+    feign: DEBUG

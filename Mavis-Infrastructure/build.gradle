@@ -17,12 +17,3 @@ jar {
     enabled = true
 }
 
-tasks.register('copySubmoduleYml', Copy) {
-    from "${rootProject.projectDir}/Mavis-Submodule/Mavis-Infrastructure"
-    include "*.yml"
-    into "${projectDir}/src/main/resources"
-}
-
-tasks.named('processResources') {
-    dependsOn 'copySubmoduleYml'
-}

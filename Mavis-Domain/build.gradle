@@ -18,15 +18,6 @@ dependencies{
     implementation project(":Mavis-Infrastructure")
 }
 
-tasks.register('copySubmoduleYml', Copy) {
-    from "${rootProject.projectDir}/Mavis-Submodule/Mavis-Domain"
-    include "*.yml"
-    into "${projectDir}/src/main/resources"
-}
-
-tasks.named('processResources') {
-    dependsOn 'copySubmoduleYml'
-}
 
 bootJar {
     enabled = false

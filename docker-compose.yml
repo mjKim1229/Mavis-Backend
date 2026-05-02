@@ -4,6 +4,7 @@ services:
     image: mavisgaram/backend
     environment:
       - TZ=Asia/Seoul
+      - SPRING_PROFILES_ACTIVE=dev
     volumes:
       - ./logs:/logs
     ports:
@@ -14,6 +15,7 @@ services:
     image: mavisgaram/admin
     environment:
       - TZ=Asia/Seoul
+      - SPRING_PROFILES_ACTIVE=dev
     volumes:
       - ./logs:/logs
     ports:

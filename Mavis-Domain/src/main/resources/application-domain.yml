@@ -1,0 +1,60 @@
+# 공통 설정 (모든 환경 공통)
+spring:
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 50
+        session.events.log.LOG_QUERIES_SLOWER_THAN_MS: 1000
+        connection.handling_mode: DELAYED_ACQUISITION_AND_RELEASE_AFTER_TRANSACTION
+        javax.persistence.query.timeout: 5000
+        query:
+          in_clause_parameter_padding: false
+          plan_cache_max_size: 2048
+          plan_parameter_max_size: 128
+
+---
+
+# local 환경
+spring:
+  config:
+    activate:
+      on-profile: local
+  jpa:
+    properties:
+      jakarta:
+        persistence:
+          query:
+            timeout: 5000
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/mavis?characterEncoding=UTF-8&serverTimezone=Asia/Seoul
+    username: mavis
+    password: mavis1234
+
+---
+
+# dev 환경
+spring:
+  config:
+    activate:
+      on-profile: dev
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      leak-detection-threshold: 2000
+      maximum-pool-size: 20
+      connection-timeout: 5000
+logging:
+  level:
+    org.hibernate.orm.jdbc.bind: trace
+    com.zaxxer.hikari: debug
+    com.zaxxer.hikari.HikariConfig: debug
