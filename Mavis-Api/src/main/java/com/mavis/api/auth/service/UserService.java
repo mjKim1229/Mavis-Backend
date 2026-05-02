@@ -77,19 +77,19 @@ public class UserService {
                 .getId();
     }
 
-    private User saveKakaoUser(KakaoUserInfoResponse kakaoUserInfoResponse, boolean isEmailAgreed, boolean isSmsAgreed) {
-        String snsId = String.valueOf(kakaoUserInfoResponse.id());
-        KakaoUserInfoResponse.KakaoAccount account = kakaoUserInfoResponse.kakaoAccount();
+    private User saveKakaoUser(KakaoUserInfoResponse info, boolean isEmailAgreed, boolean isSmsAgreed) {
+        String birthDate = info.birthyear() != null && info.birthday() != null
+                ? info.birthyear() + info.birthday() : null;
 
         User user = User.builder()
-                .snsId(snsId)
-                .email(account.email())
-                .name(account.name())
-                .gender(Gender.fromCode(account.gender()))
-                .birthDay(toLocalDate(account.birthyear() + account.birthday(), KAKAO_DATE_TIME_FORMATTER))
-                .phoneNumber(PhoneNormalizer.normalize(account.phoneNumber()))
-                .nickname(account.profile() != null ? account.profile().nickname() : null)
-                .profileImage(account.profile() != null ? account.profile().profileImageUrl() : null)
+                .snsId(String.valueOf(info.id()))
+                .email(info.email())
+                .name(info.name())
+                .gender(Gender.fromCode(info.gender()))
+                .birthDay(birthDate != null ? toLocalDate(birthDate, KAKAO_DATE_TIME_FORMATTER) : null)
+                .phoneNumber(PhoneNormalizer.normalize(info.phoneNumber()))
+                .nickname(info.nickname())
+                .profileImage(info.profileImageUrl())
                 .snsType(SnsType.KAKAO)
                 .marketingAgreement(MarketingAgreement.of(isEmailAgreed, isSmsAgreed))
                 .build();
@@ -199,7 +199,8 @@ public class UserService {
     }
 
     @Transactional
-    public void withDraw(User user) {
+    public void withDraw() {
+        User user = userReader.getCurrentUser();
         user.withDraw();
     }
 }

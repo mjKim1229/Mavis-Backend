@@ -86,7 +86,7 @@ public class UserFacade {
             Long snsId = Long.valueOf(user.getSnsId());
             unlinkKakao(snsId);
         }
-        userService.withDraw(user);
+        userService.withDraw();
     }
 
     public void withDrawNaver(User user) {
