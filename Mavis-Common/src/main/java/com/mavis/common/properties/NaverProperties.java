@@ -6,7 +6,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record NaverProperties(
         String clientId,
         String clientSecret,
-        String redirectUri,
         String state
 ) {
 }

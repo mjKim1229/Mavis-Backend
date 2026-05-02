@@ -6,7 +6,6 @@ auth:
     kakao:
       redirect-url: /v1/auths/oauth/kakao
     naver:
-      redirect_uri: /v1/auths/oauth/naver
       state: RANDOM
 
 spring:
@@ -17,8 +16,4 @@ spring:
       mail.smtp.auth: true
       mail.smtp.ssl.enable: true
       mail.smtp.ssl.trust: smtp.naver.com
-      mail.smtp.starttls.enable: true
 
-logging:
-  level:
-    feign: DEBUG

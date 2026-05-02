@@ -20,9 +20,6 @@ spring:
     aws:
       region:
         static: ap-northeast-2
-logging:
-  level:
-    feign: DEBUG
 
 ---
 
