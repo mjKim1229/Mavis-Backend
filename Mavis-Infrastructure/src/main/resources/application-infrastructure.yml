@@ -4,3 +4,18 @@ aws:
 logging:
   level:
     feign: DEBUG
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: local
+discord:
+  webhook:
+    url: http://localhost
+aws:
+  s3:
+    access-key: local
+    secret-key: local
+    bucket-name: local
