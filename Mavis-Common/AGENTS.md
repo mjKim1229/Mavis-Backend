@@ -11,7 +11,7 @@
 
 | File | Description |
 |------|-------------|
-| `src/main/resources/application-common.yml` | 공통 설정 (JWT, Kakao, Naver, TossPayments, Mail) |
+| `src/main/resources/application-common.yml` | 공통 설정 (JWT, Kakao, Naver, TossPayments) |
 
 ## Subdirectories
 
@@ -24,7 +24,7 @@
 | `enums/` | 상품 카테고리, 공통 Enum 매퍼 |
 | `exception/` | JWT 예외, 전역 에러 코드, 베이스 예외 클래스 |
 | `jwt/` | `JwtTokenUtil` - 토큰 생성/검증 |
-| `properties/` | Jwt, Kakao, Naver, TossPayments, Mail 설정 프로퍼티 |
+| `properties/` | Jwt, Kakao, Naver, TossPayments 설정 프로퍼티 |
 | `util/` | 날짜 포맷터, 주문번호 생성기, 전화번호 정규화, 인증코드 생성기 |
 
 ## For AI Agents

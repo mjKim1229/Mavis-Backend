@@ -26,7 +26,6 @@ Mavis 이커머스 플랫폼의 백엔드 서버. Gradle 멀티 모듈 아키텍
 | `Mavis-Common/` | 공통 DTO, 유틸리티, 예외 정의 (see `Mavis-Common/AGENTS.md`) |
 | `Mavis-Domain/` | 도메인 엔티티, 리포지토리, 비즈니스 로직 (see `Mavis-Domain/AGENTS.md`) |
 | `Mavis-Infrastructure/` | 외부 서비스 연동 (OAuth, 결제, S3, 이메일, Discord) (see `Mavis-Infrastructure/AGENTS.md`) |
-| `Mavis-Submodule/` | 민감 설정 파일 관리용 Git 서브모듈 |
 | `.github/workflows/` | CI/CD 파이프라인 (GitHub Actions) |
 | `.claude/` | Claude Code 설정 및 커스텀 커맨드/스킬 |
 
@@ -47,7 +46,7 @@ Mavis-Infrastructure     (External: OAuth, TossPayments, S3, Email, Discord)
 ### Working In This Directory
 - 루트 레벨 파일(build.gradle, docker-compose 등)은 전체 빌드에 영향을 주므로 신중하게 수정
 - 새 모듈 추가 시 `settings.gradle`에 등록 필요
-- 환경별 설정은 Mavis-Submodule을 통해 관리되므로 application.yml을 직접 수정하지 말 것
+- 민감 설정(DB 자격증명, OAuth 키, 메일 비밀번호 등)은 AWS Parameter Store로 주입 — `application.yml`에 직접 기입 금지
 
 ### Build & Run Commands
 
@@ -65,7 +64,7 @@ Mavis-Infrastructure     (External: OAuth, TossPayments, S3, Email, Discord)
 - **리포지토리:** 복잡한 쿼리는 `*RepositoryCustom` 인터페이스 + `*RepositoryImpl` (JPAQueryFactory). Q클래스는 `MavisApiServerApplication` 시작 시 `Class.forName`으로 eager load
 - **서비스 분리:** `*Reader` (조회) / `*Appender`·`*Modifier` (쓰기) / `*Facade` (다중 서비스 조합)
 - **외부 API 에러:** Feign 에러 디코더 (예: `TossPaymentsErrorDecoder`)가 외부 HTTP 에러를 `MavisException`으로 변환
-- **민감 설정:** DB 자격증명, OAuth 키, TossPayments 키는 `Mavis-Submodule`에서 관리 — `application.yml` 직접 수정 금지
+- **민감 설정:** DB 자격증명, OAuth 키, TossPayments 키, 메일 비밀번호는 AWS Parameter Store로 주입 — `application.yml`에 직접 기입 금지
 
 ### Tech Stack
 

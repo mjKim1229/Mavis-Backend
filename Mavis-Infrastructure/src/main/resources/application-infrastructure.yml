@@ -1,6 +1,15 @@
 aws:
   region: ap-northeast-2
 
+spring:
+  mail:
+    host: smtp.naver.com
+    port: 587
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.debug: true
+
 logging:
   level:
     feign: DEBUG

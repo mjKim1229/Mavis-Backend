@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
         KakaoProperties.class,
         JwtProperties.class,
         NaverProperties.class,
-        MailProperties.class,
         TossPaymentsProperties.class
 })
 @Configuration

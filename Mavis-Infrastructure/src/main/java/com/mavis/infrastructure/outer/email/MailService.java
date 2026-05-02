@@ -1,7 +1,7 @@
 package com.mavis.infrastructure.outer.email;
 
-import com.mavis.common.properties.MailProperties;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
@@ -13,8 +13,10 @@ import org.thymeleaf.context.Context;
 @RequiredArgsConstructor
 public class MailService {
     private final JavaMailSender javaMailSender;
-    private final MailProperties mailProperties;
     private final TemplateEngine templateEngine;
+
+    @Value("${spring.mail.username}")
+    private String fromAddress;
 
     /**
      * 회원가입 인증번호 메일 발송
@@ -41,7 +43,7 @@ public class MailService {
     private void send(String to, String subject, String content) {
         MimeMessagePreparator messagePreparator = mimeMessage -> {
             final MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            helper.setFrom(mailProperties.username());
+            helper.setFrom(fromAddress);
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(content, true);
