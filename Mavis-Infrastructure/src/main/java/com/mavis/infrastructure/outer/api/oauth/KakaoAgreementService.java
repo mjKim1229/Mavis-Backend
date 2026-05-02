@@ -3,7 +3,6 @@ package com.mavis.infrastructure.outer.api.oauth;
 import com.mavis.infrastructure.outer.api.oauth.client.kakao.KakaoInfoClient;
 import com.mavis.infrastructure.outer.api.oauth.dto.KakaoServiceTermsResponse;
 import com.mavis.infrastructure.outer.api.oauth.dto.KakaoServiceTermsResponse.KakaoServiceTerm;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,13 +29,13 @@ public class KakaoAgreementService {
     }
 
     private List<KakaoServiceTerm> getAgreements(String bearerAccessToken) {
-        try {
-            KakaoServiceTermsResponse serviceTermsResponse = kakaoInfoClient.getServiceTerms(bearerAccessToken);
-            log.info("[Kakao 동의 조회] 동의 항목 조회 - {} 항목", serviceTermsResponse);
-            return serviceTermsResponse.serviceTerms();
-        } catch (FeignException.BadRequest e) {
-            log.info("[Kakao 동의 조회] 동의 항목 없음 - 마케팅 동의 false 처리", e);
+        KakaoServiceTermsResponse serviceTermsResponse = kakaoInfoClient.getServiceTerms(bearerAccessToken);
+        log.info("[Kakao 동의 조회] 동의 항목 조회 - {} 항목", serviceTermsResponse);
+        List<KakaoServiceTerm> kakaoServiceTerms = serviceTermsResponse.serviceTerms();
+        if (kakaoServiceTerms == null) {
+            log.info("[Kakao 동의 조회] 동의 항목 없음 - 마케팅 동의 false 처리");
             return List.of();
         }
+        return kakaoServiceTerms;
     }
 }
