@@ -32,7 +32,7 @@ public class KakaoAgreementService {
     private List<KakaoServiceTerm> getAgreements(String bearerAccessToken) {
         try {
             KakaoServiceTermsResponse serviceTermsResponse = kakaoInfoClient.getServiceTerms(bearerAccessToken);
-            log.info("[Kakao 동의 조회] 동의 항목 조회 성공 - {} 항목", serviceTermsResponse.serviceTerms().size());
+            log.info("[Kakao 동의 조회] 동의 항목 조회 성공 - {} 항목", serviceTermsResponse);
             return serviceTermsResponse.serviceTerms();
         } catch (FeignException.NotFound e) {
             log.info("[Kakao 동의 조회] 동의 항목 없음 - 마케팅 동의 false 처리", e);
