@@ -89,7 +89,7 @@ public class UserService {
                 .birthDay(toLocalDate(account.birthyear() + account.birthday(), KAKAO_DATE_TIME_FORMATTER))
                 .phoneNumber(PhoneNormalizer.normalize(account.phoneNumber()))
                 .nickname(account.profile() != null ? account.profile().nickname() : null)
-                .profileImage(account.profile() != null ? account.profile().image() : null)
+                .profileImage(account.profile() != null ? account.profile().profileImageUrl() : null)
                 .snsType(SnsType.KAKAO)
                 .marketingAgreement(MarketingAgreement.of(isEmailAgreed, isSmsAgreed))
                 .build();
@@ -196,5 +196,10 @@ public class UserService {
                 request.birthDay(),
                 request.phoneNumber()
         );
+    }
+
+    @Transactional
+    public void withDraw(User user) {
+        user.withDraw();
     }
 }

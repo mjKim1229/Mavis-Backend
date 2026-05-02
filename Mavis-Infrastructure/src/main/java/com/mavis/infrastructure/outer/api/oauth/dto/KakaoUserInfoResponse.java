@@ -18,5 +18,5 @@ public record KakaoUserInfoResponse(long id, KakaoAccount kakaoAccount) {
 	) { }
 
 	@JsonNaming(SnakeCaseStrategy.class)
-	public record KakaoProfile(String nickname, String image) { }
+	public record KakaoProfile(String nickname, String profileImageUrl) { }
 }
