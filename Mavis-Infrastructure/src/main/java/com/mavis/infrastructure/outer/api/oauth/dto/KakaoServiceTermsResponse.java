@@ -8,5 +8,5 @@ import java.util.List;
 public record KakaoServiceTermsResponse(Long id, List<KakaoServiceTerm> serviceTerms) {
 
     @JsonNaming(SnakeCaseStrategy.class)
-    public record KakaoServiceTerm(String tag, Boolean required, Boolean agreed, Boolean revocable) { }
+    public record KakaoServiceTerm(String tag, boolean required, boolean agreed, boolean revocable) { }
 }

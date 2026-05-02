@@ -48,9 +48,9 @@ public class UserFacade {
         KakaoUserInfoResponse userInfo = kakaoInfoClient.getUserInfo(bearerAccessToken);
         List<KakaoServiceTerm> serviceTerms = kakaoAgreementService.getAgreements(bearerAccessToken);
         boolean isEmailAgreed = serviceTerms.stream()
-                .anyMatch(t -> "marketing_email".equals(t.tag()) && Boolean.TRUE.equals(t.agreed()));
+                .anyMatch(t -> "marketing_email".equals(t.tag()) && t.agreed());
         boolean isSmsAgreed = serviceTerms.stream()
-                .anyMatch(t -> "marketing_sms".equals(t.tag()) && Boolean.TRUE.equals(t.agreed()));
+                .anyMatch(t -> "marketing_sms".equals(t.tag()) && t.agreed());
 
         Long userId = userService.upsertKakaouser(userInfo, isEmailAgreed, isSmsAgreed);
         JwtPair jwtPair = userJwtGenerator.getJwtPair(userId);
