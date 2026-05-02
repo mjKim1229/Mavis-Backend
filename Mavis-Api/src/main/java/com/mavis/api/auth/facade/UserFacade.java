@@ -10,13 +10,13 @@ import com.mavis.common.dto.JwtPair;
 import com.mavis.domain.domains.user.domain.SnsType;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.infrastructure.outer.api.oauth.KakaoAgreementService;
+import com.mavis.infrastructure.outer.api.oauth.MarketingConsent;
 import com.mavis.infrastructure.outer.api.oauth.NaverAgreementService;
 import com.mavis.infrastructure.outer.api.oauth.client.kakao.KakaoInfoClient;
 import com.mavis.infrastructure.outer.api.oauth.client.kakao.KakaoOAuthClient;
 import com.mavis.infrastructure.outer.api.oauth.client.naver.NaverInfoClient;
 import com.mavis.infrastructure.outer.api.oauth.client.naver.NaverOAuthClient;
 import com.mavis.infrastructure.outer.api.oauth.dto.*;
-import com.mavis.infrastructure.outer.api.oauth.dto.KakaoServiceTermsResponse.KakaoServiceTerm;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -33,10 +33,10 @@ public class UserFacade {
     private final KakaoInfoClient kakaoInfoClient;
     private final KakaoAgreementService kakaoAgreementService;
     private final NaverOAuthClient naverOAuthClient;
-    private final OAuthMapper oAuthMapper;
-    private final UserJwtGenerator userJwtGenerator;
     private final NaverInfoClient naverInfoClient;
     private final NaverAgreementService naverAgreementService;
+    private final OAuthMapper oAuthMapper;
+    private final UserJwtGenerator userJwtGenerator;
     private final UserService userService;
     private final UserReader userReader;
 
@@ -46,13 +46,8 @@ public class UserFacade {
         String bearerAccessToken = BEARER + kakaoTokenResponse.accessToken();
 
         KakaoUserInfoResponse userInfo = kakaoInfoClient.getUserInfo(bearerAccessToken);
-        List<KakaoServiceTerm> serviceTerms = kakaoAgreementService.getAgreements(bearerAccessToken);
-        boolean isEmailAgreed = serviceTerms.stream()
-                .anyMatch(t -> "marketing_email".equals(t.tag()) && t.agreed());
-        boolean isSmsAgreed = serviceTerms.stream()
-                .anyMatch(t -> "marketing_sms".equals(t.tag()) && t.agreed());
-
-        Long userId = userService.upsertKakaouser(userInfo, isEmailAgreed, isSmsAgreed);
+        MarketingConsent consent = kakaoAgreementService.getMarketingConsent(bearerAccessToken);
+        Long userId = userService.upsertKakaouser(userInfo, consent.emailAgreed(), consent.smsAgreed());
         JwtPair jwtPair = userJwtGenerator.getJwtPair(userId);
         return new UserOauthResponse(userId, jwtPair);
     }
