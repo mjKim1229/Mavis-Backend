@@ -1,6 +1,7 @@
 package com.mavis.infrastructure.outer.api.oauth.config;
 
 import com.mavis.infrastructure.outer.api.BaseFeignClientPackage;
+import feign.Logger;
 import feign.Request;
 import feign.Retryer;
 import org.springframework.cloud.openfeign.EnableFeignClients;
@@ -14,6 +15,11 @@ import java.util.concurrent.TimeUnit;
 public class FeignConfig {
     private static final long CONNECTION_TIMEOUT = 10;
     private static final long READ_TIMEOUT = 5;
+
+    @Bean
+    Logger.Level feignLoggerLevel() {
+        return Logger.Level.FULL;
+    }
 
     @Bean
     public Request.Options requestOptions() {
