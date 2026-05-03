@@ -63,6 +63,7 @@ public class PaymentReconciliationService {
             case DONE, WAITING_FOR_DEPOSIT -> {
                 Payment payment = Payment.builder()
                         .order(order)
+                        .paymentType(PaymentType.CONFIRM)
                         .paymentKey(response.paymentKey())
                         .method(PaymentMethod.from(response.method()))
                         .totalAmount(response.totalAmount())

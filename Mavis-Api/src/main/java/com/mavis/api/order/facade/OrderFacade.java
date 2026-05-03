@@ -72,7 +72,7 @@ public class OrderFacade {
         }
 
         Order order = orderService.findOrderToCancel(orderId);
-        Payment payment = paymentReader.findByOrder(order);
+        Payment payment = paymentReader.findConfirmByOrder(order);
 
         String authorizationHeader = tossPaymentsProperties.getAuthorizationHeader();
         PaymentsResponse paymentsResponse;

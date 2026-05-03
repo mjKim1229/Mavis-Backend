@@ -25,6 +25,10 @@ public class Payment extends BaseEntity {
 
     @Column(columnDefinition = "varchar(255)")
     @Enumerated(EnumType.STRING)
+    private PaymentType paymentType;
+
+    @Column(columnDefinition = "varchar(255)")
+    @Enumerated(EnumType.STRING)
     @Builder.Default
     private PaymentMethod method = PaymentMethod.DEFAULT;
 
@@ -45,7 +49,7 @@ public class Payment extends BaseEntity {
 
     private String virtualAccountSecret;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order;
 }

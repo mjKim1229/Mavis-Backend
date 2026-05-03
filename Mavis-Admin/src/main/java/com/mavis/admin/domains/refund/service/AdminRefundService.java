@@ -2,6 +2,12 @@ package com.mavis.admin.domains.refund.service;
 
 import com.mavis.admin.common.page.PageResponse;
 import com.mavis.admin.domains.refund.dto.GetAdminRefundResponse;
+import com.mavis.admin.domains.refund.dto.RefundValidateInfo;
+import com.mavis.domain.domains.order.domain.Order;
+import com.mavis.domain.domains.order.domain.Payment;
+import com.mavis.domain.domains.order.domain.PaymentType;
+import com.mavis.domain.domains.order.exception.PaymentNotFoundException;
+import com.mavis.domain.domains.order.repository.PaymentRepository;
 import com.mavis.domain.domains.refund.domain.Refund;
 import com.mavis.domain.domains.refund.domain.RefundStatus;
 import com.mavis.domain.domains.refund.exception.CannotRefundException;
@@ -19,6 +25,7 @@ public class AdminRefundService {
 
     private final RefundRepository refundRepository;
     private final RefundReader refundReader;
+    private final PaymentRepository paymentRepository;
 
     @Transactional(readOnly = true)
     public PageResponse<GetAdminRefundResponse> getRefundList(Pageable pageable, RefundStatus refundStatus) {
@@ -28,14 +35,40 @@ public class AdminRefundService {
         return PageResponse.of(refundPages.map(GetAdminRefundResponse::from));
     }
 
-    @Transactional
-    public Refund approveRefund(Long refundId) {
+    @Transactional(readOnly = true)
+    public RefundValidateInfo validateForApproval(Long refundId) {
         Refund refund = refundReader.findByIdWithOrderItemAndOrder(refundId);
         if (refund.getRefundStatus() != RefundStatus.REQUESTED) {
             throw CannotRefundException.EXCEPTION;
         }
+        Order order = refund.getOrderItem().getOrder();
+        Payment confirmPayment = paymentRepository.findByOrderAndPaymentType(order, PaymentType.CONFIRM)
+                .orElseThrow(() -> PaymentNotFoundException.EXCEPTION);
+        return new RefundValidateInfo(
+                refund.getId(),
+                order.getId(),
+                refund.getRefundAmount(),
+                refund.getRefundReason(),
+                confirmPayment.getPaymentKey()
+        );
+    }
+
+    @Transactional
+    public void approveAndComplete(Long refundId, String cancelTransactionKey) {
+        Refund refund = refundReader.findByIdWithOrderItemAndOrder(refundId);
+        Order order = refund.getOrderItem().getOrder();
+
+        Payment cancelPayment = Payment.builder()
+                .order(order)
+                .paymentType(PaymentType.CANCEL)
+                .totalAmount(refund.getRefundAmount())
+                .lastTransactionKey(cancelTransactionKey)
+                .build();
+
+        Payment saved = paymentRepository.save(cancelPayment);
         refund.approve();
-        return refund;
+        refund.linkPayment(saved);
+        refund.complete(cancelTransactionKey);
     }
 
     @Transactional
@@ -45,10 +78,5 @@ public class AdminRefundService {
             throw CannotRefundException.EXCEPTION;
         }
         refund.reject();
-    }
-
-    @Transactional
-    public void completeRefund(Refund refund, String cancelTransactionKey) {
-        refund.complete(cancelTransactionKey);
     }
 }

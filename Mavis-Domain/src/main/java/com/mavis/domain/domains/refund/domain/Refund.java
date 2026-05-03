@@ -2,6 +2,7 @@ package com.mavis.domain.domains.refund.domain;
 
 import com.mavis.domain.domains.common.jpa.BaseEntity;
 import com.mavis.domain.domains.order.domain.OrderItem;
+import com.mavis.domain.domains.order.domain.Payment;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -23,6 +24,10 @@ public class Refund extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_item_id")
     private OrderItem orderItem;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_id")
+    private Payment payment;
 
     @Column(columnDefinition = "varchar(255)")
     @Enumerated(EnumType.STRING)
@@ -46,6 +51,10 @@ public class Refund extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "refund", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<RefundImage> images = new ArrayList<>();
+
+    public void linkPayment(Payment payment) {
+        this.payment = payment;
+    }
 
     public void approve() {
         this.refundStatus = RefundStatus.APPROVED;

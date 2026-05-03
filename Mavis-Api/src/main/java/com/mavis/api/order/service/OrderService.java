@@ -18,6 +18,7 @@ import com.mavis.domain.domains.order.exception.OrderNotFoundException;
 import com.mavis.domain.domains.order.exception.PriceMismatchException;
 import com.mavis.domain.domains.order.implement.OrderReader;
 import com.mavis.domain.domains.order.implement.PaymentIdempotencyManager;
+import com.mavis.domain.domains.order.implement.PaymentReader;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.order.repository.PaymentRepository;
 import com.mavis.domain.domains.user.domain.User;
@@ -46,6 +47,7 @@ public class OrderService {
     private final OrderReader orderReader;
     private final RefundAppender refundAppender;
     private final PaymentIdempotencyManager paymentIdempotencyManager;
+    private final PaymentReader paymentReader;
 
     @Transactional
     @Retryable(
@@ -102,6 +104,7 @@ public class OrderService {
 
         Payment payment = Payment.builder()
                 .order(order)
+                .paymentType(PaymentType.CONFIRM)
                 .paymentKey(response.paymentKey())
                 .method(PaymentMethod.from(response.method()))
                 .totalAmount(response.totalAmount())
@@ -129,9 +132,18 @@ public class OrderService {
 
     @Transactional
     public void processCancelSuccess(Order order, String cancelTransactionKey, String refundReason, PaymentIdempotency idempotency) {
+        Payment cancelPayment = Payment.builder()
+                .order(order)
+                .paymentType(PaymentType.CANCEL)
+                .totalAmount(order.getTotalPrice())
+                .lastTransactionKey(cancelTransactionKey)
+                .build();
+        paymentRepository.save(cancelPayment);
+
         List<Refund> refunds = order.getOrderItems().stream()
                 .map(orderItem -> Refund.builder()
                         .orderItem(orderItem)
+                        .payment(cancelPayment)
                         .refundReason(refundReason)
                         .refundAmount(orderItem.getPrice() * orderItem.getQuantity())
                         .refundStatus(RefundStatus.COMPLETED)
@@ -149,12 +161,14 @@ public class OrderService {
 
     @Transactional
     public void processDepositCallback(VirtualAccountDepositCallbackRequest request) {
-        Payment payment = paymentRepository.findByOrderOrderId(request.orderId());
-        if (payment == null || !request.secret().equals(payment.getVirtualAccountSecret())) {
+        Order order = orderRepository.findByOrderIdAndIsDeletedFalse(request.orderId())
+                .orElseThrow(() -> OrderNotFoundException.EXCEPTION);
+        Payment payment = paymentReader.findConfirmByOrder(order);
+        if (!request.secret().equals(payment.getVirtualAccountSecret())) {
             throw InvalidOrderInfoException.EXCEPTION;
         }
         if ("DONE".equals(request.status())) {
-            payment.getOrder().confirmPayment();
+            order.confirmPayment();
         }
     }
 

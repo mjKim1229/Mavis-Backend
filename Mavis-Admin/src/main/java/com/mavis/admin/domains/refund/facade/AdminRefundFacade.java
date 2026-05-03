@@ -1,11 +1,8 @@
 package com.mavis.admin.domains.refund.facade;
 
+import com.mavis.admin.domains.refund.dto.RefundValidateInfo;
 import com.mavis.admin.domains.refund.service.AdminRefundService;
 import com.mavis.common.properties.TossPaymentsProperties;
-import com.mavis.domain.domains.order.domain.Order;
-import com.mavis.domain.domains.order.domain.Payment;
-import com.mavis.domain.domains.order.implement.PaymentReader;
-import com.mavis.domain.domains.refund.domain.Refund;
 import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsCancelClient;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.CancelPaymentsRequest;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
@@ -22,22 +19,18 @@ public class AdminRefundFacade {
     private final TossPaymentsProperties tossPaymentsProperties;
     private final PaymentsCancelClient paymentsCancelClient;
     private final AdminRefundService adminRefundService;
-    private final PaymentReader paymentReader;
 
     public void approveRefund(String idempotencyKey, String testCode, Long refundId) {
-        Refund refund = adminRefundService.approveRefund(refundId);
+        // TX1 (read-only): 상태 검증 + paymentKey 조회
+        RefundValidateInfo info = adminRefundService.validateForApproval(refundId);
 
-        Order order = refund.getOrderItem().getOrder();
-        Payment payment = paymentReader.findByOrder(order);
-
-        String authorizationHeader = tossPaymentsProperties.getAuthorizationHeader();
-
+        // 외부 API
         PaymentsResponse response = paymentsCancelClient.cancelPayments(
-                authorizationHeader,
+                tossPaymentsProperties.getAuthorizationHeader(),
                 idempotencyKey,
                 testCode,
-                payment.getPaymentKey(),
-                new CancelPaymentsRequest(refund.getRefundReason(), refund.getRefundAmount())
+                info.paymentKey(),
+                new CancelPaymentsRequest(info.refundReason(), info.refundAmount())
         );
 
         log.info("Toss 환불 취소 응답: {}", response);
@@ -46,6 +39,7 @@ public class AdminRefundFacade {
                 ? response.cancels().get(0).transactionKey()
                 : null;
 
-        adminRefundService.completeRefund(refund, cancelTransactionKey);
+        // TX2: approve + Payment(CANCEL) INSERT + complete
+        adminRefundService.approveAndComplete(info.refundId(), cancelTransactionKey);
     }
 }
