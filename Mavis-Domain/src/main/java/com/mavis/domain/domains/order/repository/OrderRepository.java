@@ -2,7 +2,9 @@ package com.mavis.domain.domains.order.repository;
 
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderStatus;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -16,6 +18,7 @@ public interface OrderRepository extends JpaRepository<Order, Long>, OrderCustom
     @Query("SELECT o FROM Order o JOIN FETCH o.orderItems WHERE o.id = :id AND o.isDeleted = false")
     Optional<Order> findByIdWithItemsAndIsDeletedFalse(@Param("id") Long id);
     List<Order> findByIdInAndIsDeletedFalse(List<Long> orderIds);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<Order> findByOrderIdAndIsDeletedFalse(String orderId);
     List<Order> findByOrderStatusAndCreatedAtBefore(OrderStatus orderStatus, LocalDateTime threshold);
     long countByOrderStatusAndIsDeletedFalse(OrderStatus orderStatus);

@@ -175,10 +175,15 @@ public class OrderService {
     public void processDepositCallback(VirtualAccountDepositCallbackRequest request) {
         Order order = orderRepository.findByOrderIdAndIsDeletedFalse(request.orderId())
                 .orElseThrow(() -> OrderNotFoundException.EXCEPTION);
+        if (order.getOrderStatus() == OrderStatus.PAYMENT_CONFIRMED) {
+            return;
+        }
+
         Payment confirmPayment = paymentReader.findConfirmByOrder(order);
         if (!request.secret().equals(confirmPayment.getVirtualAccountSecret())) {
             throw InvalidOrderInfoException.EXCEPTION;
         }
+        
         if ("DONE".equals(request.status())) {
             Payment depositPayment = Payment.builder()
                     .order(order)
