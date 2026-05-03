@@ -78,6 +78,6 @@ Mavis-Infrastructure     (External: OAuth, TossPayments, S3, Email, Discord)
 | HTTP Client | Spring Cloud OpenFeign | 2025.0.0 |
 | Storage | AWS S3 SDK | 2.29.50 |
 | Testing | JUnit + Testcontainers | 1.20.4 |
-| DB | MySQL (prod) / H2 (local) | — |
+| DB | MySQL | — |
 
 <!-- MANUAL: -->
