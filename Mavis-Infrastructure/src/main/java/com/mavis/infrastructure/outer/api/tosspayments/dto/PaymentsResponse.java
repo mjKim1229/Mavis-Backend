@@ -56,4 +56,21 @@ public record PaymentsResponse(
     public String receiptUrl() {
         return receipt != null ? receipt.url() : null;
     }
+
+    public String virtualAccountNumber() {
+        return virtualAccount != null ? virtualAccount.accountNumber() : null;
+    }
+
+    public String virtualAccountBankCode() {
+        return virtualAccount != null ? virtualAccount.bankCode() : null;
+    }
+
+    public java.time.LocalDateTime virtualAccountDueDateLocal() {
+        return virtualAccount != null && virtualAccount.dueDate() != null
+                ? virtualAccount.dueDate().toLocalDateTime() : null;
+    }
+
+    public String virtualAccountDepositorName() {
+        return virtualAccount != null ? virtualAccount.depositorName() : null;
+    }
 }

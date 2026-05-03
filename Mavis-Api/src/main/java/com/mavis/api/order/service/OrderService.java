@@ -119,6 +119,12 @@ public class OrderService {
                 .cardInfo(new CardInfo(response.cardNumber(), response.cardIssuerCode()))
                 .receiptUrl(response.receiptUrl())
                 .virtualAccountSecret(response.secret())
+                .virtualAccountInfo(response.virtualAccount() != null ? new VirtualAccountInfo(
+                        response.virtualAccountNumber(),
+                        response.virtualAccountBankCode(),
+                        response.virtualAccountDueDateLocal(),
+                        response.virtualAccountDepositorName()
+                ) : null)
                 .build();
 
         paymentRepository.save(payment);

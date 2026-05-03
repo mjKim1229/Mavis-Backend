@@ -54,6 +54,9 @@ public class Payment extends BaseEntity {
 
     private String virtualAccountSecret;
 
+    @Embedded
+    private VirtualAccountInfo virtualAccountInfo;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order;
