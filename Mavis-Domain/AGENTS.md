@@ -36,10 +36,17 @@
 ## For AI Agents
 
 ### Working In This Directory
-- 엔티티 필드 추가/변경 시 DB 마이그레이션 스크립트 작성 필요 (Flyway/Liquibase 미사용 시 DBA 협의)
+- 엔티티 필드 추가/변경 시 **반드시 Flyway 마이그레이션 SQL 먼저 작성** 후 엔티티 코드 수정
 - QueryDSL 쿼리는 `*RepositoryCustom` 인터페이스 + `*RepositoryImpl` 구현 패턴 사용
 - `BaseEntity`(createdAt, updatedAt) 상속 확인 후 엔티티 작성
 - 도메인 예외는 각 도메인 `exception/` 패키지에 `ErrorCode` enum으로 정의
+
+### Flyway 마이그레이션 규칙
+- 파일 위치: `Mavis-Domain/src/main/resources/db/migration/`
+- 네이밍: `V{version}__{description}.sql` (예: `V2__add_profile_image_to_users.sql`)
+- 버전: 정수 순증 (V1 → V2 → V3 ...)
+- **기존 파일 내용/이름 절대 수정 금지** — Flyway checksum 검증 실패
+- 작업 순서: SQL 파일 작성 → 엔티티 수정 → 로컬 실행 검증
 
 ### Testing Requirements
 - `./gradlew :Mavis-Domain:test`
