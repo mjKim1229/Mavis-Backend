@@ -38,12 +38,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class OrderService {
+    private static final int DELIVERY_FEE = 4000;
 
     private final OrderRepository orderRepository;
     private final UserReader userReader;
     private final OrderItemAppender orderItemAppender;
     private final PaymentRepository paymentRepository;
-    private static final int DELIVERY_FEE = 4000;
     private final OrderReader orderReader;
     private final RefundAppender refundAppender;
     private final PaymentIdempotencyManager paymentIdempotencyManager;
@@ -190,11 +190,6 @@ public class OrderService {
             paymentRepository.save(depositPayment);
             order.confirmPayment();
         }
-    }
-
-    @Transactional
-    public void cancelOrder(Order order) {
-        order.cancel();
     }
 
     @Transactional(readOnly = true)
