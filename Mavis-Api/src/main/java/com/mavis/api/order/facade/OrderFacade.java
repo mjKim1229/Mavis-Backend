@@ -42,6 +42,7 @@ public class OrderFacade {
         PaymentsResponse response;
         try {
             response = paymentsConfirmClient.confirmPayments(authorizationHeader, idempotencyKey, testCode, tossConfirmRequest);
+            log.info("토스 결제 승인 응답 : {}", response);
         } catch (Exception e) {
             log.error("토스 결제 승인 API 호출 실패", e);
             paymentIdempotencyManager.markFailure(idempotency, e.getMessage());
