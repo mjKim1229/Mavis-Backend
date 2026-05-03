@@ -72,11 +72,11 @@ public class PaymentReconciliationService {
                         .totalAmount(response.totalAmount())
                         .balanceAmount(response.balanceAmount())
                         .requestedAt(response.requestedAt().toLocalDateTime())
-                        .approvedAt(response.approvedAt() != null ? response.approvedAt().toLocalDateTime() : null)
+                        .approvedAt(response.approvedAtLocal())
                         .lastTransactionKey(response.lastTransactionKey())
                         .partialCancelable(response.isPartialCancelable())
-                        .cardNumber(response.card() != null ? response.card().number() : null)
-                        .receiptUrl(response.receipt() != null ? response.receipt().url() : null)
+                        .cardNumber(response.cardNumber())
+                        .receiptUrl(response.receiptUrl())
                         .virtualAccountSecret(response.secret())
                         .build();
                 paymentRepository.save(payment);

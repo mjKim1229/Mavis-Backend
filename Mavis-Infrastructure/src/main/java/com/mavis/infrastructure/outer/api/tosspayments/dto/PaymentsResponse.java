@@ -40,4 +40,16 @@ public record PaymentsResponse(
     public String easyPayProvider() {
         return easyPay != null ? easyPay.provider().name() : null;
     }
+
+    public java.time.LocalDateTime approvedAtLocal() {
+        return approvedAt != null ? approvedAt.toLocalDateTime() : null;
+    }
+
+    public String cardNumber() {
+        return card != null ? card.number() : null;
+    }
+
+    public String receiptUrl() {
+        return receipt != null ? receipt.url() : null;
+    }
 }
