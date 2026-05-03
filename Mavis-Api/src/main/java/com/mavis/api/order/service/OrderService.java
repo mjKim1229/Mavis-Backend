@@ -116,7 +116,7 @@ public class OrderService {
                 .approvedAt(response.approvedAtLocal())
                 .lastTransactionKey(response.lastTransactionKey())
                 .partialCancelable(response.isPartialCancelable())
-                .cardNumber(response.cardNumber())
+                .cardInfo(new CardInfo(response.cardNumber(), response.cardIssuerCode()))
                 .receiptUrl(response.receiptUrl())
                 .virtualAccountSecret(response.secret())
                 .build();

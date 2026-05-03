@@ -49,6 +49,10 @@ public record PaymentsResponse(
         return card != null ? card.number() : null;
     }
 
+    public String cardIssuerCode() {
+        return card != null ? card.issuerCode().name() : null;
+    }
+
     public String receiptUrl() {
         return receipt != null ? receipt.url() : null;
     }

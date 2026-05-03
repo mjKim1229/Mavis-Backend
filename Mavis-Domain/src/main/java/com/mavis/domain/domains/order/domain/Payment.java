@@ -49,7 +49,8 @@ public class Payment extends BaseEntity {
 
     private Boolean partialCancelable;
 
-    private String cardNumber;
+    @Embedded
+    private CardInfo cardInfo;
 
     private String virtualAccountSecret;
 
