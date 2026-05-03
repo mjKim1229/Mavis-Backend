@@ -169,11 +169,19 @@ public class OrderService {
     public void processDepositCallback(VirtualAccountDepositCallbackRequest request) {
         Order order = orderRepository.findByOrderIdAndIsDeletedFalse(request.orderId())
                 .orElseThrow(() -> OrderNotFoundException.EXCEPTION);
-        Payment payment = paymentReader.findConfirmByOrder(order);
-        if (!request.secret().equals(payment.getVirtualAccountSecret())) {
+        Payment confirmPayment = paymentReader.findConfirmByOrder(order);
+        if (!request.secret().equals(confirmPayment.getVirtualAccountSecret())) {
             throw InvalidOrderInfoException.EXCEPTION;
         }
         if ("DONE".equals(request.status())) {
+            Payment depositPayment = Payment.builder()
+                    .order(order)
+                    .paymentType(PaymentType.DEPOSIT)
+                    .tossOrderId(request.orderId())
+                    .lastTransactionKey(request.transactionKey())
+                    .requestedAt(request.createdAt())
+                    .build();
+            paymentRepository.save(depositPayment);
             order.confirmPayment();
         }
     }
