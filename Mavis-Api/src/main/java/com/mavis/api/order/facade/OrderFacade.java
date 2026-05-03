@@ -1,11 +1,11 @@
 package com.mavis.api.order.facade;
 
 import com.mavis.api.order.dto.CancelOrderRequest;
+import com.mavis.api.order.dto.PaymentCancelInfo;
 import com.mavis.api.order.service.OrderService;
 import com.mavis.common.properties.TossPaymentsProperties;
 import com.mavis.domain.domains.order.domain.*;
 import com.mavis.domain.domains.order.implement.PaymentIdempotencyManager;
-import com.mavis.domain.domains.order.implement.PaymentReader;
 import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsCancelClient;
 import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsConfirmClient;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.CancelPaymentsRequest;
@@ -27,7 +27,6 @@ public class OrderFacade {
     private final PaymentsConfirmClient paymentsConfirmClient;
     private final PaymentsCancelClient paymentsCancelClient;
     private final OrderService orderService;
-    private final PaymentReader paymentReader;
     private final PaymentIdempotencyManager paymentIdempotencyManager;
 
     public void confirmPayments(String idempotencyKey, String testCode, ConfirmPaymentRequest request) {
@@ -71,14 +70,14 @@ public class OrderFacade {
             return;
         }
 
-        Order order = orderService.findOrderToCancel(orderId);
-        Payment payment = paymentReader.findConfirmByOrder(order);
+        // TX1 (read-only): 검증 + paymentKey 조회
+        PaymentCancelInfo info = orderService.findConfirmPaymentToCancel(orderId);
 
         String authorizationHeader = tossPaymentsProperties.getAuthorizationHeader();
         PaymentsResponse paymentsResponse;
         try {
             paymentsResponse = paymentsCancelClient.cancelPayments(
-                    authorizationHeader, idempotencyKey, testCode, payment.getPaymentKey(),
+                    authorizationHeader, idempotencyKey, testCode, info.paymentKey(),
                     CancelPaymentsRequest.of(request.refundReason()));
             log.info("주문 취소 요청에 대한 응답 : {}", paymentsResponse);
         } catch (Exception e) {
@@ -91,7 +90,8 @@ public class OrderFacade {
             String cancelTransactionKey = paymentsResponse.cancels() != null && !paymentsResponse.cancels().isEmpty()
                     ? paymentsResponse.cancels().get(0).transactionKey()
                     : null;
-            orderService.processCancelSuccess(order, cancelTransactionKey, request.refundReason(), idempotency);
+            // TX2: Order+Items 재조회 + Payment(CANCEL) INSERT + Refund 생성
+            orderService.processCancelSuccess(info.orderId(), cancelTransactionKey, request.refundReason(), idempotency);
         } catch (Exception e) {
             log.error("주문 취소 후 처리 실패", e);
             paymentIdempotencyManager.markFailure(idempotency, e.getMessage());

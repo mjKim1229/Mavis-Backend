@@ -131,7 +131,10 @@ public class OrderService {
     }
 
     @Transactional
-    public void processCancelSuccess(Order order, String cancelTransactionKey, String refundReason, PaymentIdempotency idempotency) {
+    public void processCancelSuccess(Long orderId, String cancelTransactionKey, String refundReason, PaymentIdempotency idempotency) {
+        Order order = orderRepository.findByIdWithItemsAndIsDeletedFalse(orderId)
+                .orElseThrow(() -> OrderNotFoundException.EXCEPTION);
+
         Payment cancelPayment = Payment.builder()
                 .order(order)
                 .paymentType(PaymentType.CANCEL)
@@ -178,7 +181,7 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public Order findOrderToCancel(Long orderId) {
+    public PaymentCancelInfo findConfirmPaymentToCancel(Long orderId) {
         User currentUser = userReader.getCurrentUser();
         Order order = orderReader.findOrderById(orderId);
         if (!order.getUser().equals(currentUser)) {
@@ -187,7 +190,8 @@ public class OrderService {
         if (!order.getOrderStatus().equals(OrderStatus.PAYMENT_CONFIRMED)) {
             throw CannotCancelOrderException.EXCEPTION;
         }
-        return order;
+        Payment confirmPayment = paymentReader.findConfirmByOrder(order);
+        return new PaymentCancelInfo(order.getId(), confirmPayment.getPaymentKey());
     }
 
     @Transactional(readOnly = true)
