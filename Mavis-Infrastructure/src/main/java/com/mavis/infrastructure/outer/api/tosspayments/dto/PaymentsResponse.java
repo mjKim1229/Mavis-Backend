@@ -37,4 +37,7 @@ public record PaymentsResponse(
         PaymentsCashReceipt cashReceipt,
         PaymentsCardPromotion discount
 ) {
+    public String easyPayProvider() {
+        return easyPay != null ? easyPay.provider().name() : null;
+    }
 }

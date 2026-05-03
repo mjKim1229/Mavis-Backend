@@ -19,6 +19,10 @@ public class Payment extends BaseEntity {
 
     private String paymentKey;
 
+    private String tossOrderId;
+
+    private String orderName;
+
     private String provider;
 
     private String receiptUrl;
