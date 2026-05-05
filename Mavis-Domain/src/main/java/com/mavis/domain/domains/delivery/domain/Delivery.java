@@ -43,7 +43,4 @@ public class Delivery extends BaseEntity {
         this.deliveryStatus = DeliveryStatus.DELIVERED;
     }
 
-    public void cancel() {
-        this.deliveryStatus = DeliveryStatus.CANCELLED;
-    }
 }
