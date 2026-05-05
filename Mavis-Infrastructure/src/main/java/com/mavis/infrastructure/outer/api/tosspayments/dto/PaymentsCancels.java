@@ -3,7 +3,7 @@ package com.mavis.infrastructure.outer.api.tosspayments.dto;
 import java.time.ZonedDateTime;
 
 public record PaymentsCancels(
-        Long cancelAmount,
+        int cancelAmount,
         String cancelReason,
         Long taxFreeAmount,
         Long taxExceptionAmount,

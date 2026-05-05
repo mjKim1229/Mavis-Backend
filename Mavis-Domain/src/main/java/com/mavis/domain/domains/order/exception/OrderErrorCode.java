@@ -16,7 +16,8 @@ public enum OrderErrorCode implements BaseErrorCode {
     DUPLICATE_PAYMENT(409, "이미 처리된 결제입니다.", "ORDER_409_1"),
     PAYMENT_ALREADY_PROCESSING(409, "결제가 처리 중입니다. 잠시 후 다시 시도해주세요.", "ORDER_409_2"),
     PREVIOUS_PAYMENT_FAILED(409, "이전 결제 시도가 실패했습니다.", "ORDER_409_3"),
-    IDEMPOTENCY_NOT_FOUND(500, "멱등키 조회에 실패했습니다.", "ORDER_500_1");
+    IDEMPOTENCY_NOT_FOUND(500, "멱등키 조회에 실패했습니다.", "ORDER_500_1"),
+    CANCEL_ENTRY_NOT_FOUND(500, "취소 응답에서 취소 항목을 찾을 수 없습니다.", "ORDER_500_2");
 
     private final Integer status;
     private final String message;

@@ -28,10 +28,55 @@
 | File | Description |
 |------|-------------|
 | `order/domain/Order.java` | 주문 집합 루트 엔티티 |
-| `order/domain/Payment.java` | 결제 정보 엔티티 |
+| `order/domain/Payment.java` | 결제 원장 엔티티 (insert-only) |
 | `order/domain/PaymentIdempotency.java` | 결제 멱등성 관리 엔티티 |
 | `order/domain/IdempotencyStatus.java` | 멱등성 상태 enum |
 | `order/implement/PaymentIdempotencyManager.java` | 멱등키 생성/검증 로직 |
+
+### Payment 원장 설계
+
+**Payment는 insert-only 원장 테이블이다. 기존 행을 UPDATE하지 않는다.**
+
+결제 이벤트마다 새 Payment 행을 INSERT하며 `PaymentType`으로 구분한다.
+
+| PaymentType | 의미 | cancel 필드 |
+|-------------|------|------------|
+| `CONFIRM` | 결제 승인 | null |
+| `CANCEL` | 결제 취소 (전체/부분) | `cancelAmount`, `cancelReason`, `canceledAt` 세팅 |
+| `DEPOSIT` | 가상계좌 입금 확인 | null |
+
+**엔티티 관계:**
+
+```
+Order (1) ──── Payment (N)         FK: payment.order_id → orders.id
+                   │
+                   └── Refund (N)  FK: refund.payment_id → payment.id
+                                   환불 도메인 로직 담당, Payment 원장과 분리
+```
+
+- `Order → Payment`: 한 주문에 여러 결제 이벤트 (승인 1건 + 취소 N건)
+- `Payment → Refund`: CANCEL Payment에 환불 상세 연결 (Refund는 비즈니스 로직, Payment는 Toss 원장 데이터)
+
+### 취소/환불 시나리오
+
+**케이스 1 — 회원 API 전체 취소** (`PaymentType.CANCEL`, `RefundType.CANCEL`)
+```
+Payment(CANCEL) 1건 INSERT  ← order.totalPrice, Toss cancel 응답 기준
+    └── Refund N건 생성      ← OrderItem 수만큼, 모두 동일 Payment 참조
+Order.status → CANCELED
+```
+
+**케이스 2 — 어드민 부분 취소** (`PaymentType.CANCEL`, `RefundType.REFUND`)
+```
+Refund(REQUESTED) 선신청    ← 회원이 OrderItem 단위로 환불 요청
+    ↓ 어드민 승인
+Payment(CANCEL) 1건 INSERT  ← refund.refundAmount 기준 (부분 금액)
+    └── 해당 Refund.linkPayment() + status → COMPLETED
+```
+
+**제약:**
+- `OrderItem ↔ Refund` = OneToOne → 동일 OrderItem 중복 환불 불가
+- `Payment(CANCEL).totalAmount`: 전체 취소 = `order.totalPrice`, 부분 취소 = `refund.refundAmount`
 
 ## For AI Agents
 

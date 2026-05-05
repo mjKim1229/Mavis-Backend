@@ -54,15 +54,18 @@ public class AdminRefundService {
     }
 
     @Transactional
-    public void approveAndComplete(Long refundId, String cancelTransactionKey) {
+    public void approveAndComplete(Long refundId, String cancelTransactionKey, int cancelAmount, String cancelReason, java.time.LocalDateTime canceledAt) {
         Refund refund = refundReader.findByIdWithOrderItemAndOrder(refundId);
         Order order = refund.getOrderItem().getOrder();
 
         Payment cancelPayment = Payment.builder()
                 .order(order)
                 .paymentType(PaymentType.CANCEL)
-                .totalAmount(refund.getRefundAmount())
+                .totalAmount(cancelAmount)
                 .lastTransactionKey(cancelTransactionKey)
+                .cancelAmount(cancelAmount)
+                .cancelReason(cancelReason)
+                .canceledAt(canceledAt)
                 .build();
 
         Payment saved = paymentRepository.save(cancelPayment);

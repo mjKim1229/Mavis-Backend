@@ -73,4 +73,12 @@ public record PaymentsResponse(
     public String virtualAccountDepositorName() {
         return virtualAccount != null ? virtualAccount.depositorName() : null;
     }
+
+    public PaymentsCancels currentCancelEntry() {
+        if (cancels == null || cancels.isEmpty() || lastTransactionKey == null) return null;
+        return cancels.stream()
+                .filter(c -> lastTransactionKey.equals(c.transactionKey()))
+                .findFirst()
+                .orElse(null);
+    }
 }

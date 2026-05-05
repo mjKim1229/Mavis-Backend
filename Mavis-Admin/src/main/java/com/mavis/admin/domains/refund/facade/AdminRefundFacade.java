@@ -4,8 +4,12 @@ import com.mavis.admin.domains.refund.dto.RefundValidateInfo;
 import com.mavis.admin.domains.refund.service.AdminRefundService;
 import com.mavis.common.properties.TossPaymentsProperties;
 import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsCancelClient;
+import com.mavis.domain.domains.order.exception.CancelEntryNotFoundException;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.CancelPaymentsRequest;
+import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsCancels;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
+
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -35,11 +39,14 @@ public class AdminRefundFacade {
 
         log.info("Toss 환불 취소 응답: {}", response);
 
-        String cancelTransactionKey = response.cancels() != null && !response.cancels().isEmpty()
-                ? response.cancels().get(0).transactionKey()
-                : null;
+        PaymentsCancels cancelEntry = response.currentCancelEntry();
+        if (cancelEntry == null) throw CancelEntryNotFoundException.EXCEPTION;
+        String cancelTransactionKey = cancelEntry.transactionKey();
+        int cancelAmount = cancelEntry.cancelAmount();
+        String cancelReason = cancelEntry.cancelReason();
+        LocalDateTime canceledAt = cancelEntry.canceledAt().toLocalDateTime();
 
         // TX2: approve + Payment(CANCEL) INSERT + complete
-        adminRefundService.approveAndComplete(info.refundId(), cancelTransactionKey);
+        adminRefundService.approveAndComplete(info.refundId(), cancelTransactionKey, cancelAmount, cancelReason, canceledAt);
     }
 }

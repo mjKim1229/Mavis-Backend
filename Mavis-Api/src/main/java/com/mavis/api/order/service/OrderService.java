@@ -140,15 +140,18 @@ public class OrderService {
     }
 
     @Transactional
-    public void processCancelSuccess(Long orderId, String cancelTransactionKey, String refundReason, PaymentIdempotency idempotency) {
+    public void processCancelSuccess(Long orderId, String cancelTransactionKey, int cancelAmount, String cancelReason, java.time.LocalDateTime canceledAt, String refundReason, PaymentIdempotency idempotency) {
         Order order = orderRepository.findByIdWithItemsAndIsDeletedFalse(orderId)
                 .orElseThrow(() -> OrderNotFoundException.EXCEPTION);
 
         Payment cancelPayment = Payment.builder()
                 .order(order)
                 .paymentType(PaymentType.CANCEL)
-                .totalAmount(order.getTotalPrice())
+                .totalAmount(cancelAmount)
                 .lastTransactionKey(cancelTransactionKey)
+                .cancelAmount(cancelAmount)
+                .cancelReason(cancelReason)
+                .canceledAt(canceledAt)
                 .build();
         paymentRepository.save(cancelPayment);
 
@@ -183,7 +186,7 @@ public class OrderService {
         if (!request.secret().equals(confirmPayment.getVirtualAccountSecret())) {
             throw InvalidOrderInfoException.EXCEPTION;
         }
-        
+
         if ("DONE".equals(request.status())) {
             Payment depositPayment = Payment.builder()
                     .order(order)
