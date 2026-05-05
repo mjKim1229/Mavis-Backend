@@ -9,7 +9,6 @@ import com.mavis.infrastructure.outer.api.tosspayments.dto.CancelPaymentsRequest
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsCancels;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
 
-import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -41,12 +40,8 @@ public class AdminRefundFacade {
 
         PaymentsCancels cancelEntry = response.currentCancelEntry();
         if (cancelEntry == null) throw CancelEntryNotFoundException.EXCEPTION;
-        String cancelTransactionKey = cancelEntry.transactionKey();
-        int cancelAmount = cancelEntry.cancelAmount();
-        String cancelReason = cancelEntry.cancelReason();
-        LocalDateTime canceledAt = cancelEntry.canceledAt().toLocalDateTime();
 
         // TX2: approve + Payment(CANCEL) INSERT + complete
-        adminRefundService.approveAndComplete(info.refundId(), cancelTransactionKey, cancelAmount, cancelReason, canceledAt);
+        adminRefundService.approveAndComplete(info.refundId(), response, cancelEntry);
     }
 }

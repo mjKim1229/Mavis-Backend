@@ -15,7 +15,6 @@ import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsCancels;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.TossConfirmRequest;
 
-import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -93,14 +92,10 @@ public class OrderFacade {
 
         PaymentsCancels cancelEntry = paymentsResponse.currentCancelEntry();
         if (cancelEntry == null) throw CancelEntryNotFoundException.EXCEPTION;
-        String cancelTransactionKey = cancelEntry.transactionKey();
-        int cancelAmount = cancelEntry.cancelAmount();
-        String cancelReason = cancelEntry.cancelReason();
-        LocalDateTime canceledAt = cancelEntry.canceledAt().toLocalDateTime();
 
         try {
             // TX2: Order+Items 재조회 + Payment(CANCEL) INSERT + Refund 생성
-            orderService.processCancelSuccess(info.orderId(), cancelTransactionKey, cancelAmount, cancelReason, canceledAt, request.refundReason(), idempotency);
+            orderService.processCancelSuccess(info.orderId(), paymentsResponse, cancelEntry, request.refundReason(), idempotency);
         } catch (Exception e) {
             log.error("주문 취소 후 처리 실패", e);
             paymentIdempotencyManager.markFailure(idempotency, e.getMessage());

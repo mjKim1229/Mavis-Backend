@@ -22,6 +22,7 @@ import com.mavis.domain.domains.order.implement.PaymentReader;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.order.repository.PaymentRepository;
 import com.mavis.domain.domains.user.domain.User;
+import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsCancels;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsStatus;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.VirtualAccountDepositCallbackRequest;
@@ -140,18 +141,27 @@ public class OrderService {
     }
 
     @Transactional
-    public void processCancelSuccess(Long orderId, String cancelTransactionKey, int cancelAmount, String cancelReason, java.time.LocalDateTime canceledAt, String refundReason, PaymentIdempotency idempotency) {
+    public void processCancelSuccess(Long orderId, PaymentsResponse response, PaymentsCancels cancelEntry, String refundReason, PaymentIdempotency idempotency) {
         Order order = orderRepository.findByIdWithItemsAndIsDeletedFalse(orderId)
                 .orElseThrow(() -> OrderNotFoundException.EXCEPTION);
 
         Payment cancelPayment = Payment.builder()
                 .order(order)
                 .paymentType(PaymentType.CANCEL)
-                .totalAmount(cancelAmount)
-                .lastTransactionKey(cancelTransactionKey)
-                .cancelAmount(cancelAmount)
-                .cancelReason(cancelReason)
-                .canceledAt(canceledAt)
+                .paymentKey(response.paymentKey())
+                .tossOrderId(response.orderId())
+                .orderName(response.orderName())
+                .provider(response.easyPayProvider())
+                .method(PaymentMethod.from(response.method()))
+                .totalAmount(cancelEntry.cancelAmount())
+                .balanceAmount(response.balanceAmount())
+                .lastTransactionKey(cancelEntry.transactionKey())
+                .partialCancelable(response.isPartialCancelable())
+                .cardInfo(new CardInfo(response.cardNumber(), response.cardIssuerCode()))
+                .receiptUrl(response.receiptUrl())
+                .cancelAmount(cancelEntry.cancelAmount())
+                .cancelReason(cancelEntry.cancelReason())
+                .canceledAt(cancelEntry.canceledAt().toLocalDateTime())
                 .build();
         paymentRepository.save(cancelPayment);
 
@@ -163,7 +173,7 @@ public class OrderService {
                         .refundAmount(orderItem.getPrice() * orderItem.getQuantity())
                         .refundStatus(RefundStatus.COMPLETED)
                         .refundType(RefundType.CANCEL)
-                        .cancelTransactionKey(cancelTransactionKey)
+                        .cancelTransactionKey(cancelEntry.transactionKey())
                         .build())
                 .toList();
         refundAppender.saveAll(refunds);

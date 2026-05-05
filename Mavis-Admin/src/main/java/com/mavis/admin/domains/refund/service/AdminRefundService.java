@@ -3,9 +3,13 @@ package com.mavis.admin.domains.refund.service;
 import com.mavis.admin.common.page.PageResponse;
 import com.mavis.admin.domains.refund.dto.GetAdminRefundResponse;
 import com.mavis.admin.domains.refund.dto.RefundValidateInfo;
+import com.mavis.domain.domains.order.domain.CardInfo;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.Payment;
+import com.mavis.domain.domains.order.domain.PaymentMethod;
 import com.mavis.domain.domains.order.domain.PaymentType;
+import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsCancels;
+import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
 import com.mavis.domain.domains.order.exception.PaymentNotFoundException;
 import com.mavis.domain.domains.order.repository.PaymentRepository;
 import com.mavis.domain.domains.refund.domain.Refund;
@@ -54,24 +58,33 @@ public class AdminRefundService {
     }
 
     @Transactional
-    public void approveAndComplete(Long refundId, String cancelTransactionKey, int cancelAmount, String cancelReason, java.time.LocalDateTime canceledAt) {
+    public void approveAndComplete(Long refundId, PaymentsResponse response, PaymentsCancels cancelEntry) {
         Refund refund = refundReader.findByIdWithOrderItemAndOrder(refundId);
         Order order = refund.getOrderItem().getOrder();
 
         Payment cancelPayment = Payment.builder()
                 .order(order)
                 .paymentType(PaymentType.CANCEL)
-                .totalAmount(cancelAmount)
-                .lastTransactionKey(cancelTransactionKey)
-                .cancelAmount(cancelAmount)
-                .cancelReason(cancelReason)
-                .canceledAt(canceledAt)
+                .paymentKey(response.paymentKey())
+                .tossOrderId(response.orderId())
+                .orderName(response.orderName())
+                .provider(response.easyPayProvider())
+                .method(PaymentMethod.from(response.method()))
+                .totalAmount(cancelEntry.cancelAmount())
+                .balanceAmount(response.balanceAmount())
+                .lastTransactionKey(cancelEntry.transactionKey())
+                .partialCancelable(response.isPartialCancelable())
+                .cardInfo(new CardInfo(response.cardNumber(), response.cardIssuerCode()))
+                .receiptUrl(response.receiptUrl())
+                .cancelAmount(cancelEntry.cancelAmount())
+                .cancelReason(cancelEntry.cancelReason())
+                .canceledAt(cancelEntry.canceledAt().toLocalDateTime())
                 .build();
 
         Payment saved = paymentRepository.save(cancelPayment);
         refund.approve();
         refund.linkPayment(saved);
-        refund.complete(cancelTransactionKey);
+        refund.complete(cancelEntry.transactionKey());
     }
 
     @Transactional
