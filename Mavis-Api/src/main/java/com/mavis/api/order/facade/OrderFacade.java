@@ -91,13 +91,14 @@ public class OrderFacade {
             throw e;
         }
 
+        PaymentsCancels cancelEntry = paymentsResponse.currentCancelEntry();
+        if (cancelEntry == null) throw CancelEntryNotFoundException.EXCEPTION;
+        String cancelTransactionKey = cancelEntry.transactionKey();
+        int cancelAmount = cancelEntry.cancelAmount();
+        String cancelReason = cancelEntry.cancelReason();
+        LocalDateTime canceledAt = cancelEntry.canceledAt().toLocalDateTime();
+
         try {
-            PaymentsCancels cancelEntry = paymentsResponse.currentCancelEntry();
-            if (cancelEntry == null) throw CancelEntryNotFoundException.EXCEPTION;
-            String cancelTransactionKey = cancelEntry.transactionKey();
-            int cancelAmount = cancelEntry.cancelAmount();
-            String cancelReason = cancelEntry.cancelReason();
-            LocalDateTime canceledAt = cancelEntry.canceledAt().toLocalDateTime();
             // TX2: Order+Items 재조회 + Payment(CANCEL) INSERT + Refund 생성
             orderService.processCancelSuccess(info.orderId(), cancelTransactionKey, cancelAmount, cancelReason, canceledAt, request.refundReason(), idempotency);
         } catch (Exception e) {

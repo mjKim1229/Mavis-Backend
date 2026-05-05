@@ -49,7 +49,7 @@ public class Payment extends BaseEntity {
 
     private Boolean partialCancelable;
 
-    private int cancelAmount;
+    private Integer cancelAmount;
 
     private String cancelReason;
 
