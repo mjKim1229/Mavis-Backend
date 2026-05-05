@@ -30,14 +30,17 @@ public class CartService {
     public void createCart(CreateCartRequest request) {
         User user = userReader.getCurrentUser();
         Product product = productReader.readById(request.productId());
-        CartItem cartItem = CartItem.builder()
-                .user(user)
-                .product(product)
-                .color(request.color())
-                .quantity(request.quantity())
-                .totalPrice(product.getPrice() * request.quantity())
-                .build();
-        cartItemRepository.save(cartItem);
+        cartItemRepository.findByUserAndProductAndColorAndIsDeletedFalse(user, product, request.color())
+                .ifPresentOrElse(
+                        existing -> existing.increaseQuantity(request.quantity()),
+                        () -> cartItemRepository.save(CartItem.builder()
+                                .user(user)
+                                .product(product)
+                                .color(request.color())
+                                .quantity(request.quantity())
+                                .totalPrice(product.getPrice() * request.quantity())
+                                .build())
+                );
     }
 
     @Transactional

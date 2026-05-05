@@ -39,6 +39,11 @@ public class CartItem extends BaseEntity {
         this.totalPrice = product.getPrice() * quantity;
     }
 
+    public void increaseQuantity(int additionalQuantity) {
+        this.quantity += additionalQuantity;
+        this.totalPrice = product.getPrice() * this.quantity;
+    }
+
     public void delete() {
         this.isDeleted = true;
     }
