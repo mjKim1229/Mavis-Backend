@@ -75,4 +75,11 @@ public class Order extends BaseEntity {
         }
         return delivery != null ? delivery.getDeliveryStatus().getTitle() : orderStatus.getTitle();
     }
+
+    public String getDisplayStatusCode() {
+        if (orderStatus == OrderStatus.CANCELED) {
+            return orderStatus.getCode();
+        }
+        return delivery != null ? delivery.getDeliveryStatus().getCode() : orderStatus.getCode();
+    }
 }

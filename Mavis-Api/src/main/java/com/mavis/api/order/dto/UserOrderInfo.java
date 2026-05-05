@@ -13,6 +13,7 @@ public record UserOrderInfo(
         Long orderId,
         String tossOrderId,
         List<OrderProduct> orderProductList,
+        String orderStatusCode,
         String orderStatus,
         String address,
         String addressInfo,
@@ -25,6 +26,7 @@ public record UserOrderInfo(
                 .orderId(order.getId())
                 .tossOrderId(order.getOrderId().substring(DOMAIN_PREFIX.length()))
                 .orderProductList(order.getOrderItems().stream().map(OrderProduct::from).toList())
+                .orderStatusCode(order.getDisplayStatusCode())
                 .orderStatus(order.getDisplayStatus())
                 .address(order.getOrderAddress().getAddress())
                 .addressInfo(order.getOrderAddress().getAddressDetail())
