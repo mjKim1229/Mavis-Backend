@@ -63,6 +63,9 @@ public class Payment extends BaseEntity {
     @Embedded
     private VirtualAccountInfo virtualAccountInfo;
 
+    @Embedded
+    private RefundReceiveAccount refundReceiveAccount;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order;

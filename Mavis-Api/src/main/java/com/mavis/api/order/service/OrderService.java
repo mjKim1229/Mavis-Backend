@@ -126,6 +126,11 @@ public class OrderService {
                         response.virtualAccountDueDateLocal(),
                         response.virtualAccountDepositorName()
                 ) : null)
+                .refundReceiveAccount(response.virtualAccount() != null ? new RefundReceiveAccount(
+                        response.refundReceiveBankCode(),
+                        response.refundReceiveAccountNumber(),
+                        response.refundReceiveHolderName()
+                ) : null)
                 .build();
 
         paymentRepository.save(payment);
@@ -222,7 +227,14 @@ public class OrderService {
             throw CannotCancelOrderException.EXCEPTION;
         }
         Payment confirmPayment = paymentReader.findConfirmByOrder(order);
-        return new PaymentCancelInfo(order.getId(), confirmPayment.getPaymentKey());
+        RefundReceiveAccount refundReceiveAccount = confirmPayment.getRefundReceiveAccount();
+        return new PaymentCancelInfo(
+                order.getId(),
+                confirmPayment.getPaymentKey(),
+                refundReceiveAccount != null ? refundReceiveAccount.getRefundReceiveBankCode() : null,
+                refundReceiveAccount != null ? refundReceiveAccount.getRefundReceiveAccountNumber() : null,
+                refundReceiveAccount != null ? refundReceiveAccount.getRefundReceiveHolderName() : null
+        );
     }
 
     @Transactional(readOnly = true)

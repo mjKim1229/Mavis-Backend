@@ -74,6 +74,18 @@ public record PaymentsResponse(
         return virtualAccount != null ? virtualAccount.depositorName() : null;
     }
 
+    public String refundReceiveBankCode() {
+        return virtualAccount != null ? virtualAccount.refundReceiveAccount().bankCode() : null;
+    }
+
+    public String refundReceiveAccountNumber() {
+        return virtualAccount != null ? virtualAccount.refundReceiveAccount().accountNumber() : null;
+    }
+
+    public String refundReceiveHolderName() {
+        return virtualAccount != null ? virtualAccount.refundReceiveAccount().holderName() : null;
+    }
+
     public PaymentsCancels currentCancelEntry() {
         if (cancels == null || cancels.isEmpty() || lastTransactionKey == null) return null;
         return cancels.stream()

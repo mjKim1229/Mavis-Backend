@@ -8,6 +8,7 @@ import com.mavis.domain.domains.order.exception.CancelEntryNotFoundException;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.CancelPaymentsRequest;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsCancels;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
+import com.mavis.infrastructure.outer.api.tosspayments.dto.RefundReceiveAccountRequest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,13 +28,17 @@ public class AdminRefundFacade {
         // TX1 (read-only): 상태 검증 + paymentKey 조회
         RefundValidateInfo info = adminRefundService.validateForApproval(refundId);
 
+        RefundReceiveAccountRequest refundReceiveAccountRequest = info.refundReceiveBankCode() != null
+                ? new RefundReceiveAccountRequest(info.refundReceiveBankCode(), info.refundReceiveAccountNumber(), info.refundReceiveHolderName())
+                : null;
+
         // 외부 API
         PaymentsResponse response = paymentsCancelClient.cancelPayments(
                 tossPaymentsProperties.getAuthorizationHeader(),
                 idempotencyKey,
                 testCode,
                 info.paymentKey(),
-                new CancelPaymentsRequest(info.refundReason(), info.refundAmount())
+                new CancelPaymentsRequest(info.refundReason(), info.refundAmount(), refundReceiveAccountRequest)
         );
 
         log.info("Toss 환불 취소 응답: {}", response);

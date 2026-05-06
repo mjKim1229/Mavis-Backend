@@ -13,6 +13,7 @@ import com.mavis.infrastructure.outer.api.tosspayments.dto.CancelPaymentsRequest
 import com.mavis.infrastructure.outer.api.tosspayments.dto.ConfirmPaymentRequest;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsCancels;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
+import com.mavis.infrastructure.outer.api.tosspayments.dto.RefundReceiveAccountRequest;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.TossConfirmRequest;
 
 import lombok.RequiredArgsConstructor;
@@ -78,11 +79,15 @@ public class OrderFacade {
         PaymentCancelInfo info = orderService.findConfirmPaymentToCancel(orderId);
 
         String authorizationHeader = tossPaymentsProperties.getAuthorizationHeader();
+        RefundReceiveAccountRequest refundReceiveAccountRequest = info.refundReceiveBankCode() != null
+                ? new RefundReceiveAccountRequest(info.refundReceiveBankCode(), info.refundReceiveAccountNumber(), info.refundReceiveHolderName())
+                : null;
+
         PaymentsResponse paymentsResponse;
         try {
             paymentsResponse = paymentsCancelClient.cancelPayments(
                     authorizationHeader, idempotencyKey, testCode, info.paymentKey(),
-                    CancelPaymentsRequest.of(request.refundReason()));
+                    new CancelPaymentsRequest(request.refundReason(), null, refundReceiveAccountRequest));
             log.info("주문 취소 요청에 대한 응답 : {}", paymentsResponse);
         } catch (Exception e) {
             log.error("토스 결제 취소 API 호출 실패", e);

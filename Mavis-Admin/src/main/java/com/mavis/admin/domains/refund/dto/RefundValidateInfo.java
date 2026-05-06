@@ -5,5 +5,8 @@ public record RefundValidateInfo(
         Long orderId,
         int refundAmount,
         String refundReason,
-        String paymentKey
+        String paymentKey,
+        String refundReceiveBankCode,
+        String refundReceiveAccountNumber,
+        String refundReceiveHolderName
 ) {}
