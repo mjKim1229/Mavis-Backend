@@ -33,6 +33,10 @@ public class Order extends BaseEntity {
     @Builder.Default
     private OrderStatus orderStatus = OrderStatus.READY;
 
+    @Column(columnDefinition = "varchar(255)")
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
+
     @Embedded
     private OrderAddress orderAddress;
 
@@ -47,6 +51,10 @@ public class Order extends BaseEntity {
 
     public void setTotalPrice(int totalPrice) {
         this.totalPrice = totalPrice;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
     public void paymentRequested() {

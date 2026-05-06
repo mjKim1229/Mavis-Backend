@@ -2,6 +2,7 @@ package com.mavis.api.order.dto;
 
 import com.mavis.common.util.DateFormatters;
 import com.mavis.domain.domains.order.domain.Order;
+import com.mavis.domain.domains.order.domain.PaymentMethod;
 import lombok.Builder;
 
 import java.util.List;
@@ -19,7 +20,8 @@ public record UserOrderInfo(
         String addressInfo,
         int totalPrice,
         String userName,
-        String createdAt
+        String createdAt,
+        String paymentMethod
 ) {
     public static UserOrderInfo from(Order order) {
         return UserOrderInfo.builder()
@@ -33,6 +35,7 @@ public record UserOrderInfo(
                 .totalPrice(order.getTotalPrice())
                 .userName(order.getUser().getName())
                 .createdAt(order.getCreatedAt().format(DateFormatters.DATE_FORMATTER))
+                .paymentMethod(order.getPaymentMethod() != null ? order.getPaymentMethod().name() : null)
                 .build();
     }
 }

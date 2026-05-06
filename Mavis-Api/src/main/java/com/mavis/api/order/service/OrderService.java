@@ -130,6 +130,7 @@ public class OrderService {
 
         paymentRepository.save(payment);
 
+        order.setPaymentMethod(PaymentMethod.from(response.method()));
         if (response.status() == PaymentsStatus.WAITING_FOR_DEPOSIT) {
             order.waitingForDeposit();
         } else {
