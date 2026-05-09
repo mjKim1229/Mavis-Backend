@@ -49,11 +49,11 @@ public class Payment extends BaseEntity {
 
     private Boolean partialCancelable;
 
+    private LocalDateTime canceledAt;
+
     private Integer cancelAmount;
 
     private String cancelReason;
-
-    private LocalDateTime canceledAt;
 
     @Embedded
     private CardInfo cardInfo;

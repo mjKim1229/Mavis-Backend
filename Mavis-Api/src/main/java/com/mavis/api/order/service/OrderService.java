@@ -167,7 +167,7 @@ public class OrderService {
                 .receiptUrl(response.receiptUrl())
                 .cancelAmount(cancelEntry.cancelAmount())
                 .cancelReason(cancelEntry.cancelReason())
-                .requestedAt(cancelEntry.canceledAt().toLocalDateTime())
+                .requestedAt(response.requestedAt().toLocalDateTime())
                 .canceledAt(cancelEntry.canceledAt().toLocalDateTime())
                 .build();
         paymentRepository.save(cancelPayment);
