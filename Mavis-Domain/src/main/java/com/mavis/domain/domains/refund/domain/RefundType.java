@@ -5,8 +5,8 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public enum RefundType implements EnumMapperType {
-    CANCEL("주문 취소"),
-    RETURN("반품 신청");
+    CANCEL("주문 취소"),   // OrderStatus.PAYMENT_CONFIRMED 상태에서만 허용
+    RETURN("반품 신청");   // DeliveryStatus.DELIVERED 이후에만 허용
 
     private final String title;
 
