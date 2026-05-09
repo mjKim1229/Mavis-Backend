@@ -18,8 +18,4 @@ public class PaymentReader {
         return paymentRepository.findByOrderAndPaymentType(order, PaymentType.CONFIRM)
                 .orElseThrow(() -> PaymentNotFoundException.EXCEPTION);
     }
-
-    public boolean existsByPaymentKey(String paymentKey) {
-        return paymentRepository.existsByPaymentKey(paymentKey);
-    }
 }

@@ -12,9 +12,6 @@ import java.util.Optional;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
     Optional<Payment> findByOrderAndPaymentType(Order order, PaymentType paymentType);
-    boolean existsByPaymentKey(String paymentKey);
-    Payment findByOrderOrderId(String orderId);
     Optional<Payment> findByPaymentKey(String paymentKey);
-    List<Payment> findByOrderOrderStatusAndOrderCreatedAtBefore(OrderStatus status, LocalDateTime threshold);
-    List<Payment> findAllByOrder(Order order);
+    List<Payment> findByOrderOrderStatusAndOrderCreatedAtBefore(OrderStatus status, LocalDateTime threshold);;
 }

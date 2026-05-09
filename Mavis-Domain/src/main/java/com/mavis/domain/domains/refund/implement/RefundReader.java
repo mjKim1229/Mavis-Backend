@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -32,9 +31,5 @@ public class RefundReader {
                 orderItem,
                 List.of(RefundStatus.REQUESTED)
         );
-    }
-
-    public Optional<RefundStatus> findRefundStatusByOrderItem(OrderItem orderItem) {
-        return refundRepository.findByOrderItem(orderItem).map(Refund::getRefundStatus);
     }
 }
