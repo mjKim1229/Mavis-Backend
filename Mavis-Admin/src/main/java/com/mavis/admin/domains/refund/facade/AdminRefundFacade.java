@@ -8,6 +8,7 @@ import com.mavis.domain.domains.order.exception.CancelEntryNotFoundException;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.CancelPaymentsRequest;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsCancels;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
+import com.mavis.domain.domains.order.domain.RefundReceiveAccount;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.RefundReceiveAccountRequest;
 
 import lombok.RequiredArgsConstructor;
@@ -28,8 +29,9 @@ public class AdminRefundFacade {
         // TX1 (read-only): 상태 검증 + paymentKey 조회
         RefundValidateInfo info = adminRefundService.validateForApproval(refundId);
 
-        RefundReceiveAccountRequest refundReceiveAccountRequest = info.refundReceiveBankCode() != null
-                ? new RefundReceiveAccountRequest(info.refundReceiveBankCode(), info.refundReceiveAccountNumber(), info.refundReceiveHolderName())
+        RefundReceiveAccount account = info.refundReceiveAccount();
+        RefundReceiveAccountRequest refundReceiveAccountRequest = account != null
+                ? new RefundReceiveAccountRequest(account.getRefundReceiveBankCode(), account.getRefundReceiveAccountNumber(), account.getRefundReceiveHolderName())
                 : null;
 
         CancelPaymentsRequest cancelRequest = new CancelPaymentsRequest(info.refundReason(), info.refundAmount(), refundReceiveAccountRequest);

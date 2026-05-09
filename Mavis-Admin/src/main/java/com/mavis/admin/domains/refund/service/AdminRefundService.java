@@ -8,7 +8,6 @@ import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.Payment;
 import com.mavis.domain.domains.order.domain.PaymentMethod;
 import com.mavis.domain.domains.order.domain.PaymentType;
-import com.mavis.domain.domains.order.domain.RefundReceiveAccount;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsCancels;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
 import com.mavis.domain.domains.order.implement.PaymentReader;
@@ -49,16 +48,13 @@ public class AdminRefundService {
         }
         Order order = refund.getOrderItem().getOrder();
         Payment confirmPayment = paymentReader.findConfirmByOrder(order);
-        RefundReceiveAccount refundReceiveAccount = confirmPayment.getRefundReceiveAccount();
         return new RefundValidateInfo(
                 refund.getId(),
                 order.getId(),
                 refund.getRefundAmount(),
                 refund.getRefundReason(),
                 confirmPayment.getPaymentKey(),
-                refundReceiveAccount != null ? refundReceiveAccount.getRefundReceiveBankCode() : null,
-                refundReceiveAccount != null ? refundReceiveAccount.getRefundReceiveAccountNumber() : null,
-                refundReceiveAccount != null ? refundReceiveAccount.getRefundReceiveHolderName() : null
+                confirmPayment.getRefundReceiveAccount()
         );
     }
 
