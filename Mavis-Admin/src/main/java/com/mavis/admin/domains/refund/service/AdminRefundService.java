@@ -88,7 +88,6 @@ public class AdminRefundService {
                 .build();
 
         Payment saved = paymentRepository.save(cancelPayment);
-        refund.approve();
         refund.linkPayment(saved);
         refund.complete(cancelEntry.transactionKey());
 

@@ -56,10 +56,6 @@ public class Refund extends BaseEntity {
         this.payment = payment;
     }
 
-    public void approve() {
-        this.refundStatus = RefundStatus.APPROVED;
-    }
-
     public void reject() {
         this.refundStatus = RefundStatus.REJECTED;
     }
