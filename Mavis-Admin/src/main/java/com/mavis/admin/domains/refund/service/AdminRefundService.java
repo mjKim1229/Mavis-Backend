@@ -77,19 +77,27 @@ public class AdminRefundService {
                 .method(PaymentMethod.from(response.method()))
                 .totalAmount(cancelEntry.cancelAmount())
                 .balanceAmount(response.balanceAmount())
+                .requestedAt(response.requestedAt().toLocalDateTime())
+                .canceledAt(cancelEntry.canceledAt().toLocalDateTime())
                 .lastTransactionKey(cancelEntry.transactionKey())
                 .partialCancelable(response.isPartialCancelable())
                 .cardInfo(new CardInfo(response.cardNumber(), response.cardIssuerCode()))
                 .receiptUrl(response.receiptUrl())
                 .cancelAmount(cancelEntry.cancelAmount())
                 .cancelReason(cancelEntry.cancelReason())
-                .canceledAt(cancelEntry.canceledAt().toLocalDateTime())
                 .build();
 
         Payment saved = paymentRepository.save(cancelPayment);
         refund.approve();
         refund.linkPayment(saved);
         refund.complete(cancelEntry.transactionKey());
+
+        boolean allRefunded = order.getOrderItems().stream()
+                .allMatch(item -> item.getRefund() != null
+                        && item.getRefund().getRefundStatus() == RefundStatus.COMPLETED);
+        if (allRefunded) {
+            order.cancel();
+        }
     }
 
     @Transactional
