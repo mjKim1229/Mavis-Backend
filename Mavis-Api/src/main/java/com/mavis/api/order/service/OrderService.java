@@ -208,6 +208,7 @@ public class OrderService {
             Payment depositPayment = Payment.builder()
                     .order(order)
                     .paymentType(PaymentType.DEPOSIT)
+                    .method(confirmPayment.getMethod())
                     .tossOrderId(request.orderId())
                     .lastTransactionKey(request.transactionKey())
                     .requestedAt(request.createdAt())
