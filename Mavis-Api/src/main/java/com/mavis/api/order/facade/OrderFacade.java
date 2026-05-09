@@ -80,8 +80,9 @@ public class OrderFacade {
         PaymentCancelInfo info = orderService.findConfirmPaymentToCancel(orderId);
 
         String authorizationHeader = tossPaymentsProperties.getAuthorizationHeader();
-        RefundReceiveAccountRequest refundReceiveAccountRequest = info.refundReceiveBankCode() != null
-                ? new RefundReceiveAccountRequest(info.refundReceiveBankCode(), info.refundReceiveAccountNumber(), info.refundReceiveHolderName())
+        RefundReceiveAccount account = info.refundReceiveAccount();
+        RefundReceiveAccountRequest refundReceiveAccountRequest = account != null
+                ? new RefundReceiveAccountRequest(account.getRefundReceiveBankCode(), account.getRefundReceiveAccountNumber(), account.getRefundReceiveHolderName())
                 : null;
 
         CancelPaymentsRequest cancelRequest = new CancelPaymentsRequest(request.refundReason(), null, refundReceiveAccountRequest);

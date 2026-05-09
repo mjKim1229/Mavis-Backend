@@ -229,14 +229,7 @@ public class OrderService {
             throw CannotCancelOrderException.EXCEPTION;
         }
         Payment confirmPayment = paymentReader.findConfirmByOrder(order);
-        RefundReceiveAccount refundReceiveAccount = confirmPayment.getRefundReceiveAccount();
-        return new PaymentCancelInfo(
-                order.getId(),
-                confirmPayment.getPaymentKey(),
-                refundReceiveAccount != null ? refundReceiveAccount.getRefundReceiveBankCode() : null,
-                refundReceiveAccount != null ? refundReceiveAccount.getRefundReceiveAccountNumber() : null,
-                refundReceiveAccount != null ? refundReceiveAccount.getRefundReceiveHolderName() : null
-        );
+        return PaymentCancelInfo.from(order, confirmPayment);
     }
 
     @Transactional(readOnly = true)

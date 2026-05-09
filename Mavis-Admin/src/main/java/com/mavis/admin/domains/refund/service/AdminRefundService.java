@@ -48,14 +48,7 @@ public class AdminRefundService {
         }
         Order order = refund.getOrderItem().getOrder();
         Payment confirmPayment = paymentReader.findConfirmByOrder(order);
-        return new RefundValidateInfo(
-                refund.getId(),
-                order.getId(),
-                refund.getRefundAmount(),
-                refund.getRefundReason(),
-                confirmPayment.getPaymentKey(),
-                confirmPayment.getRefundReceiveAccount()
-        );
+        return RefundValidateInfo.from(refund, confirmPayment);
     }
 
     @Transactional
