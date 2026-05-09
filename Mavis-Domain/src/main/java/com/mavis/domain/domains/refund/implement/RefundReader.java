@@ -30,7 +30,7 @@ public class RefundReader {
     public boolean hasActiveRefund(OrderItem orderItem) {
         return refundRepository.existsByOrderItemAndRefundStatusIn(
                 orderItem,
-                List.of(RefundStatus.REQUESTED, RefundStatus.APPROVED)
+                List.of(RefundStatus.REQUESTED)
         );
     }
 
