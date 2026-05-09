@@ -243,16 +243,6 @@ public class OrderService {
     public PageResponse<GetOrderItemUserCanReviewResponse> getUserCanReviewList(Pageable pageable) {
         User user = userReader.getCurrentUser();
         Page<OrderItem> orderItemPages = orderRepository.findUserOrderItemCanReview(pageable, user);
-        Page<GetOrderItemUserCanReviewResponse> getOrderItemUserCanReviewResponses = orderItemPages.map(
-                orderItem -> {
-                    OrderOption orderOption = new OrderOption(orderItem.getColor(), orderItem.getQuantity());
-                    return GetOrderItemUserCanReviewResponse.builder()
-                            .productName(orderItem.getProduct().getName())
-                            .orderItemId(orderItem.getId())
-                            .orderOption(orderOption)
-                            .build();
-                }
-        );
-        return PageResponse.of(getOrderItemUserCanReviewResponses);
+        return PageResponse.of(orderItemPages.map(GetOrderItemUserCanReviewResponse::from));
     }
 }
