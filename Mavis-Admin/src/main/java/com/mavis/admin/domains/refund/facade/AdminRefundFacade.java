@@ -32,16 +32,22 @@ public class AdminRefundFacade {
                 ? new RefundReceiveAccountRequest(info.refundReceiveBankCode(), info.refundReceiveAccountNumber(), info.refundReceiveHolderName())
                 : null;
 
-        // 외부 API
-        PaymentsResponse response = paymentsCancelClient.cancelPayments(
-                tossPaymentsProperties.getAuthorizationHeader(),
-                idempotencyKey,
-                testCode,
-                info.paymentKey(),
-                new CancelPaymentsRequest(info.refundReason(), info.refundAmount(), refundReceiveAccountRequest)
-        );
-
-        log.info("Toss 환불 취소 응답: {}", response);
+        CancelPaymentsRequest cancelRequest = new CancelPaymentsRequest(info.refundReason(), info.refundAmount(), refundReceiveAccountRequest);
+        log.info("[TOSS][REFUND] 요청 - {}", cancelRequest);
+        PaymentsResponse response;
+        try {
+            response = paymentsCancelClient.cancelPayments(
+                    tossPaymentsProperties.getAuthorizationHeader(),
+                    idempotencyKey,
+                    testCode,
+                    info.paymentKey(),
+                    cancelRequest
+            );
+            log.info("[TOSS][REFUND] 완료 - {}", response);
+        } catch (Exception e) {
+            log.error("[TOSS][REFUND] 실패 - {}", cancelRequest, e);
+            throw e;
+        }
 
         PaymentsCancels cancelEntry = response.currentCancelEntry();
         if (cancelEntry == null) throw CancelEntryNotFoundException.EXCEPTION;

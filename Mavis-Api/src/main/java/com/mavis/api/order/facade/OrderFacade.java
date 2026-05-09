@@ -45,10 +45,11 @@ public class OrderFacade {
         TossConfirmRequest tossConfirmRequest = TossConfirmRequest.of(request.paymentKey(), request.tossOrderId(), request.amount());
         PaymentsResponse response;
         try {
+            log.info("[TOSS][CONFIRM] 요청 - {}", tossConfirmRequest);
             response = paymentsConfirmClient.confirmPayments(authorizationHeader, idempotencyKey, testCode, tossConfirmRequest);
-            log.info("토스 결제 승인 응답 : {}", response);
+            log.info("[TOSS][CONFIRM] 완료 - {}", response);
         } catch (Exception e) {
-            log.error("토스 결제 승인 API 호출 실패", e);
+            log.error("[TOSS][CONFIRM] 실패 - {}", tossConfirmRequest, e);
             paymentIdempotencyManager.markFailure(idempotency, e.getMessage());
             throw e;
         }
@@ -56,7 +57,7 @@ public class OrderFacade {
         try {
             orderService.processPaymentSuccess(order, response, idempotency);
         } catch (Exception e) {
-            log.error("결제 후 처리 실패, 결제 취소 시도", e);
+            log.error("[TOSS][CONFIRM] 후처리 실패, 자동 취소 시도 - {}", response, e);
             paymentIdempotencyManager.markFailure(idempotency, e.getMessage());
             paymentsCancelClient.cancelPayments(
                     authorizationHeader,
@@ -83,14 +84,15 @@ public class OrderFacade {
                 ? new RefundReceiveAccountRequest(info.refundReceiveBankCode(), info.refundReceiveAccountNumber(), info.refundReceiveHolderName())
                 : null;
 
+        CancelPaymentsRequest cancelRequest = new CancelPaymentsRequest(request.refundReason(), null, refundReceiveAccountRequest);
         PaymentsResponse paymentsResponse;
         try {
+            log.info("[TOSS][CANCEL] 요청 - {}", cancelRequest);
             paymentsResponse = paymentsCancelClient.cancelPayments(
-                    authorizationHeader, idempotencyKey, testCode, info.paymentKey(),
-                    new CancelPaymentsRequest(request.refundReason(), null, refundReceiveAccountRequest));
-            log.info("주문 취소 요청에 대한 응답 : {}", paymentsResponse);
+                    authorizationHeader, idempotencyKey, testCode, info.paymentKey(), cancelRequest);
+            log.info("[TOSS][CANCEL] 완료 - {}", paymentsResponse);
         } catch (Exception e) {
-            log.error("토스 결제 취소 API 호출 실패", e);
+            log.error("[TOSS][CANCEL] 실패 - {}", cancelRequest, e);
             paymentIdempotencyManager.markFailure(idempotency, e.getMessage());
             throw e;
         }
@@ -102,7 +104,7 @@ public class OrderFacade {
             // TX2: Order+Items 재조회 + Payment(CANCEL) INSERT + Refund 생성
             orderService.processCancelSuccess(info.orderId(), paymentsResponse, cancelEntry, request.refundReason(), idempotency);
         } catch (Exception e) {
-            log.error("주문 취소 후 처리 실패", e);
+            log.error("[TOSS][CANCEL] 후처리 실패 - {}", paymentsResponse, e);
             paymentIdempotencyManager.markFailure(idempotency, e.getMessage());
             throw e;
         }
