@@ -11,7 +11,7 @@ import com.mavis.domain.domains.order.domain.PaymentType;
 import com.mavis.domain.domains.order.domain.RefundReceiveAccount;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsCancels;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
-import com.mavis.domain.domains.order.exception.PaymentNotFoundException;
+import com.mavis.domain.domains.order.implement.PaymentReader;
 import com.mavis.domain.domains.order.repository.PaymentRepository;
 import com.mavis.domain.domains.refund.domain.Refund;
 import com.mavis.domain.domains.refund.domain.RefundStatus;
@@ -31,6 +31,7 @@ public class AdminRefundService {
     private final RefundRepository refundRepository;
     private final RefundReader refundReader;
     private final PaymentRepository paymentRepository;
+    private final PaymentReader paymentReader;
 
     @Transactional(readOnly = true)
     public PageResponse<GetAdminRefundResponse> getRefundList(Pageable pageable, RefundStatus refundStatus) {
@@ -47,8 +48,7 @@ public class AdminRefundService {
             throw CannotRefundException.EXCEPTION;
         }
         Order order = refund.getOrderItem().getOrder();
-        Payment confirmPayment = paymentRepository.findByOrderAndPaymentType(order, PaymentType.CONFIRM)
-                .orElseThrow(() -> PaymentNotFoundException.EXCEPTION);
+        Payment confirmPayment = paymentReader.findConfirmByOrder(order);
         RefundReceiveAccount refundReceiveAccount = confirmPayment.getRefundReceiveAccount();
         return new RefundValidateInfo(
                 refund.getId(),
