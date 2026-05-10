@@ -1,6 +1,5 @@
 package com.mavis.domain.domains.review.repository;
 
-import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.review.domain.Review;
 import com.mavis.domain.domains.review.vo.GetWritableUserOrderItemResponseVO;
 import com.mavis.domain.domains.review.vo.ProductReviewTotal;
