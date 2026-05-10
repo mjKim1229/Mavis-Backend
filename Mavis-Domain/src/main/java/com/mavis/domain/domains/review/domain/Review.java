@@ -17,7 +17,6 @@ public class Review extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private int score;
     private String content;
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -40,8 +39,7 @@ public class Review extends BaseEntity {
         this.isDeleted = true;
     }
 
-    public void update(int score, String content, boolean isPrivate) {
-        this.score = score;
+    public void update(String content, boolean isPrivate) {
         this.content = content;
         this.isPrivate = isPrivate;
     }

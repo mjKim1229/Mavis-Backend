@@ -18,7 +18,6 @@ import com.mavis.domain.domains.review.exception.ReviewNotFoundException;
 import com.mavis.domain.domains.review.exception.UnauthorizedReviewException;
 import com.mavis.domain.domains.review.repository.ReviewRepository;
 import com.mavis.domain.domains.review.vo.GetWritableUserOrderItemResponseVO;
-import com.mavis.domain.domains.review.vo.ProductReviewTotal;
 import com.mavis.domain.domains.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -58,7 +57,7 @@ public class ReviewService {
         if (!review.getUser().getId().equals(user.getId())) {
             throw UnauthorizedReviewException.EXCEPTION;
         }
-        review.update(request.score(), request.content(), request.isPrivate());
+        review.update(request.content(), request.isPrivate());
 
         List<String> keepImageUrls = request.keepImageUrls() != null ? request.keepImageUrls() : List.of();
         reviewImageUploader.deleteRemovedImages(review, keepImageUrls);
@@ -77,12 +76,6 @@ public class ReviewService {
             throw UnauthorizedReviewException.EXCEPTION;
         }
         review.delete();
-    }
-
-    @Transactional(readOnly = true)
-    public ProductReviewTotal getProductReviewTotal(Long productId) {
-        Product product = productReader.readById(productId);
-        return reviewRepository.queryProductReviewTotal(product.getId());
     }
 
     @Transactional(readOnly = true)

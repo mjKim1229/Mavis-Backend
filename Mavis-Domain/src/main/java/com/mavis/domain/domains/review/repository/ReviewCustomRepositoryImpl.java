@@ -5,12 +5,10 @@ import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.product.domain.ProductImageType;
 import com.mavis.domain.domains.review.domain.Review;
 import com.mavis.domain.domains.review.vo.GetWritableUserOrderItemResponseVO;
-import com.mavis.domain.domains.review.vo.ProductReviewTotal;
 import com.mavis.domain.domains.user.domain.User;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -33,22 +31,6 @@ import static com.mavis.domain.domains.review.domain.QReviewImage.reviewImage;
 @RequiredArgsConstructor
 public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
     private final JPAQueryFactory queryFactory;
-
-    public ProductReviewTotal queryProductReviewTotal(Long productId) {
-        return queryFactory
-                .select(Projections.constructor(
-                        ProductReviewTotal.class,
-                        Expressions.numberTemplate(
-                                Double.class, "ROUND({0}, 1)",
-                                review.score.avg().coalesce(0.0)
-                        ),
-                        review.count()
-                ))
-                .from(review)
-                .join(orderItem).on(review.orderItem.id.eq(orderItem.id))
-                .where(orderItem.product.id.eq(productId))
-                .fetchOne();
-    }
 
     public Page<Review> queryProductReviews(Long productId, boolean photoOnly, Pageable pageable) {
         JPAQuery<Review> query = queryFactory

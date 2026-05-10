@@ -8,7 +8,6 @@ import com.mavis.api.review.dto.UpdateReviewRequest;
 import com.mavis.api.review.dto.UserReviewResponse;
 import com.mavis.api.review.service.ReviewService;
 import com.mavis.domain.domains.review.vo.GetWritableUserOrderItemResponseVO;
-import com.mavis.domain.domains.review.vo.ProductReviewTotal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -60,12 +59,6 @@ public class ReviewController {
     @GetMapping("/user/review-writable")
     public PageResponse<GetWritableUserOrderItemResponseVO> getWritableUserOrderItemResponsePageResponse(Pageable pageable) {
         return reviewService.getWritableOrderItems(pageable);
-    }
-
-    @Operation(summary = "상품 리뷰 통계 조회", description = "특정 상품의 리뷰 통계 정보를 조회합니다.")
-    @GetMapping("/product/{productId}/total")
-    public ProductReviewTotal getProductReviewTotal(@PathVariable Long productId) {
-        return reviewService.getProductReviewTotal(productId);
     }
 
     @Operation(summary = "상품 리뷰 목록 조회", description = "특정 상품에 작성된 리뷰 목록을 조회합니다.")

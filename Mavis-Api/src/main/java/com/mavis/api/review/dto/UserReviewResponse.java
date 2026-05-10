@@ -11,7 +11,6 @@ import java.util.List;
 @Builder
 public record UserReviewResponse(
         Long reviewId,
-        int score,
         String createdAt,
         String content,
         List<String> imageUrls,
@@ -20,7 +19,6 @@ public record UserReviewResponse(
     public static UserReviewResponse of(Review review, OrderItem orderItem, List<String> imageUrls) {
         return UserReviewResponse.builder()
                 .reviewId(review.getId())
-                .score(review.getScore())
                 .createdAt(review.getCreatedAt().format(DateFormatters.DATE_FORMATTER))
                 .imageUrls(imageUrls)
                 .content(review.getContentForPublic())
