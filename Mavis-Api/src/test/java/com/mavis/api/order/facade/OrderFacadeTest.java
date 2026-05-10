@@ -57,17 +57,15 @@ class OrderFacadeTest {
     @Test
     void 결제승인_성공시_processPaymentSuccess를_호출한다() {
         PaymentIdempotency idempotency = idempotency(PaymentApiType.CONFIRM, IdempotencyStatus.PROCESSING);
-        Order order = Order.builder().orderId("ORDER-001").build();
         PaymentsResponse response = confirmResponse();
 
         given(paymentIdempotencyManager.startProcessing(any(), eq(PaymentApiType.CONFIRM))).willReturn(idempotency);
         given(tossPaymentsProperties.getAuthorizationHeader()).willReturn("Basic xxx");
-        given(orderService.validateAndMarkPaymentRequested(any(), anyInt())).willReturn(order);
         given(paymentsConfirmClient.confirmPayments(any(), any(), any(), any())).willReturn(response);
 
         orderFacade.confirmPayments("key", null, new ConfirmPaymentRequest("pk", "ORDER-001", 10000));
 
-        then(orderService).should().processPaymentSuccess(order, response, 99L);
+        then(orderService).should().processPaymentSuccess("ORDER-001", response, 99L);
     }
 
     @Test
@@ -77,8 +75,6 @@ class OrderFacadeTest {
 
         given(paymentIdempotencyManager.startProcessing(any(), eq(PaymentApiType.CONFIRM))).willReturn(idempotency);
         given(tossPaymentsProperties.getAuthorizationHeader()).willReturn("Basic xxx");
-        given(orderService.validateAndMarkPaymentRequested(any(), anyInt()))
-                .willReturn(Order.builder().orderId("ORDER-001").build());
         given(paymentsConfirmClient.confirmPayments(any(), any(), any(), any())).willThrow(tossError);
 
         assertThatThrownBy(() ->
@@ -92,13 +88,11 @@ class OrderFacadeTest {
     @Test
     void 결제승인_후처리_실패시_자동취소_요청하고_예외를_다시_던진다() {
         PaymentIdempotency idempotency = idempotency(PaymentApiType.CONFIRM, IdempotencyStatus.PROCESSING);
-        Order order = Order.builder().orderId("ORDER-001").build();
         PaymentsResponse response = confirmResponse();
         RuntimeException postError = new RuntimeException("후처리 실패");
 
         given(paymentIdempotencyManager.startProcessing(any(), eq(PaymentApiType.CONFIRM))).willReturn(idempotency);
         given(tossPaymentsProperties.getAuthorizationHeader()).willReturn("Basic xxx");
-        given(orderService.validateAndMarkPaymentRequested(any(), anyInt())).willReturn(order);
         given(paymentsConfirmClient.confirmPayments(any(), any(), any(), any())).willReturn(response);
         willThrow(postError).given(orderService).processPaymentSuccess(any(), any(), any());
 

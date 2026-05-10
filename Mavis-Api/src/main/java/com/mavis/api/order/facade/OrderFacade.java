@@ -39,7 +39,7 @@ public class OrderFacade {
             return;
         }
 
-        Order order = orderService.validateAndMarkPaymentRequested(request.tossOrderId(), request.amount());
+        orderService.validateAndMarkPaymentRequested(request.tossOrderId(), request.amount());
 
         String authorizationHeader = tossPaymentsProperties.getAuthorizationHeader();
         TossConfirmRequest tossConfirmRequest = TossConfirmRequest.of(request.paymentKey(), request.tossOrderId(), request.amount());
@@ -55,7 +55,7 @@ public class OrderFacade {
         }
 
         try {
-            orderService.processPaymentSuccess(order, response, idempotency.getId());
+            orderService.processPaymentSuccess(request.tossOrderId(), response, idempotency.getId());
         } catch (Exception e) {
             log.error("[TOSS][CONFIRM] 후처리 실패, 자동 취소 시도 - {}", response, e);
             paymentIdempotencyManager.markFailure(idempotency.getId(), e.getMessage());
