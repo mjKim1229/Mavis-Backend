@@ -9,8 +9,6 @@ import com.mavis.domain.domains.favorite.domain.Favorite;
 import com.mavis.domain.domains.favorite.exception.UnauthorizedFavoriteException;
 import com.mavis.domain.domains.favorite.repository.FavoriteRepository;
 import com.mavis.domain.domains.product.domain.Product;
-import com.mavis.domain.domains.product.domain.ProductColor;
-import com.mavis.domain.domains.product.domain.ProductImage;
 import com.mavis.domain.domains.product.implement.ProductReader;
 import com.mavis.domain.domains.user.domain.User;
 import lombok.RequiredArgsConstructor;
@@ -36,25 +34,12 @@ public class FavoriteService {
         Page<GetUserFavoriteResponse> userFavoritePages = favoriteRepository.findByUserAndIsDeletedFalse(user, pageable)
                 .map(favorite -> {
                     Product product = favorite.getProduct();
-                    List<String> colors = extractColors(product);
-                    String previewImage = getPreviewImage(product);
+                    List<String> colors = product.getColorNames();
+                    String previewImage = product.getMainImageUrl();
                     GetProductPreviewResponse productResponse = GetProductPreviewResponse.from(product, colors, previewImage);
                     return new GetUserFavoriteResponse(favorite.getId(), productResponse);
                 });
         return PageResponse.of(userFavoritePages);
-    }
-
-    private static List<String> extractColors(Product product) {
-        return product.getColors().stream()
-                .map(ProductColor::getColor)
-                .toList();
-    }
-
-    private static String getPreviewImage(Product product) {
-        return product.getImages().stream()
-                .map(ProductImage::getImageUrl)
-                .findFirst()
-                .orElse(null);
     }
 
     @Transactional

@@ -23,8 +23,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -57,24 +55,11 @@ public class AdminProductService {
 
         return products.stream()
                 .map(product -> {
-                            String previewImage = getPreviewImage(product);
-                            List<String> colors = extractColors(product);
+                            String previewImage = product.getMainImageUrl();
+                            List<String> colors = product.getColorNames();
                             return GetProductPreviewResponse.from(product, colors, previewImage);
                         }
                 ).toList();
-    }
-
-    private static String getPreviewImage(Product product) {
-        return product.getImages().stream()
-                .map(ProductImage::getImageUrl)
-                .findFirst()
-                .orElse(null);
-    }
-
-    private static List<String> extractColors(Product product) {
-        return product.getColors().stream()
-                .map(ProductColor::getColor)
-                .toList();
     }
 
     @Transactional
@@ -103,7 +88,7 @@ public class AdminProductService {
 
         //color
         List<String> requestColors = request.colors();
-        List<String> recentColors = extractColors(product);
+        List<String> recentColors = product.getColorNames();
 
         List<String> toAddColors = requestColors.stream()
                 .filter(color -> !recentColors.contains(color))

@@ -50,6 +50,20 @@ public class Product extends BaseEntity {
     @Builder.Default
     private boolean isClearance = false;
 
+    public String getMainImageUrl() {
+        return images.stream()
+                .filter(img -> img.getImageType() == ProductImageType.MAIN)
+                .findFirst()
+                .map(ProductImage::getImageUrl)
+                .orElse(null);
+    }
+
+    public List<String> getColorNames() {
+        return colors.stream()
+                .map(ProductColor::getColor)
+                .toList();
+    }
+
     public void update(String name, Integer price, ProductSubCategory subCategory) {
         this.name = name;
         this.price = price;

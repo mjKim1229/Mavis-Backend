@@ -3,15 +3,14 @@ package com.mavis.api.product.service;
 import com.mavis.api.product.dto.GetProductPreviewResponse;
 import com.mavis.api.product.dto.GetProductResponse;
 import com.mavis.api.product.dto.SubCategoryVO;
-import com.mavis.common.enums.ProductSubCategory;
-import com.mavis.domain.domains.product.domain.ProductImageType;
-import com.mavis.domain.domains.product.implement.ProductReader;
 import com.mavis.api.product.implement.ProductTotalViewManager;
 import com.mavis.common.enums.EnumMapper;
 import com.mavis.common.enums.ProductCategory;
+import com.mavis.common.enums.ProductSubCategory;
 import com.mavis.domain.domains.product.domain.Product;
-import com.mavis.domain.domains.product.domain.ProductColor;
 import com.mavis.domain.domains.product.domain.ProductImage;
+import com.mavis.domain.domains.product.domain.ProductImageType;
+import com.mavis.domain.domains.product.implement.ProductReader;
 import com.mavis.domain.domains.product.repository.ProductRepository;
 import com.mavis.domain.domains.product.vo.ColorVO;
 import com.mavis.domain.domains.product.vo.ProductNoticeResponse;
@@ -23,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -37,7 +35,6 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductTotalViewManager productTotalViewManager;
 
-    @Transactional
     public GetProductResponse getProductById(Long id) {
         Product product = productReader.readById(id);
         List<ColorVO> colors = productReader.readProductColors(product.getId());
@@ -78,32 +75,19 @@ public class ProductService {
 
         return products.stream()
                 .map(product -> {
-                            String previewImage = getPreviewImage(product);
-                            List<String> colors = extractColors(product);
+                            String previewImage = product.getMainImageUrl();
+                            List<String> colors = product.getColorNames();
                             return GetProductPreviewResponse.from(product, colors, previewImage);
                         }
                 ).toList();
-    }
-
-    private static List<String> extractColors(Product product) {
-        return product.getColors().stream()
-                .map(ProductColor::getColor)
-                .toList();
-    }
-
-    private static String getPreviewImage(Product product) {
-        return product.getImages().stream()
-                .map(ProductImage::getImageUrl)
-                .findFirst()
-                .orElse(null);
     }
 
     public List<GetProductPreviewResponse> getRecentCreatedProducts(Pageable pageable) {
         List<Product> products = productRepository.getRecentCreatedProducts(pageable);
         return products.stream()
                 .map(product -> {
-                    List<String> colors = extractColors(product);
-                    String previewImage = getPreviewImage(product);
+                    List<String> colors = product.getColorNames();
+                    String previewImage = product.getMainImageUrl();
                     return GetProductPreviewResponse.from(product, colors, previewImage);
                 }).toList();
     }
@@ -112,8 +96,8 @@ public class ProductService {
         List<Product> products = productRepository.getProductsByCategory(productCategory, subCategory, pageable);
         return products.stream()
                 .map(product -> {
-                    List<String> colors = extractColors(product);
-                    String previewImage = getPreviewImage(product);
+                    List<String> colors = product.getColorNames();
+                    String previewImage = product.getMainImageUrl();
                     return GetProductPreviewResponse.from(product, colors, previewImage);
                 }).toList();
     }
@@ -122,8 +106,8 @@ public class ProductService {
         List<Product> products = productRepository.getClearanceProduct(pageable);
         return products.stream()
                 .map(product -> {
-                    List<String> colors = extractColors(product);
-                    String previewImage = getPreviewImage(product);
+                    List<String> colors = product.getColorNames();
+                    String previewImage = product.getMainImageUrl();
                     return GetProductPreviewResponse.from(product, colors, previewImage);
                 }).toList();
     }
@@ -132,8 +116,8 @@ public class ProductService {
         List<Product> products = productRepository.searchProducts(keyword, pageable);
         return products.stream()
                 .map(product -> {
-                    List<String> colors = extractColors(product);
-                    String previewImage = getPreviewImage(product);
+                    List<String> colors = product.getColorNames();
+                    String previewImage = product.getMainImageUrl();
                     return GetProductPreviewResponse.from(product, colors, previewImage);
                 }).toList();
     }
