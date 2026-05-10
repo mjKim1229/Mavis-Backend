@@ -15,12 +15,11 @@ public record OrderProduct(
         OrderOption option,
         int totalPrice,
         RefundStatus refundStatus,
+        String refundStatusTitle,
         String productImageUrl
 ) {
     public static OrderProduct from(OrderItem orderItem) {
-        RefundStatus refundStatus = orderItem.getRefund() != null
-                ? orderItem.getRefund().getRefundStatus()
-                : null;
+        RefundStatus refundStatus = orderItem.getRefundStatus();
         String imageUrl = orderItem.getProduct().getImages().stream()
                 .filter(img -> img.getImageType() == ProductImageType.MAIN)
                 .min(Comparator.comparingInt(ProductImage::getOrderNum))
@@ -31,8 +30,9 @@ public record OrderProduct(
                 orderItem.getProduct().getId(),
                 orderItem.getProduct().getName(),
                 new OrderOption(orderItem.getColor(), orderItem.getQuantity()),
-                orderItem.getPrice() * orderItem.getQuantity(),
+                orderItem.getTotalPrice(),
                 refundStatus,
+                refundStatus != null ? refundStatus.getTitle() : null,
                 imageUrl
         );
     }
