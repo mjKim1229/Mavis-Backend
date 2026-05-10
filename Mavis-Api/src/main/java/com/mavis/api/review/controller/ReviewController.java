@@ -32,7 +32,7 @@ public class ReviewController {
     @Operation(summary = "리뷰 생성", description = "사용자가 상품에 대한 리뷰를 작성합니다.")
     @PostMapping("/user")
     public void createReview(@RequestPart CreateReviewRequest request,
-                             @RequestPart List<MultipartFile> images) {
+                             @RequestPart(required = false) List<MultipartFile> images) {
         reviewService.createReview(request, images);
     }
 
