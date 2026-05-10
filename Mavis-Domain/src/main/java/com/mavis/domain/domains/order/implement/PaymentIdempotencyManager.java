@@ -41,14 +41,16 @@ public class PaymentIdempotencyManager {
     }
 
     @Transactional
-    public void markSuccess(PaymentIdempotency idempotency) {
+    public void markSuccess(Long idempotencyId) {
+        PaymentIdempotency idempotency = paymentIdempotencyRepository.findById(idempotencyId)
+                .orElseThrow(() -> IdempotencyNotFoundException.EXCEPTION);
         idempotency.success();
-        paymentIdempotencyRepository.save(idempotency);
     }
 
     @Transactional
-    public void markFailure(PaymentIdempotency idempotency, String reason) {
+    public void markFailure(Long idempotencyId, String reason) {
+        PaymentIdempotency idempotency = paymentIdempotencyRepository.findById(idempotencyId)
+                .orElseThrow(() -> IdempotencyNotFoundException.EXCEPTION);
         idempotency.fail(reason);
-        paymentIdempotencyRepository.save(idempotency);
     }
 }

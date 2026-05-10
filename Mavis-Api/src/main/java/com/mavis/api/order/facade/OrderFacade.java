@@ -50,15 +50,15 @@ public class OrderFacade {
             log.info("[TOSS][CONFIRM] 완료 - {}", response);
         } catch (Exception e) {
             log.error("[TOSS][CONFIRM] 실패 - {}", tossConfirmRequest, e);
-            paymentIdempotencyManager.markFailure(idempotency, e.getMessage());
+            paymentIdempotencyManager.markFailure(idempotency.getId(), e.getMessage());
             throw e;
         }
 
         try {
-            orderService.processPaymentSuccess(order, response, idempotency);
+            orderService.processPaymentSuccess(order, response, idempotency.getId());
         } catch (Exception e) {
             log.error("[TOSS][CONFIRM] 후처리 실패, 자동 취소 시도 - {}", response, e);
-            paymentIdempotencyManager.markFailure(idempotency, e.getMessage());
+            paymentIdempotencyManager.markFailure(idempotency.getId(), e.getMessage());
             paymentsCancelClient.cancelPayments(
                     authorizationHeader,
                     UUID.randomUUID().toString(),
@@ -94,7 +94,7 @@ public class OrderFacade {
             log.info("[TOSS][CANCEL] 완료 - {}", paymentsResponse);
         } catch (Exception e) {
             log.error("[TOSS][CANCEL] 실패 - {}", cancelRequest, e);
-            paymentIdempotencyManager.markFailure(idempotency, e.getMessage());
+            paymentIdempotencyManager.markFailure(idempotency.getId(), e.getMessage());
             throw e;
         }
 
@@ -103,10 +103,10 @@ public class OrderFacade {
 
         try {
             // TX2: Order+Items 재조회 + Payment(CANCEL) INSERT + Refund 생성
-            orderService.processCancelSuccess(info.orderId(), paymentsResponse, cancelEntry, request.refundReason(), idempotency);
+            orderService.processCancelSuccess(info.orderId(), paymentsResponse, cancelEntry, request.refundReason(), idempotency.getId());
         } catch (Exception e) {
             log.error("[TOSS][CANCEL] 후처리 실패 - {}", paymentsResponse, e);
-            paymentIdempotencyManager.markFailure(idempotency, e.getMessage());
+            paymentIdempotencyManager.markFailure(idempotency.getId(), e.getMessage());
             throw e;
         }
     }

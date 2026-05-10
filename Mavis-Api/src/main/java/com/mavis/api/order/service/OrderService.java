@@ -98,7 +98,7 @@ public class OrderService {
     }
 
     @Transactional
-    public void processPaymentSuccess(Order order, PaymentsResponse response, PaymentIdempotency idempotency) {
+    public void processPaymentSuccess(Order order, PaymentsResponse response, Long idempotencyId) {
         if (response.totalAmount() != order.getTotalPrice()) {
             throw PriceMismatchException.EXCEPTION;
         }
@@ -143,11 +143,11 @@ public class OrderService {
         }
         orderRepository.save(order);
 
-        paymentIdempotencyManager.markSuccess(idempotency);
+        paymentIdempotencyManager.markSuccess(idempotencyId);
     }
 
     @Transactional
-    public void processCancelSuccess(Long orderId, PaymentsResponse response, PaymentsCancels cancelEntry, String refundReason, PaymentIdempotency idempotency) {
+    public void processCancelSuccess(Long orderId, PaymentsResponse response, PaymentsCancels cancelEntry, String refundReason, Long idempotencyId) {
         Order order = orderRepository.findByIdWithItemsAndIsDeletedFalse(orderId)
                 .orElseThrow(() -> OrderNotFoundException.EXCEPTION);
 
@@ -188,7 +188,7 @@ public class OrderService {
         order.cancel();
         orderRepository.save(order);
 
-        paymentIdempotencyManager.markSuccess(idempotency);
+        paymentIdempotencyManager.markSuccess(idempotencyId);
     }
 
     @Transactional
