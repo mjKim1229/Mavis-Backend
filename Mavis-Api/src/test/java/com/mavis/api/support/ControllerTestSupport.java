@@ -1,6 +1,7 @@
 package com.mavis.api.support;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mavis.common.jwt.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
+import static com.mavis.common.consts.MavisStatic.BEARER;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -40,4 +43,11 @@ public abstract class ControllerTestSupport {
 
     @Autowired
     protected ObjectMapper objectMapper;
+
+    @Autowired
+    protected JwtTokenUtil jwtTokenUtil;
+
+    protected String userToken(Long userId) {
+        return BEARER + jwtTokenUtil.generateAccessToken(userId, "USER");
+    }
 }

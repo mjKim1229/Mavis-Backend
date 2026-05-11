@@ -76,7 +76,12 @@ public class OrderService {
     }
 
     @Transactional
-    public Order validateAndMarkPaymentRequested(String orderId, int amount) {
+    public Long validateAndMarkPaymentRequested(String idempotencyKey, String orderId, int amount) {
+        PaymentIdempotency idempotency = paymentIdempotencyManager.startProcessing(idempotencyKey, PaymentApiType.CONFIRM);
+        if (idempotency.getStatus() == IdempotencyStatus.SUCCESS) {
+            return null;
+        }
+
         Order order = orderRepository.findByOrderIdAndIsDeletedFalse(orderId)
                 .orElseThrow(() -> OrderNotFoundException.EXCEPTION);
 
@@ -94,7 +99,7 @@ public class OrderService {
         }
 
         order.paymentRequested();
-        return order;
+        return idempotency.getId();
     }
 
     @Transactional

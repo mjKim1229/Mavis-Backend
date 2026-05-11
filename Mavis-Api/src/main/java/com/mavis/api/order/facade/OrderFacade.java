@@ -4,7 +4,10 @@ import com.mavis.api.order.dto.CancelOrderRequest;
 import com.mavis.api.order.dto.PaymentCancelInfo;
 import com.mavis.api.order.service.OrderService;
 import com.mavis.common.properties.TossPaymentsProperties;
-import com.mavis.domain.domains.order.domain.*;
+import com.mavis.domain.domains.order.domain.IdempotencyStatus;
+import com.mavis.domain.domains.order.domain.PaymentApiType;
+import com.mavis.domain.domains.order.domain.PaymentIdempotency;
+import com.mavis.domain.domains.order.domain.RefundReceiveAccount;
 import com.mavis.domain.domains.order.exception.CancelEntryNotFoundException;
 import com.mavis.domain.domains.order.implement.PaymentIdempotencyManager;
 import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsCancelClient;
@@ -34,12 +37,10 @@ public class OrderFacade {
     private final PaymentIdempotencyManager paymentIdempotencyManager;
 
     public void confirmPayments(String idempotencyKey, String testCode, ConfirmPaymentRequest request) {
-        PaymentIdempotency idempotency = paymentIdempotencyManager.startProcessing(idempotencyKey, PaymentApiType.CONFIRM);
-        if (idempotency.getStatus() == IdempotencyStatus.SUCCESS) {
+        Long idempotencyId = orderService.validateAndMarkPaymentRequested(idempotencyKey, request.tossOrderId(), request.amount());
+        if (idempotencyId == null) {
             return;
         }
-
-        orderService.validateAndMarkPaymentRequested(request.tossOrderId(), request.amount());
 
         String authorizationHeader = tossPaymentsProperties.getAuthorizationHeader();
         TossConfirmRequest tossConfirmRequest = TossConfirmRequest.of(request.paymentKey(), request.tossOrderId(), request.amount());
@@ -50,15 +51,15 @@ public class OrderFacade {
             log.info("[TOSS][CONFIRM] 완료 - {}", response);
         } catch (Exception e) {
             log.error("[TOSS][CONFIRM] 실패 - {}", tossConfirmRequest, e);
-            paymentIdempotencyManager.markFailure(idempotency.getId(), e.getMessage());
+            paymentIdempotencyManager.markFailure(idempotencyId, e.getMessage());
             throw e;
         }
 
         try {
-            orderService.processPaymentSuccess(request.tossOrderId(), response, idempotency.getId());
+            orderService.processPaymentSuccess(request.tossOrderId(), response, idempotencyId);
         } catch (Exception e) {
             log.error("[TOSS][CONFIRM] 후처리 실패, 자동 취소 시도 - {}", response, e);
-            paymentIdempotencyManager.markFailure(idempotency.getId(), e.getMessage());
+            paymentIdempotencyManager.markFailure(idempotencyId, e.getMessage());
             paymentsCancelClient.cancelPayments(
                     authorizationHeader,
                     UUID.randomUUID().toString(),

@@ -45,21 +45,19 @@ class OrderFacadeTest {
 
     @Test
     void 멱등키가_SUCCESS면_결제승인을_건너뛴다() {
-        given(paymentIdempotencyManager.startProcessing(any(), eq(PaymentApiType.CONFIRM)))
-                .willReturn(idempotency(PaymentApiType.CONFIRM, IdempotencyStatus.SUCCESS));
+        given(orderService.validateAndMarkPaymentRequested(any(), any(), anyInt())).willReturn(null);
 
         orderFacade.confirmPayments("key", null, new ConfirmPaymentRequest("pk", "ORDER-001", 10000));
 
         then(paymentsConfirmClient).shouldHaveNoInteractions();
-        then(orderService).shouldHaveNoInteractions();
+        then(orderService).should(never()).processPaymentSuccess(any(), any(), any());
     }
 
     @Test
     void 결제승인_성공시_processPaymentSuccess를_호출한다() {
-        PaymentIdempotency idempotency = idempotency(PaymentApiType.CONFIRM, IdempotencyStatus.PROCESSING);
         PaymentsResponse response = confirmResponse();
 
-        given(paymentIdempotencyManager.startProcessing(any(), eq(PaymentApiType.CONFIRM))).willReturn(idempotency);
+        given(orderService.validateAndMarkPaymentRequested(any(), any(), anyInt())).willReturn(99L);
         given(tossPaymentsProperties.getAuthorizationHeader()).willReturn("Basic xxx");
         given(paymentsConfirmClient.confirmPayments(any(), any(), any(), any())).willReturn(response);
 
@@ -70,10 +68,9 @@ class OrderFacadeTest {
 
     @Test
     void 토스_결제승인_실패시_멱등키_실패처리하고_예외를_다시_던진다() {
-        PaymentIdempotency idempotency = idempotency(PaymentApiType.CONFIRM, IdempotencyStatus.PROCESSING);
         RuntimeException tossError = new RuntimeException("토스 결제 오류");
 
-        given(paymentIdempotencyManager.startProcessing(any(), eq(PaymentApiType.CONFIRM))).willReturn(idempotency);
+        given(orderService.validateAndMarkPaymentRequested(any(), any(), anyInt())).willReturn(99L);
         given(tossPaymentsProperties.getAuthorizationHeader()).willReturn("Basic xxx");
         given(paymentsConfirmClient.confirmPayments(any(), any(), any(), any())).willThrow(tossError);
 
@@ -87,11 +84,10 @@ class OrderFacadeTest {
 
     @Test
     void 결제승인_후처리_실패시_자동취소_요청하고_예외를_다시_던진다() {
-        PaymentIdempotency idempotency = idempotency(PaymentApiType.CONFIRM, IdempotencyStatus.PROCESSING);
         PaymentsResponse response = confirmResponse();
         RuntimeException postError = new RuntimeException("후처리 실패");
 
-        given(paymentIdempotencyManager.startProcessing(any(), eq(PaymentApiType.CONFIRM))).willReturn(idempotency);
+        given(orderService.validateAndMarkPaymentRequested(any(), any(), anyInt())).willReturn(99L);
         given(tossPaymentsProperties.getAuthorizationHeader()).willReturn("Basic xxx");
         given(paymentsConfirmClient.confirmPayments(any(), any(), any(), any())).willReturn(response);
         willThrow(postError).given(orderService).processPaymentSuccess(any(), any(), any());

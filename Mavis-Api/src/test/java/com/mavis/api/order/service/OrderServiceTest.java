@@ -4,8 +4,7 @@ import com.mavis.api.auth.implement.UserReader;
 import com.mavis.api.order.dto.CreateOrderRequest;
 import com.mavis.api.order.dto.OrderAddressRequest;
 import com.mavis.api.order.implement.OrderItemAppender;
-import com.mavis.domain.domains.order.domain.Order;
-import com.mavis.domain.domains.order.domain.OrderStatus;
+import com.mavis.domain.domains.order.domain.*;
 import com.mavis.domain.domains.order.exception.InvalidOrderInfoException;
 import com.mavis.domain.domains.order.exception.PriceMismatchException;
 import com.mavis.domain.domains.order.implement.OrderReader;
@@ -20,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,7 +50,7 @@ class OrderServiceTest {
 
     @Test
     void 주문자와_현재_유저가_다르면_InvalidOrderInfoException을_던진다() {
-        // given
+        String idempotencyKey = "key-001";
         String orderId = "ORDER-001";
         int requestAmount = 10000;
 
@@ -64,17 +64,18 @@ class OrderServiceTest {
                 .build();
         order.setTotalPrice(requestAmount);
 
+        given(paymentIdempotencyManager.startProcessing(idempotencyKey, PaymentApiType.CONFIRM))
+                .willReturn(processingIdempotency(idempotencyKey));
         given(orderRepository.findByOrderIdAndIsDeletedFalse(orderId)).willReturn(Optional.of(order));
         given(userReader.getCurrentUser()).willReturn(currentUser);
 
-        // when & then
-        assertThatThrownBy(() -> orderService.validateAndMarkPaymentRequested(orderId, requestAmount))
+        assertThatThrownBy(() -> orderService.validateAndMarkPaymentRequested(idempotencyKey, orderId, requestAmount))
                 .isInstanceOf(InvalidOrderInfoException.class);
     }
 
     @Test
     void 요청_금액이_주문_금액과_다르면_PriceMismatchException을_던진다() {
-        // given
+        String idempotencyKey = "key-001";
         String orderId = "ORDER-001";
         int orderTotalPrice = 10000;
         int requestAmount = 99999;
@@ -88,12 +89,23 @@ class OrderServiceTest {
                 .build();
         order.setTotalPrice(orderTotalPrice);
 
+        given(paymentIdempotencyManager.startProcessing(idempotencyKey, PaymentApiType.CONFIRM))
+                .willReturn(processingIdempotency(idempotencyKey));
         given(orderRepository.findByOrderIdAndIsDeletedFalse(orderId)).willReturn(Optional.of(order));
         given(userReader.getCurrentUser()).willReturn(orderOwner);
 
-        // when & then
-        assertThatThrownBy(() -> orderService.validateAndMarkPaymentRequested(orderId, requestAmount))
+        assertThatThrownBy(() -> orderService.validateAndMarkPaymentRequested(idempotencyKey, orderId, requestAmount))
                 .isInstanceOf(PriceMismatchException.class);
+    }
+
+    private PaymentIdempotency processingIdempotency(String key) {
+        return PaymentIdempotency.builder()
+                .id(1L)
+                .idempotencyKey(key)
+                .apiType(PaymentApiType.CONFIRM)
+                .status(IdempotencyStatus.PROCESSING)
+                .expiredAt(LocalDateTime.now().plusDays(15))
+                .build();
     }
 
     @Test

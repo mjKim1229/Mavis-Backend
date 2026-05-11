@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 
 @FeignClient(
         name = "PaymentsConfirmClient",
-        url = "https://api.tosspayments.com",
+        url = "${payments.toss.api-url:https://api.tosspayments.com}",
         configuration = TossPaymentsConfig.class
 )
 public interface PaymentsConfirmClient {
