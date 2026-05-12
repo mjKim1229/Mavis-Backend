@@ -2,6 +2,7 @@ package com.mavis.api.order.controller;
 
 import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.order.dto.CancelOrderRequest;
+import com.mavis.api.order.dto.ConfirmPaymentResponse;
 import com.mavis.api.order.dto.CreateOrderRequest;
 import com.mavis.api.order.dto.CreateOrderResponse;
 import com.mavis.api.order.dto.GetOrderItemUserCanReviewResponse;
@@ -45,11 +46,11 @@ public class OrderController {
 
     @Operation(summary = "토스 PG 결제 승인")
     @PostMapping("/toss/confirm")
-    public void confirmPayments(
+    public ConfirmPaymentResponse confirmPayments(
             @RequestHeader("Idempotency-Key") String idempotencyKey,
             @RequestHeader(value = "TossPayments-Test-Code", required = false) String testCode,
             @RequestBody ConfirmPaymentRequest request) {
-        orderFacade.confirmPayments(idempotencyKey, testCode, request);
+        return orderFacade.confirmPayments(idempotencyKey, testCode, request);
     }
 
     @Operation(summary = "주문 취소 (배송전)")

@@ -1,6 +1,7 @@
 package com.mavis.api.order.facade;
 
 import com.mavis.api.order.dto.CancelOrderRequest;
+import com.mavis.api.order.dto.ConfirmPaymentResponse;
 import com.mavis.api.order.dto.PaymentCancelInfo;
 import com.mavis.api.order.service.OrderService;
 import com.mavis.common.properties.TossPaymentsProperties;
@@ -36,10 +37,10 @@ public class OrderFacade {
     private final OrderService orderService;
     private final PaymentIdempotencyManager paymentIdempotencyManager;
 
-    public void confirmPayments(String idempotencyKey, String testCode, ConfirmPaymentRequest request) {
+    public ConfirmPaymentResponse confirmPayments(String idempotencyKey, String testCode, ConfirmPaymentRequest request) {
         Long idempotencyId = orderService.validateAndMarkPaymentRequested(idempotencyKey, request.tossOrderId(), request.amount());
         if (idempotencyId == null) {
-            return;
+            return null;
         }
 
         String authorizationHeader = tossPaymentsProperties.getAuthorizationHeader();
@@ -69,6 +70,8 @@ public class OrderFacade {
             );
             throw e;
         }
+
+        return ConfirmPaymentResponse.from(response.method());
     }
 
     public void cancelPayments(String idempotencyKey, String testCode, Long orderId, CancelOrderRequest request) {
