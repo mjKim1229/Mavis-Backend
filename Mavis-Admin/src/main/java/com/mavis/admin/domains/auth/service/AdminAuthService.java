@@ -34,6 +34,8 @@ public class AdminAuthService {
 
     public AdminLoginResponse adminTokenRefresh(String refreshToken) {
         Long adminId = jwtTokenUtil.parseRefreshToken(refreshToken);
+        adminRepository.findByIdAndIsDeletedFalse(adminId)
+                .orElseThrow(() -> AdminLoginException.EXCEPTION);
         String accessToken = jwtTokenUtil.generateAccessToken(adminId, "ADMIN");
         String newRefreshToken = jwtTokenUtil.generateRefreshToken(adminId);
         return new AdminLoginResponse(new JwtPair(accessToken, newRefreshToken));
