@@ -36,7 +36,7 @@ public class FavoriteService {
                     List<String> colors = product.getColorNames();
                     String previewImage = product.getMainImageUrl();
                     GetProductPreviewResponse productResponse = GetProductPreviewResponse.from(product, colors, previewImage);
-                    return new GetUserFavoriteResponse(favorite.getId(), productResponse);
+                    return new GetUserFavoriteResponse(product.getId(), productResponse);
                 });
         return PageResponse.of(userFavoritePages);
     }
