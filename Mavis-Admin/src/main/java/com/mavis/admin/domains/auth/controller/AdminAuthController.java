@@ -21,4 +21,10 @@ public class AdminAuthController {
     public AdminLoginResponse adminLogin(@RequestBody AdminLoginRequest request) {
         return adminAuthService.adminLogin(request);
     }
+
+    @PostMapping("/refresh")
+    @Operation(summary = "관리자 토큰 재발급")
+    public AdminLoginResponse adminTokenRefresh(@RequestHeader("refreshToken") String refreshToken) {
+        return adminAuthService.adminTokenRefresh(refreshToken);
+    }
 }

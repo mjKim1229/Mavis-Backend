@@ -53,7 +53,7 @@ public class SecurityConfig {
         return (web) -> web.ignoring()
                 .requestMatchers("/swagger-resources/**", "/swagger-ui/**", "/v3/api-docs/**",
                         "/v3/api-docs")
-                .requestMatchers("/v1/api/admin/auth");
+                .requestMatchers("/v1/api/admin/auth", "/v1/api/admin/auth/refresh");
     }
 
     @Bean
