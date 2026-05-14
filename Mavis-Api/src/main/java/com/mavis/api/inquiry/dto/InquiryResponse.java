@@ -7,12 +7,14 @@ import lombok.Builder;
 
 @Builder
 public record InquiryResponse(
+        Long id,
         String question,
         String createdAt,
         String userName
 ) {
         public static InquiryResponse from(Inquiry inquiry, User user) {
                 return InquiryResponse.builder()
+                        .id(inquiry.getId())
                         .question(inquiry.getQuestion())
                         .createdAt(inquiry.getCreatedAt().format(DateFormatters.DATE_FORMATTER))
                         .userName(maskName(user.getName()))
