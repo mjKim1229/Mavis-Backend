@@ -30,8 +30,8 @@ public class FavoriteController {
     }
 
     @Operation(summary = "즐겨찾기 삭제")
-    @DeleteMapping("/{favoriteId}")
-    public void deleteFavorite(@PathVariable Long favoriteId) {
-        favoriteService.deleteFavorite(favoriteId);
+    @DeleteMapping("/{productId}")
+    public void deleteFavorite(@PathVariable Long productId) {
+        favoriteService.deleteFavorite(productId);
     }
 }
