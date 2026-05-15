@@ -39,7 +39,7 @@ public class TossPaymentsErrorDecoder implements ErrorDecoder {
             String body = new String(bodyBytes, StandardCharsets.UTF_8);
             TossErrorResponse errorResponse = objectMapper.readValue(body, TossErrorResponse.class);
             String tossCode = errorResponse.code();
-            Map<String, BaseErrorCode> errorCodeMap = methodKey.contains("Cancel")
+            Map<String, BaseErrorCode> errorCodeMap = methodKey.contains("PaymentsCancelClient")
                     ? CANCEL_ERROR_CODE_MAP
                     : CONFIRM_ERROR_CODE_MAP;
             BaseErrorCode errorCode = errorCodeMap.getOrDefault(tossCode, GlobalErrorCode.INTERNAL_SERVER_ERROR);

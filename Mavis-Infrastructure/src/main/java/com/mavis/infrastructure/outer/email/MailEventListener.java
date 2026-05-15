@@ -13,13 +13,13 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class MailEventListener {
     private final MailService mailService;
 
-    @Async
+    @Async("mailTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleVerifyMail(VerifyMailEvent event) {
         mailService.sendVerifyEmail(event.to(), event.subject(), event.authCode());
     }
 
-    @Async
+    @Async("mailTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handlePasswordResetMail(PasswordResetMailEvent event) {
         mailService.sendPasswordResetEmail(event.to(), event.resetLink());
