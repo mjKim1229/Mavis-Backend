@@ -1,17 +1,11 @@
 package com.mavis.api.auth.service;
 
-import com.mavis.api.auth.dto.UserPasswordFoundVerifyCodeRequest;
-import com.mavis.api.auth.dto.UserPasswordFoundVerifyCreateRequest;
-import com.mavis.api.auth.dto.UserSignUpCodeCreateRequest;
-import com.mavis.api.auth.dto.UserSignUpCodeVerifyRequest;
-import com.mavis.api.auth.dto.UserEmailChangeCreateRequest;
-import com.mavis.api.auth.dto.UserEmailChangeVerifyRequest;
+import com.mavis.api.auth.dto.*;
 import com.mavis.api.auth.implement.UserReader;
 import com.mavis.common.util.RandomAuthCodeUtil;
 import com.mavis.domain.domains.user.domain.PasswordResetToken;
-import com.mavis.domain.domains.user.domain.VerificationCode;
-import com.mavis.domain.domains.user.domain.VerificationType;
 import com.mavis.domain.domains.user.domain.User;
+import com.mavis.domain.domains.user.domain.VerificationCode;
 import com.mavis.domain.domains.user.exception.InvalidVerificationCodeException;
 import com.mavis.domain.domains.user.exception.UserNotFoundException;
 import com.mavis.domain.domains.user.exception.VerificationCodeExpiredException;
@@ -36,15 +30,15 @@ import static com.mavis.domain.domains.user.domain.VerificationType.UPDATE_EMAIL
 @RequiredArgsConstructor
 public class AuthVerificationService {
     private static final String PASSWORD_RESET_URL = "https://www.garamall.com/password-reset?token=";
-
-    private final VerificationCodeRepository verificationCodeRepository;
-    private final ApplicationEventPublisher eventPublisher;
     private static final long VERIFICATION_CODE_VALID_MINUTES = 5;
     private static final long PASSWORD_RESET_LINK_VALID_MINUTES = 10;
+
+    private final VerificationCodeRepository verificationCodeRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final UserRepository userRepository;
     private final UserReader userReader;
-    private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void savePasswordFoundCode(UserPasswordFoundVerifyCreateRequest request) {

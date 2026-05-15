@@ -1,14 +1,6 @@
 package com.mavis.api.auth.service;
 
-import com.mavis.api.auth.dto.PasswordChangeRequest;
-import com.mavis.api.auth.dto.UserAddressRequest;
-import com.mavis.api.auth.dto.UserDetailResponse;
-import com.mavis.api.auth.dto.UserDetailUpdateRequest;
-import com.mavis.api.auth.dto.UserLoginRequest;
-import com.mavis.api.auth.dto.UserOauthResponse;
-import com.mavis.api.auth.dto.UserProfileResponse;
-import com.mavis.api.auth.dto.UserSignUpRequest;
-import com.mavis.api.auth.dto.UsernameCheckResponse;
+import com.mavis.api.auth.dto.*;
 import com.mavis.api.auth.implement.UserReader;
 import com.mavis.api.order.dto.OrderAddressResponse;
 import com.mavis.common.dto.JwtPair;
