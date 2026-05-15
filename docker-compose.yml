@@ -5,10 +5,12 @@ services:
     environment:
       - TZ=Asia/Seoul
       - SPRING_PROFILES_ACTIVE=dev
+      - JAVA_OPTS=-Xms64m -Xmx300m
     volumes:
       - ./logs:/logs
     ports:
       - "8080:8080"
+    restart: always
 
   admin:
     container_name: admin
@@ -16,10 +18,12 @@ services:
     environment:
       - TZ=Asia/Seoul
       - SPRING_PROFILES_ACTIVE=dev
+      - JAVA_OPTS=-Xms32m -Xmx220m
     volumes:
       - ./logs:/logs
     ports:
       - "8081:8081"
+    restart: always
   nginx:
     container_name: nginx
     image: nginx:latest
