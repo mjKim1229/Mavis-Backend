@@ -18,8 +18,10 @@ import com.mavis.domain.domains.user.exception.VerificationCodeExpiredException;
 import com.mavis.domain.domains.user.repository.PasswordResetTokenRepository;
 import com.mavis.domain.domains.user.repository.UserRepository;
 import com.mavis.domain.domains.user.repository.VerificationCodeRepository;
-import com.mavis.infrastructure.outer.email.MailService;
+import com.mavis.infrastructure.outer.email.event.PasswordResetMailEvent;
+import com.mavis.infrastructure.outer.email.event.VerifyMailEvent;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +38,7 @@ public class AuthVerificationService {
     private static final String PASSWORD_RESET_URL = "https://www.garamall.com/password-reset?token=";
 
     private final VerificationCodeRepository verificationCodeRepository;
-    private final MailService mailService;
+    private final ApplicationEventPublisher eventPublisher;
     private static final long VERIFICATION_CODE_VALID_MINUTES = 5;
     private static final long PASSWORD_RESET_LINK_VALID_MINUTES = 10;
     private final UserRepository userRepository;
@@ -58,7 +60,7 @@ public class AuthVerificationService {
                         passwordResetToken -> passwordResetToken.update(token.toString(), expiredAt)
                         , () -> saveToken(request, token.toString(), expiredAt)
                 );
-        mailService.sendPasswordResetEmail(request.email(), resetURL);
+        eventPublisher.publishEvent(new PasswordResetMailEvent(request.email(), resetURL));
     }
 
     private void saveToken(UserPasswordFoundVerifyCreateRequest request, String token, LocalDateTime expiredAt) {
@@ -95,7 +97,7 @@ public class AuthVerificationService {
                 .ifPresentOrElse(verificationCode -> verificationCode.update(authCode, expiredAt)
                         , () -> saveSignUpAuthCode(request, authCode, expiredAt)
                 );
-        mailService.sendVerifyEmail(request.email(), "[가람몰] 회원가입 인증번호 안내", authCode.toString());
+        eventPublisher.publishEvent(new VerifyMailEvent(request.email(), "[가람몰] 회원가입 인증번호 안내", authCode.toString()));
     }
 
     private void saveSignUpAuthCode(UserSignUpCodeCreateRequest request, Integer authCode, LocalDateTime expiredAt) {
@@ -127,7 +129,7 @@ public class AuthVerificationService {
                 .ifPresentOrElse(verificationCode -> verificationCode.update(authCode, expiredAt)
                         , () -> saveEmailChangeAuthCode(request, authCode, expiredAt)
                 );
-        mailService.sendVerifyEmail(request.newEmail(), "[가람몰] 이메일 변경 인증번호 안내", authCode.toString());
+        eventPublisher.publishEvent(new VerifyMailEvent(request.newEmail(), "[가람몰] 이메일 변경 인증번호 안내", authCode.toString()));
     }
 
     private void saveEmailChangeAuthCode(UserEmailChangeCreateRequest request, Integer authCode, LocalDateTime expiredAt) {
