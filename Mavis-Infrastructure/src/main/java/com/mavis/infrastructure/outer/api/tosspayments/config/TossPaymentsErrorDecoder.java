@@ -6,6 +6,7 @@ import com.mavis.common.exception.GlobalErrorCode;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.TossErrorResponse;
 import com.mavis.infrastructure.outer.api.tosspayments.exception.PaymentsCancelErrorCode;
 import com.mavis.infrastructure.outer.api.tosspayments.exception.PaymentsConfirmErrorCode;
+import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsCancelClient;
 import com.mavis.infrastructure.outer.api.tosspayments.exception.TossPaymentsException;
 import feign.Response;
 import feign.codec.ErrorDecoder;
@@ -39,7 +40,7 @@ public class TossPaymentsErrorDecoder implements ErrorDecoder {
             String body = new String(bodyBytes, StandardCharsets.UTF_8);
             TossErrorResponse errorResponse = objectMapper.readValue(body, TossErrorResponse.class);
             String tossCode = errorResponse.code();
-            Map<String, BaseErrorCode> errorCodeMap = methodKey.contains("PaymentsCancelClient")
+            Map<String, BaseErrorCode> errorCodeMap = methodKey.contains(PaymentsCancelClient.class.getSimpleName())
                     ? CANCEL_ERROR_CODE_MAP
                     : CONFIRM_ERROR_CODE_MAP;
             BaseErrorCode errorCode = errorCodeMap.getOrDefault(tossCode, GlobalErrorCode.INTERNAL_SERVER_ERROR);
