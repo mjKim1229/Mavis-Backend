@@ -21,15 +21,15 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class TossPaymentsErrorDecoder implements ErrorDecoder {
 
-    private static final Map<String, BaseErrorCode> ERROR_CODE_MAP = new HashMap<>();
+    private static final Map<String, BaseErrorCode> CANCEL_ERROR_CODE_MAP = new HashMap<>();
+    private static final Map<String, BaseErrorCode> CONFIRM_ERROR_CODE_MAP = new HashMap<>();
     private final ObjectMapper objectMapper;
 
     static {
-        // cancel 먼저 등록 후 confirm이 중복 키를 덮어씀 (INVALID_REQUEST, PROVIDER_ERROR)
         Arrays.stream(PaymentsCancelErrorCode.values())
-                .forEach(code -> ERROR_CODE_MAP.put(code.name(), code));
+                .forEach(code -> CANCEL_ERROR_CODE_MAP.put(code.name(), code));
         Arrays.stream(PaymentsConfirmErrorCode.values())
-                .forEach(code -> ERROR_CODE_MAP.put(code.name(), code));
+                .forEach(code -> CONFIRM_ERROR_CODE_MAP.put(code.name(), code));
     }
 
     @Override
@@ -39,7 +39,10 @@ public class TossPaymentsErrorDecoder implements ErrorDecoder {
             String body = new String(bodyBytes, StandardCharsets.UTF_8);
             TossErrorResponse errorResponse = objectMapper.readValue(body, TossErrorResponse.class);
             String tossCode = errorResponse.code();
-            BaseErrorCode errorCode = ERROR_CODE_MAP.getOrDefault(tossCode, GlobalErrorCode.INTERNAL_SERVER_ERROR);
+            Map<String, BaseErrorCode> errorCodeMap = methodKey.contains("Cancel")
+                    ? CANCEL_ERROR_CODE_MAP
+                    : CONFIRM_ERROR_CODE_MAP;
+            BaseErrorCode errorCode = errorCodeMap.getOrDefault(tossCode, GlobalErrorCode.INTERNAL_SERVER_ERROR);
             return new TossPaymentsException(errorCode);
         } catch (Exception e) {
             log.error("Toss 에러 응답 파싱 실패", e);
