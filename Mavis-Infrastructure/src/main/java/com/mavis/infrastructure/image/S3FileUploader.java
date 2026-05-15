@@ -1,5 +1,7 @@
 package com.mavis.infrastructure.image;
 
+import com.mavis.common.exception.GlobalErrorCode;
+import com.mavis.common.exception.MavisCodeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,8 +41,9 @@ public class S3FileUploader {
                     .build();
 
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, file.getSize()));
-        } catch (Exception exception) {
-            exception.printStackTrace();
+        } catch (Exception e) {
+            log.error("S3 파일 업로드 실패: {}", s3FileName, e);
+            throw new MavisCodeException(GlobalErrorCode.INTERNAL_SERVER_ERROR);
         }
 
         String resizedFileName = s3FileName.replace("original/", "resized/");
