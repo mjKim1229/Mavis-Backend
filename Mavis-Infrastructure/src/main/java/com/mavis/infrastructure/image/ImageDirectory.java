@@ -1,5 +1,10 @@
 package com.mavis.infrastructure.image;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
 public enum ImageDirectory {
     REVIEW("review"),
     REFUND("refund"),
@@ -7,12 +12,4 @@ public enum ImageDirectory {
     PRODUCT("product");
 
     private final String path;
-
-    ImageDirectory(String path) {
-        this.path = path;
-    }
-
-    public String getPath() {
-        return path;
-    }
 }
