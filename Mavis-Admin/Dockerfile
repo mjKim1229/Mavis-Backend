@@ -6,4 +6,4 @@ COPY ${JAR_FILE} app.jar
 ARG PROFILE=dev
 ENV SPRING_PROFILES_ACTIVE=${PROFILE}
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app.jar"]
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar /app.jar"]
