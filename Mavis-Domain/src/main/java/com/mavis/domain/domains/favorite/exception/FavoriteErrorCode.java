@@ -7,7 +7,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum FavoriteErrorCode implements BaseErrorCode {
     FAVORITE_NOT_FOUND(404, "존재하지 않는 즐겨찾기입니다.", "FAVORITE_404_1"),
-    UNAUTHORIZED_FAVORITE(403, "본인의 즐겨찾기만 삭제할 수 있습니다.", "FAVORITE_403_1");
+    UNAUTHORIZED_FAVORITE(403, "본인의 즐겨찾기만 삭제할 수 있습니다.", "FAVORITE_403_1"),
+    FAVORITE_ALREADY_EXISTS(409, "이미 즐겨찾기에 추가된 상품입니다.", "FAVORITE_409_1");
 
     private final Integer status;
     private final String message;

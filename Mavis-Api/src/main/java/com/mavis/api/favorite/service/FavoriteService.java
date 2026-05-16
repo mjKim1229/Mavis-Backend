@@ -6,6 +6,7 @@ import com.mavis.api.favorite.dto.GetUserFavoriteResponse;
 import com.mavis.api.favorite.implement.FavoriteReader;
 import com.mavis.api.product.dto.GetProductPreviewResponse;
 import com.mavis.domain.domains.favorite.domain.Favorite;
+import com.mavis.domain.domains.favorite.exception.FavoriteAlreadyExistsException;
 import com.mavis.domain.domains.favorite.repository.FavoriteRepository;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.product.implement.ProductReader;
@@ -45,6 +46,9 @@ public class FavoriteService {
     public void createFavorite(Long productId) {
         User user = userReader.getCurrentUser();
         Product product = productReader.readById(productId);
+        if (favoriteRepository.existsByUserAndProductIdAndIsDeletedFalse(user, productId)) {
+            throw FavoriteAlreadyExistsException.EXCEPTION;
+        }
         Favorite favorite = Favorite.builder()
                 .user(user)
                 .product(product)
