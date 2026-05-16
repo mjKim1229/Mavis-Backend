@@ -58,6 +58,16 @@ public class PaymentReconciliationService {
     }
 
     @Transactional
+    public void expireAllExpiredVirtualAccounts() {
+        List<Payment> targets = paymentRepository.findExpiredVirtualAccountPayments(LocalDateTime.now());
+        log.info("[가상계좌 만료] 대상: {}건", targets.size());
+        for (Payment payment : targets) {
+            payment.getOrder().cancel();
+            log.info("[가상계좌 만료] 주문 취소 - orderId: {}", payment.getOrder().getOrderId());
+        }
+    }
+
+    @Transactional
     public void reconcileReadyOrder(Order order, PaymentsResponse response) {
         switch (response.status()) {
             case DONE, WAITING_FOR_DEPOSIT -> {

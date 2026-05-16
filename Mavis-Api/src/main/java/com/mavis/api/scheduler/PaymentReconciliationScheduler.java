@@ -30,6 +30,11 @@ public class PaymentReconciliationScheduler {
         reconcileReadyOrders(authorization);
     }
 
+    @Scheduled(cron = "0 0 * * * *")
+    public void expireVirtualAccounts() {
+        paymentReconciliationService.expireAllExpiredVirtualAccounts();
+    }
+
     private void reconcileWaitingDeposit(String authorization) {
         List<Payment> targets = paymentReconciliationService.findWaitingDepositTargets();
         log.info("[결제 보정][WAITING_FOR_DEPOSIT] 대상: {}건", targets.size());

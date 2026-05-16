@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-public interface PaymentRepository extends JpaRepository<Payment, Long> {
+public interface PaymentRepository extends JpaRepository<Payment, Long>, PaymentCustomRepository {
     Optional<Payment> findByOrderAndPaymentType(Order order, PaymentType paymentType);
     Optional<Payment> findByPaymentKey(String paymentKey);
-    List<Payment> findByOrderOrderStatusAndOrderCreatedAtBefore(OrderStatus status, LocalDateTime threshold);;
+    List<Payment> findByOrderOrderStatusAndOrderCreatedAtBefore(OrderStatus status, LocalDateTime threshold);
 }
