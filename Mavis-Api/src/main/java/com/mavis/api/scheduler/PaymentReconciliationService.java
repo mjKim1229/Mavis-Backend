@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 
 @Slf4j
@@ -60,7 +59,7 @@ public class PaymentReconciliationService {
 
     @Transactional
     public void expireAllExpiredVirtualAccounts() {
-        List<Payment> targets = paymentRepository.findExpiredVirtualAccountPayments(LocalDateTime.now(ZoneOffset.UTC));
+        List<Payment> targets = paymentRepository.findExpiredVirtualAccountPayments(LocalDateTime.now());
         log.info("[가상계좌 만료] 대상: {}건", targets.size());
         for (Payment payment : targets) {
             payment.getOrder().cancel();

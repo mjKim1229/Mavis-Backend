@@ -1,6 +1,6 @@
 package com.mavis.infrastructure.outer.api.tosspayments.dto;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 public record PaymentsVirtualAccount(
         String accountType,
@@ -8,7 +8,7 @@ public record PaymentsVirtualAccount(
         String bankCode,
         String customerName,
         String depositorName,
-        ZonedDateTime dueDate,
+        OffsetDateTime dueDate,
         VirtualAccountRefundStatus refundStatus,
         Boolean expired,
         String settlementStatus,
