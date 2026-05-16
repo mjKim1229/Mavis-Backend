@@ -10,7 +10,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,7 +42,7 @@ class PaymentReconciliationServiceTest {
                 .virtualAccountInfo(new VirtualAccountInfo(
                         "accountNumber",
                         "bankCode",
-                        LocalDateTime.now(ZoneOffset.UTC).minusMinutes(1),
+                        LocalDateTime.now().minusMinutes(1),
                         null
                 ))
                 .build();
@@ -71,7 +70,7 @@ class PaymentReconciliationServiceTest {
         order1.waitingForDeposit();
         order2.waitingForDeposit();
 
-        LocalDateTime expiredDueDate = LocalDateTime.now(ZoneOffset.UTC).minusHours(1);
+        LocalDateTime expiredDueDate = LocalDateTime.now().minusHours(1);
 
         Payment payment1 = Payment.builder()
                 .paymentKey("paymentKey-001")

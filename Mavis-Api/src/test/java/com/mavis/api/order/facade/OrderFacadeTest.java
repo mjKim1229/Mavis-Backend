@@ -17,7 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -198,21 +198,21 @@ class OrderFacadeTest {
         return new PaymentsResponse(
                 null, "pk", null, "ORDER-001", null, null, null,
                 null, 10000, null, PaymentsStatus.DONE,
-                ZonedDateTime.now(), null, null, null, null, null,
+                OffsetDateTime.now(), null, null, null, null, null,
                 null, null, null, null, null, null, null, null,
                 null, null, null, null, null, null, null
         );
     }
 
     private PaymentsCancels cancelEntry(String transactionKey) {
-        return new PaymentsCancels(10000, "환불사유", null, null, null, null, ZonedDateTime.now(), transactionKey);
+        return new PaymentsCancels(10000, "환불사유", null, null, null, null, OffsetDateTime.now(), transactionKey);
     }
 
     private PaymentsResponse cancelResponse(String transactionKey, PaymentsCancels entry) {
         return new PaymentsResponse(
                 null, "payKey", null, "ORDER-001", null, null, null,
                 null, 10000, null, PaymentsStatus.CANCELED,
-                ZonedDateTime.now(), null, null, transactionKey, null, null,
+                OffsetDateTime.now(), null, null, transactionKey, null, null,
                 null, null, null, List.of(entry), null, null, null, null,
                 null, null, null, null, null, null, null
         );
@@ -222,7 +222,7 @@ class OrderFacadeTest {
         return new PaymentsResponse(
                 null, "payKey", null, "ORDER-001", null, null, null,
                 null, 10000, null, PaymentsStatus.CANCELED,
-                ZonedDateTime.now(), null, null, null, null, null,
+                OffsetDateTime.now(), null, null, null, null, null,
                 null, null, null, null, null, null, null, null,
                 null, null, null, null, null, null, null
         );

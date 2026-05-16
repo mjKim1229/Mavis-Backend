@@ -1,6 +1,6 @@
 package com.mavis.infrastructure.outer.api.tosspayments.dto;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 public record PaymentsCancels(
         int cancelAmount,
@@ -9,7 +9,7 @@ public record PaymentsCancels(
         Long taxExceptionAmount,
         Long refundableAmount,
         Long easyPayDiscountAmount,
-        ZonedDateTime canceledAt,
+        OffsetDateTime canceledAt,
         String transactionKey
 ) {
 }

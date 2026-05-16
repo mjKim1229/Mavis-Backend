@@ -1,6 +1,6 @@
 package com.mavis.infrastructure.outer.api.tosspayments.dto;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 public record PaymentsResponse(
@@ -15,8 +15,8 @@ public record PaymentsResponse(
         int totalAmount,
         Long balanceAmount,
         PaymentsStatus status,
-        ZonedDateTime requestedAt,
-        ZonedDateTime approvedAt,
+        OffsetDateTime requestedAt,
+        OffsetDateTime approvedAt,
         Boolean useEscrow,
         String lastTransactionKey,
         Long suppliedAmount,
