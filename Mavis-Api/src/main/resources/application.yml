@@ -12,6 +12,9 @@ spring:
       - infrastructure
       - domain
       - common
+  jackson:
+    deserialization:
+      adjust-dates-to-context-time-zone: false
   servlet:
     multipart:
       max-file-size: 50MB
