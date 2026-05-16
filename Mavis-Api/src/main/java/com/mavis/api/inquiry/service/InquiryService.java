@@ -5,7 +5,6 @@ import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.inquiry.dto.CreateInquiryRequest;
 import com.mavis.api.inquiry.dto.GetProductInquiryResponse;
 import com.mavis.api.inquiry.dto.GetUserInquiryResponse;
-import com.mavis.api.inquiry.implement.InquiryImageAppender;
 import com.mavis.api.inquiry.implement.InquiryReader;
 import com.mavis.common.util.DateFormatters;
 import com.mavis.domain.domains.inquiry.domain.Inquiry;
@@ -21,10 +20,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class InquiryService {
@@ -33,7 +28,6 @@ public class InquiryService {
     private final UserReader userReader;
     private final ProductReader productReader;
     private final InquiryRepository inquiryRepository;
-    private final InquiryImageAppender inquiryImageAppender;
 
     @Transactional(readOnly = true)
     public PageResponse<GetProductInquiryResponse> getProductInquiries(Long productId, boolean onlyUnanswered, Pageable pageable) {
@@ -55,12 +49,11 @@ public class InquiryService {
     }
 
     @Transactional
-    public void createInquiry(Long productId, CreateInquiryRequest request, List<MultipartFile> images) {
+    public void createInquiry(Long productId, CreateInquiryRequest request) {
         User user = userReader.getCurrentUser();
         Product product = productReader.readById(productId);
         Inquiry inquiry = request.toEntity(product, user);
-        Inquiry savedInquiry = inquiryRepository.save(inquiry);
-        inquiryImageAppender.saveInquiryImages(savedInquiry, images);
+        inquiryRepository.save(inquiry);
     }
 
     @Transactional(readOnly = true)

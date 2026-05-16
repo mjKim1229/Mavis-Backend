@@ -10,17 +10,12 @@ import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.product.repository.ProductRepository;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.domain.domains.user.repository.UserRepository;
-import com.mavis.infrastructure.image.S3FileUploader;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -38,9 +33,6 @@ class InquiryControllerTest extends ControllerTestSupport {
 
     @Autowired
     private InquiryAnswerRepository inquiryAnswerRepository;
-
-    @MockitoBean
-    private S3FileUploader s3FileUploader;
 
     @Autowired
     private EntityManager em;
@@ -124,41 +116,18 @@ class InquiryControllerTest extends ControllerTestSupport {
 
     @Test
     void 상품_문의_등록_성공() throws Exception {
-        MockMultipartFile requestPart = new MockMultipartFile(
-                "request", "", MediaType.APPLICATION_JSON_VALUE,
-                objectMapper.writeValueAsBytes(new CreateInquiryRequest("질문내용입니다", false)));
-        MockMultipartFile imagePart = new MockMultipartFile(
-                "images", "test.jpg", MediaType.IMAGE_JPEG_VALUE, "image".getBytes());
-
-        given(s3FileUploader.uploadImageToS3(any(), any())).willReturn("http://s3.test/image.jpg");
-
-        mockMvc.perform(multipart("/v1/api/inquiry/product/{id}", savedProduct.getId())
-                        .file(requestPart)
-                        .file(imagePart)
-                        .with(user(savedUser.getId().toString()).roles("USER")))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void 이미지_없이_문의_등록_성공() throws Exception {
-        MockMultipartFile requestPart = new MockMultipartFile(
-                "request", "", MediaType.APPLICATION_JSON_VALUE,
-                objectMapper.writeValueAsBytes(new CreateInquiryRequest("이미지없는 질문", false)));
-
-        mockMvc.perform(multipart("/v1/api/inquiry/product/{id}", savedProduct.getId())
-                        .file(requestPart)
+        mockMvc.perform(post("/v1/api/inquiry/product/{id}", savedProduct.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new CreateInquiryRequest("질문내용입니다", false)))
                         .with(user(savedUser.getId().toString()).roles("USER")))
                 .andExpect(status().isOk());
     }
 
     @Test
     void 비인증_문의_등록시_401() throws Exception {
-        MockMultipartFile requestPart = new MockMultipartFile(
-                "request", "", MediaType.APPLICATION_JSON_VALUE,
-                objectMapper.writeValueAsBytes(new CreateInquiryRequest("질문내용입니다", false)));
-
-        mockMvc.perform(multipart("/v1/api/inquiry/product/{id}", savedProduct.getId())
-                        .file(requestPart))
+        mockMvc.perform(post("/v1/api/inquiry/product/{id}", savedProduct.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new CreateInquiryRequest("질문내용입니다", false))))
                 .andExpect(status().isUnauthorized());
     }
 

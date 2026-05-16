@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 public enum ImageDirectory {
     REVIEW("review"),
     REFUND("refund"),
-    INQUIRY("inquiry"),
     PRODUCT("product");
 
     private final String path;

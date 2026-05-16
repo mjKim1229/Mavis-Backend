@@ -2,10 +2,7 @@ package com.mavis.admin.domains.inquiry.dto;
 
 import com.mavis.common.util.DateFormatters;
 import com.mavis.domain.domains.inquiry.domain.Inquiry;
-import com.mavis.domain.domains.inquiry.domain.InquiryImage;
 import lombok.Builder;
-
-import java.util.List;
 
 @Builder
 public record GetAdminInquiryDetailResponse(
@@ -14,7 +11,6 @@ public record GetAdminInquiryDetailResponse(
         String productName,
         String productMainImageUrl,
         String question,
-        List<String> inquiryImageUrls,
         String userName,
         String createdAt,
         boolean isAnswered,
@@ -30,9 +26,6 @@ public record GetAdminInquiryDetailResponse(
                 .productName(inquiry.getProduct().getName())
                 .productMainImageUrl(inquiry.getProduct().getMainImageUrl())
                 .question(inquiry.getQuestion())
-                .inquiryImageUrls(inquiry.getInquiryImages().stream()
-                        .map(InquiryImage::getImageUrl)
-                        .toList())
                 .userName(inquiry.getUser().getName())
                 .createdAt(inquiry.getCreatedAt().format(DateFormatters.DATE_FORMATTER))
                 .isAnswered(hasAnswer)
