@@ -10,6 +10,7 @@ import com.mavis.domain.domains.user.domain.Gender;
 import com.mavis.domain.domains.user.domain.MarketingAgreement;
 import com.mavis.domain.domains.user.domain.SnsType;
 import com.mavis.domain.domains.user.domain.User;
+import com.mavis.domain.domains.user.exception.DuplicateEmailException;
 import com.mavis.domain.domains.user.exception.InvalidPasswordException;
 import com.mavis.domain.domains.user.exception.SnsUserCannotChangePasswordException;
 import com.mavis.domain.domains.user.exception.UserNotFoundException;
@@ -94,6 +95,9 @@ public class UserService {
 
     @Transactional
     public void signUp(UserSignUpRequest request) {
+        if (userRepository.existsBySnsTypeAndEmailAndIsDeletedFalse(SnsType.MANUAL, request.email())) {
+            throw DuplicateEmailException.EXCEPTION;
+        }
         String encodedPassword = passwordEncoder.encode(request.password());
         User user = request.toEntity(encodedPassword);
         userRepository.save(user);

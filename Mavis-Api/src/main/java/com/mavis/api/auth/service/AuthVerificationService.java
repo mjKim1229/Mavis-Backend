@@ -7,6 +7,7 @@ import com.mavis.common.util.RandomAuthCodeUtil;
 import com.mavis.domain.domains.user.domain.PasswordResetToken;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.domain.domains.user.domain.VerificationCode;
+import com.mavis.domain.domains.user.exception.DuplicateEmailException;
 import com.mavis.domain.domains.user.exception.InvalidVerificationCodeException;
 import com.mavis.domain.domains.user.exception.UserNotFoundException;
 import com.mavis.domain.domains.user.exception.VerificationCodeExpiredException;
@@ -93,6 +94,9 @@ public class AuthVerificationService {
 
     @Transactional
     public void saveSignUpCode(UserSignUpCodeCreateRequest request) {
+        if (userRepository.existsBySnsTypeAndEmailAndIsDeletedFalse(MANUAL, request.email())) {
+            throw DuplicateEmailException.EXCEPTION;
+        }
         Integer authCode = RandomAuthCodeUtil.generateRandomIntegerNumber();
         LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(VERIFICATION_CODE_VALID_MINUTES);
         verificationCodeRepository.findByVerificationTypeAndEmail(SIGN_UP, request.email())
