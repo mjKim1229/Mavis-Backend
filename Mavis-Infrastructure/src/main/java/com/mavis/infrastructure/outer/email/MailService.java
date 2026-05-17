@@ -29,6 +29,14 @@ public class MailService {
         send(to, subject, html);
     }
 
+    public void sendFindUsernameEmail(String to, String username) {
+        Context context = new Context();
+        context.setVariable("username", username);
+        String html = templateEngine.process("mail/find-username", context);
+
+        send(to, "[가람몰] 아이디 찾기 안내", html);
+    }
+
     /**
      * 비밀번호 재설정 링크 메일 발송
      */

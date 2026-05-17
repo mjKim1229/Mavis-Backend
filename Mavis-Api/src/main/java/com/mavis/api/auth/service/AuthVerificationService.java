@@ -2,6 +2,7 @@ package com.mavis.api.auth.service;
 
 import com.mavis.api.auth.dto.*;
 import com.mavis.api.auth.implement.UserReader;
+import com.mavis.infrastructure.outer.email.event.FindUsernameMailEvent;
 import com.mavis.common.util.RandomAuthCodeUtil;
 import com.mavis.domain.domains.user.domain.PasswordResetToken;
 import com.mavis.domain.domains.user.domain.User;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import static com.mavis.domain.domains.user.domain.SnsType.MANUAL;
 import static com.mavis.domain.domains.user.domain.VerificationType.SIGN_UP;
 import static com.mavis.domain.domains.user.domain.VerificationType.UPDATE_EMAIL;
 
@@ -81,6 +83,12 @@ public class AuthVerificationService {
         String password = passwordEncoder.encode(request.password());
         user.updatePassword(password);
         passwordResetTokenRepository.delete(passwordResetToken);
+    }
+
+    @Transactional
+    public void findUsername(UserFindUsernameRequest request) {
+        userRepository.findBySnsTypeAndEmailAndIsDeletedFalse(MANUAL, request.email())
+                .ifPresent(user -> eventPublisher.publishEvent(new FindUsernameMailEvent(request.email(), user.getUsername())));
     }
 
     @Transactional

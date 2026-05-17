@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>아이디 찾기</title>
+    <style type="text/css">
+        body { margin: 0; padding: 0; background-color: #f4f4f4; }
+        table { border-spacing: 0; }
+        td { padding: 0; }
+        img { border: 0; }
+        .wrapper { width: 100%; table-layout: fixed; background-color: #f4f4f4; padding-bottom: 40px; }
+        .main-table { background-color: #ffffff; margin: 0 auto; width: 100%; max-width: 600px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; }
+    </style>
+</head>
+<body>
+<center class="wrapper">
+    <table class="main-table" width="600" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+            <td height="60" style="padding: 20px 30px;">
+                <table cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                        <td style="color: #454446; font-size: 18px; font-weight: bold; font-family: sans-serif;">
+                            <span style="color: #454446;">가람</span>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+        <tr>
+            <td bgcolor="#454446" style="background-color: #454446; padding: 50px 40px; text-align: center;">
+                <p style="margin: 0 0 15px 0; color: #ffffff; font-size: 14px; opacity: 0.8;">회원님의 아이디</p>
+                <h1 th:text="${username}" style="margin: 0; color: #ffffff; font-size: 36px; line-height: 1.2; font-weight: bold; letter-spacing: 2px;">
+                    아이디
+                </h1>
+            </td>
+        </tr>
+
+        <tr>
+            <td style="padding: 40px 30px 20px 30px; text-align: center;">
+                <p style="margin: 0 0 10px 0; color: #333333; font-size: 16px; font-weight: bold;">
+                    위 아이디로 로그인해 주세요.
+                </p>
+                <p style="margin: 0; color: #666666; font-size: 14px; line-height: 1.6;">
+                    본인이 요청하지 않은 경우 이 메일을 무시해 주세요.
+                </p>
+            </td>
+        </tr>
+
+        <tr>
+            <td style="padding: 0 30px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                        <td style="border-top: 1px solid #eeeeee;"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+        <tr>
+            <td style="padding: 30px 30px 40px 30px; text-align: center;">
+                <p style="color: #999999; font-size: 12px; margin: 0; line-height: 1.5;">
+                    본 메일은 발신 전용이며 회신되지 않습니다.<br/>
+                </p>
+            </td>
+        </tr>
+    </table>
+</center>
+</body>
+</html>

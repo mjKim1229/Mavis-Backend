@@ -2,6 +2,7 @@ package com.mavis.api.auth.controller;
 
 import com.mavis.api.auth.dto.*;
 import com.mavis.api.auth.facade.UserFacade;
+import com.mavis.api.auth.service.AuthVerificationService;
 import com.mavis.api.auth.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,6 +18,7 @@ public class AuthController {
 
     private final UserFacade userFacade;
     private final UserService userService;
+    private final AuthVerificationService authVerificationService;
 
     @Operation(summary = "카카오 로그인 code 전송 후 로그인 처리", description = "code만 보내면 됩니다. (Host, Origin)은 안 보내도 됨")
     @PostMapping("/oauth/kakao")
@@ -61,5 +63,11 @@ public class AuthController {
     public UsernameCheckResponse checkUsername(@RequestParam String username) {
         boolean available = userService.isUsernameAvailable(username);
         return new UsernameCheckResponse(username, available);
+    }
+
+    @PostMapping("/find-username")
+    @Operation(summary = "아이디 찾기 (이메일로 아이디 발송)")
+    public void findUsername(@RequestBody UserFindUsernameRequest request) {
+        authVerificationService.findUsername(request);
     }
 }

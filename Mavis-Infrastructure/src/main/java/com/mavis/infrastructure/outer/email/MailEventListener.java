@@ -1,5 +1,6 @@
 package com.mavis.infrastructure.outer.email;
 
+import com.mavis.infrastructure.outer.email.event.FindUsernameMailEvent;
 import com.mavis.infrastructure.outer.email.event.PasswordResetMailEvent;
 import com.mavis.infrastructure.outer.email.event.VerifyMailEvent;
 import lombok.RequiredArgsConstructor;
@@ -23,5 +24,11 @@ public class MailEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handlePasswordResetMail(PasswordResetMailEvent event) {
         mailService.sendPasswordResetEmail(event.to(), event.resetLink());
+    }
+
+    @Async("mailTaskExecutor")
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleFindUsernameMail(FindUsernameMailEvent event) {
+        mailService.sendFindUsernameEmail(event.to(), event.username());
     }
 }
