@@ -68,14 +68,6 @@ OrderItem ↔ Refund = OneToOne → 동일 OrderItem 중복 환불 불가
 - 관련 코드: `AdminRefundService.approveAndComplete()`
 - **전체 환불 완료 감지**: 모든 OrderItem의 Refund가 COMPLETED이면 Order → CANCELED
 
-```java
-// AdminRefundService.approveAndComplete() 마지막
-boolean allRefunded = order.getOrderItems().stream()
-    .allMatch(item -> item.getRefund() != null
-            && item.getRefund().getRefundStatus() == RefundStatus.COMPLETED);
-if (allRefunded) order.cancel();
-```
-
 ### 4. 가상계좌 입금 확인 (웹훅)
 ```
 OrderStatus: WAITING_FOR_DEPOSIT → PAYMENT_CONFIRMED
