@@ -25,6 +25,6 @@ discord:
     url: http://localhost
 aws:
   s3:
-    access-key: local
-    secret-key: local
-    bucket-name: local
+    access-key: ${AWS_S3_ACCESS_KEY}
+    secret-key: ${AWS_S3_SECRET_KEY}
+    bucket-name: ${AWS_S3_BUCKET_NAME}
