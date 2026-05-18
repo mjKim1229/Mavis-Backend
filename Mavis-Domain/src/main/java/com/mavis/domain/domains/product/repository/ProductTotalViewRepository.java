@@ -7,6 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.time.LocalDate;
 import java.util.Optional;
 
-public interface ProductTotalViewRepository extends JpaRepository<ProductTotalView, Long> {
+public interface ProductTotalViewRepository extends JpaRepository<ProductTotalView, Long>, ProductTotalViewCustomRepository {
     Optional<ProductTotalView> findByProductAndWeekStartAndWeekEndAndIsDeletedFalse(Product product, LocalDate startAt, LocalDate endAt);
 }
