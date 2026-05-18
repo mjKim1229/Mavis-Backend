@@ -30,7 +30,4 @@ public class ProductTotalView extends BaseEntity {
     @Builder.Default
     private boolean isDeleted = false;
 
-    public void increaseView() {
-        totalViews++;
-    }
 }
