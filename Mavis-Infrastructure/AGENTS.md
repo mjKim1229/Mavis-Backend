@@ -53,7 +53,7 @@ AWS S3 파일 업로드, 이메일 발송, Discord 웹훅 알림을 Feign Client
 ## For AI Agents
 
 ### Working In This Directory
-- Feign Client URL과 인증 키는 `application-infrastructure.yml` 또는 `Mavis-Submodule` 설정 파일에서 주입됨
+- Feign Client URL과 인증 키는 `application-infrastructure.yml`에서 주입됨
 - TossPayments 에러 처리는 `TossPaymentsErrorDecoder`를 통해 표준 예외로 변환
 - S3 업로드 시 파일 크기/타입 검증은 호출 측(API 레이어)에서 수행
 - 이메일 템플릿 수정 시 HTML 파일 직접 편집 (Thymeleaf 템플릿)
