@@ -59,11 +59,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
     }
 
     public List<Product> getWeeklyBestProducts(LocalDate startAt, LocalDate endAt, Pageable pageable) {
-        NumberExpression<Long> totalViewsExpr = Expressions.numberTemplate(
-                Long.class,
-                "coalesce({0}, 0)",
-                productTotalView.totalViews
-        );
+        NumberExpression<Long> totalViewsExpr = productTotalView.totalViews.sum().coalesce(0L);
 
         return queryFactory
                 .select(product)
