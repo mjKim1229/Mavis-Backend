@@ -74,6 +74,7 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                 .selectFrom(review)
                 .where(review.user.eq(user)
                         .and(review.isDeleted.eq(false)))
+                .orderBy(review.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
