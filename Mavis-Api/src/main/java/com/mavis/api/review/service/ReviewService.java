@@ -58,7 +58,7 @@ public class ReviewService {
         if (!review.getUser().getId().equals(user.getId())) {
             throw UnauthorizedReviewException.EXCEPTION;
         }
-        review.update(request.content(), request.isPrivate());
+        review.update(request.content());
 
         List<ReviewImageVO> keepImages = request.keepImages() != null ? request.keepImages() : List.of();
         reviewImageUploader.updateKeptImages(review, keepImages);

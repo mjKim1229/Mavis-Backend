@@ -23,7 +23,7 @@ public record ReviewResponse(
                 .reviewId(review.getId())
                 .createdAt(review.getCreatedAt().format(DateFormatters.DATE_FORMATTER))
                 .imageUrls(imageUrls)
-                .content(review.getContentForPublic())
+                .content(review.getContent())
                 .name(maskName(user.getName()))
                 .quantity(orderItem.getQuantity())
                 .color(orderItem.getColor())

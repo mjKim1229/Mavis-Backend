@@ -118,7 +118,7 @@ class ReviewServiceTest {
                 new ReviewImageVO(0, "url1"),
                 new ReviewImageVO(1, "url2")
         );
-        UpdateReviewRequest request = new UpdateReviewRequest("수정내용", false, keepImages);
+        UpdateReviewRequest request = new UpdateReviewRequest("수정내용", keepImages);
 
         reviewService.updateReview(reviewId, request, null);
 
@@ -141,7 +141,7 @@ class ReviewServiceTest {
                 new ReviewImageVO(0, "url1"),
                 new ReviewImageVO(2, "url2")
         );
-        UpdateReviewRequest request = new UpdateReviewRequest("수정내용", false, keepImages);
+        UpdateReviewRequest request = new UpdateReviewRequest("수정내용", keepImages);
 
         reviewService.updateReview(reviewId, request, List.of(newImage));
 

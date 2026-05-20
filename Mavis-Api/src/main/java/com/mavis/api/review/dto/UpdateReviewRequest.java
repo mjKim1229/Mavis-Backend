@@ -4,7 +4,6 @@ import java.util.List;
 
 public record UpdateReviewRequest(
         String content,
-        boolean isPrivate,
         List<ReviewImageVO> keepImages
 ) {
 }

@@ -21,7 +21,7 @@ public record UserReviewResponse(
                 .reviewId(review.getId())
                 .createdAt(review.getCreatedAt().format(DateFormatters.DATE_FORMATTER))
                 .imageUrls(imageUrls)
-                .content(review.getContentForPublic())
+                .content(review.getContent())
                 .orderItemInfo(OrderItemInfo.from(orderItem))
                 .build();
     }

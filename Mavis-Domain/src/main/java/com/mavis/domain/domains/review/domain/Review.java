@@ -27,8 +27,6 @@ public class Review extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    private boolean isPrivate;
-
     @OneToMany(mappedBy = "review")
     @OrderBy("sortOrder ASC")
     private List<ReviewImage> images;
@@ -40,15 +38,7 @@ public class Review extends BaseEntity {
         this.isDeleted = true;
     }
 
-    public void update(String content, boolean isPrivate) {
+    public void update(String content) {
         this.content = content;
-        this.isPrivate = isPrivate;
-    }
-
-    public String getContentForPublic() {
-        if (isPrivate) {
-            return null;
-        }
-        return content;
     }
 }

@@ -6,15 +6,13 @@ import com.mavis.domain.domains.user.domain.User;
 
 public record CreateReviewRequest(
         String content,
-        Long orderItemId,
-        boolean isPrivate
+        Long orderItemId
 ) {
     public Review toEntity(OrderItem orderItem, User user) {
         return Review.builder()
                 .user(user)
                 .content(content)
                 .orderItem(orderItem)
-                .isPrivate(isPrivate)
                 .build();
     }
 }
