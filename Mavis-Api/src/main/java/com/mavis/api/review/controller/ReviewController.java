@@ -49,6 +49,12 @@ public class ReviewController {
         reviewService.deleteReview(reviewId);
     }
 
+    @Operation(summary = "사용자 리뷰 단건 조회", description = "사용자가 작성한 리뷰를 ID로 조회합니다.")
+    @GetMapping("/user/{reviewId}")
+    public UserReviewResponse getUserReview(@PathVariable Long reviewId) {
+        return reviewService.getUserReviewById(reviewId);
+    }
+
     @Operation(summary = "사용자 리뷰 목록 조회", description = "사용자가 작성한 리뷰 목록을 조회합니다.")
     @GetMapping("/user")
     public PageResponse<UserReviewResponse> getUserReviewList(Pageable pageable) {

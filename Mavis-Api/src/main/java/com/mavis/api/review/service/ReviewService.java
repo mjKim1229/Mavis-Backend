@@ -91,6 +91,18 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
+    public UserReviewResponse getUserReviewById(Long reviewId) {
+        User user = userReader.getCurrentUser();
+        Review review = reviewRepository.findByIdAndIsDeletedFalse(reviewId)
+                .orElseThrow(() -> ReviewNotFoundException.EXCEPTION);
+        if (!review.getUser().getId().equals(user.getId())) {
+            throw UnauthorizedReviewException.EXCEPTION;
+        }
+        List<String> imageUrls = extractReviewImages(review);
+        return UserReviewResponse.of(review, review.getOrderItem(), imageUrls);
+    }
+
+    @Transactional(readOnly = true)
     public PageResponse<UserReviewResponse> getUserReviews(Pageable pageable) {
         User user = userReader.getCurrentUser();
         Page<UserReviewResponse> reviewPages = reviewRepository.queryProductReviewsByUser(user, pageable)
