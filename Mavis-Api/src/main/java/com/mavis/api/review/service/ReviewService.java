@@ -3,6 +3,7 @@ package com.mavis.api.review.service;
 import com.mavis.api.auth.implement.UserReader;
 import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.review.dto.CreateReviewRequest;
+import com.mavis.api.review.dto.ReviewImageVO;
 import com.mavis.api.review.dto.ReviewResponse;
 import com.mavis.api.review.dto.UpdateReviewRequest;
 import com.mavis.api.review.dto.UserReviewResponse;
@@ -59,11 +60,12 @@ public class ReviewService {
         }
         review.update(request.content(), request.isPrivate());
 
-        List<String> keepImageUrls = request.keepImageUrls() != null ? request.keepImageUrls() : List.of();
-        reviewImageUploader.deleteRemovedImages(review, keepImageUrls);
+        List<ReviewImageVO> keepImages = request.keepImages() != null ? request.keepImages() : List.of();
+        reviewImageUploader.updateKeptImages(review, keepImages);
 
         if (images != null && !images.isEmpty()) {
-            reviewImageUploader.saveReviewImages(images, review);
+            int maxOrder = keepImages.stream().mapToInt(ReviewImageVO::order).max().orElse(-1);
+            reviewImageUploader.saveReviewImages(images, review, maxOrder + 1);
         }
     }
 
@@ -116,6 +118,7 @@ public class ReviewService {
     private static List<String> extractReviewImages(Review review) {
         return review.getImages()
                 .stream()
+                .filter(image -> !image.isDeleted())
                 .map(ReviewImage::getImageUrl)
                 .toList();
     }

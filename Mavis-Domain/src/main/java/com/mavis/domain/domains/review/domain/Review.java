@@ -30,6 +30,7 @@ public class Review extends BaseEntity {
     private boolean isPrivate;
 
     @OneToMany(mappedBy = "review")
+    @OrderBy("sortOrder ASC")
     private List<ReviewImage> images;
 
     @Builder.Default

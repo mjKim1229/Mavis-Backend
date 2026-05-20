@@ -19,4 +19,17 @@ public class ReviewImage extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_id")
     private Review review;
+
+    private int sortOrder;
+
+    @Builder.Default
+    private boolean isDeleted = false;
+
+    public void update(int sortOrder) {
+        this.sortOrder = sortOrder;
+    }
+
+    public void delete() {
+        this.isDeleted = true;
+    }
 }
