@@ -106,7 +106,7 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
         List<OrderItem> orderItems = queryFactory.selectFrom(orderItem)
                 .join(orderItem.order, order).fetchJoin()
                 .join(order.delivery, delivery).fetchJoin()
-                .leftJoin(orderItem.review, review).fetchJoin()
+                .leftJoin(review).on(review.orderItem.eq(orderItem))
                 .where(
                         orderItem.isDeleted.eq(false)
                                 .and(order.user.eq(user))
@@ -122,7 +122,7 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
                 .from(orderItem)
                 .join(orderItem.order, order)
                 .join(order.delivery, delivery)
-                .leftJoin(orderItem.review, review)
+                .leftJoin(review).on(review.orderItem.eq(orderItem))
                 .where(
                         orderItem.isDeleted.eq(false)
                                 .and(order.user.eq(user))
