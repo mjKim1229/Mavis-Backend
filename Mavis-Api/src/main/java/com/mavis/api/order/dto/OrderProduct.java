@@ -15,8 +15,7 @@ public record OrderProduct(
         String refundStatusTitle,
         String productImageUrl
 ) {
-    public static OrderProduct from(OrderItem orderItem) {
-        RefundStatus refundStatus = orderItem.getRefundStatus();
+    public static OrderProduct from(OrderItem orderItem, RefundStatus refundStatus) {
         String imageUrl = orderItem.getProduct().getMainImageUrl();
         return new OrderProduct(
                 orderItem.getId(),

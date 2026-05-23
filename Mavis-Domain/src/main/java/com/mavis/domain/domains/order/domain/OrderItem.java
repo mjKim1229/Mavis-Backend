@@ -2,8 +2,6 @@ package com.mavis.domain.domains.order.domain;
 
 import com.mavis.domain.domains.common.jpa.BaseEntity;
 import com.mavis.domain.domains.product.domain.Product;
-import com.mavis.domain.domains.refund.domain.Refund;
-import com.mavis.domain.domains.refund.domain.RefundStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,19 +29,12 @@ public class OrderItem extends BaseEntity {
     @JoinColumn(name = "order_id")
     private Order order;
 
-    @OneToOne(mappedBy = "orderItem")
-    private Refund refund;
-
     @Builder.Default
     private boolean isDeleted = false;
 
 
     public int getTotalPrice() {
         return price * quantity;
-    }
-
-    public RefundStatus getRefundStatus() {
-        return refund != null ? refund.getRefundStatus() : null;
     }
 
     public static OrderItem of(OrderOption option, int price, Order order, Product product) {

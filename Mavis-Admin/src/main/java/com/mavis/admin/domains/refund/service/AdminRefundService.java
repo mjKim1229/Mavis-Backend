@@ -81,8 +81,7 @@ public class AdminRefundService {
         refund.complete(cancelEntry.transactionKey());
 
         boolean allRefunded = order.getOrderItems().stream()
-                .allMatch(item -> item.getRefund() != null
-                        && item.getRefund().getRefundStatus() == RefundStatus.COMPLETED);
+                .allMatch(item -> refundReader.findStatusByOrderItem(item) == RefundStatus.COMPLETED);
         if (allRefunded) {
             order.cancel();
         }

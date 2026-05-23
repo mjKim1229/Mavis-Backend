@@ -10,6 +10,7 @@ import com.mavis.domain.domains.refund.domain.Refund;
 import com.mavis.domain.domains.refund.domain.RefundStatus;
 import com.mavis.domain.domains.refund.domain.RefundType;
 import com.mavis.domain.domains.refund.implement.RefundAppender;
+import com.mavis.domain.domains.refund.implement.RefundReader;
 
 import java.util.List;
 import com.mavis.domain.domains.order.exception.CannotCancelOrderException;
@@ -47,6 +48,7 @@ public class OrderService {
     private final PaymentRepository paymentRepository;
     private final OrderReader orderReader;
     private final RefundAppender refundAppender;
+    private final RefundReader refundReader;
     private final PaymentIdempotencyManager paymentIdempotencyManager;
     private final PaymentReader paymentReader;
 
@@ -243,7 +245,7 @@ public class OrderService {
     public PageResponse<UserOrderInfo> getUserOrderList(Pageable pageable) {
         User user = userReader.getCurrentUser();
         Page<Order> orderPages = orderRepository.findOrderPagesByUser(pageable, user);
-        return PageResponse.of(orderPages.map(UserOrderInfo::from));
+        return PageResponse.of(orderPages.map(order -> UserOrderInfo.from(order, refundReader::findStatusByOrderItem)));
     }
 
     @Transactional(readOnly = true)
