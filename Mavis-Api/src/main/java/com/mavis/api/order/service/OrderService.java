@@ -6,13 +6,6 @@ import com.mavis.api.order.dto.*;
 import com.mavis.api.order.implement.OrderItemAppender;
 import com.mavis.common.util.OrderNumberGenerator;
 import com.mavis.domain.domains.order.domain.*;
-import com.mavis.domain.domains.refund.domain.Refund;
-import com.mavis.domain.domains.refund.domain.RefundStatus;
-import com.mavis.domain.domains.refund.domain.RefundType;
-import com.mavis.domain.domains.refund.implement.RefundAppender;
-import com.mavis.domain.domains.refund.implement.RefundReader;
-
-import java.util.List;
 import com.mavis.domain.domains.order.exception.CannotCancelOrderException;
 import com.mavis.domain.domains.order.exception.InvalidOrderInfoException;
 import com.mavis.domain.domains.order.exception.OrderNotFoundException;
@@ -22,6 +15,11 @@ import com.mavis.domain.domains.order.implement.PaymentIdempotencyManager;
 import com.mavis.domain.domains.order.implement.PaymentReader;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.order.repository.PaymentRepository;
+import com.mavis.domain.domains.refund.domain.Refund;
+import com.mavis.domain.domains.refund.domain.RefundStatus;
+import com.mavis.domain.domains.refund.domain.RefundType;
+import com.mavis.domain.domains.refund.implement.RefundAppender;
+import com.mavis.domain.domains.refund.implement.RefundReader;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsCancels;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
@@ -35,6 +33,8 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 
 @Service
@@ -245,7 +245,12 @@ public class OrderService {
     public PageResponse<UserOrderInfo> getUserOrderList(Pageable pageable) {
         User user = userReader.getCurrentUser();
         Page<Order> orderPages = orderRepository.findOrderPagesByUser(pageable, user);
-        return PageResponse.of(orderPages.map(order -> UserOrderInfo.from(order, refundReader::findStatusByOrderItem)));
+        return PageResponse.of(orderPages.map(order -> {
+            List<OrderProduct> products = order.getOrderItems().stream()
+                    .map(item -> OrderProduct.from(item, refundReader.findStatusByOrderItem(item)))
+                    .toList();
+            return UserOrderInfo.from(order, products);
+        }));
     }
 
     @Transactional(readOnly = true)
