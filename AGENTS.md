@@ -62,7 +62,7 @@ Mavis-Infrastructure     (External: OAuth, TossPayments, S3, Email, Discord)
 ### Common Patterns
 - **예외 처리:** 모든 에러는 `MavisException(ErrorCode)` 패턴. `ErrorCode` enum은 도메인 패키지별로 정의
 - **리포지토리:** 복잡한 쿼리는 `*RepositoryCustom` 인터페이스 + `*RepositoryImpl` (JPAQueryFactory). Q클래스는 `MavisApiServerApplication` 시작 시 `Class.forName`으로 eager load
-- **서비스 분리:** `*Reader` (조회) / `*Appender`·`*Modifier` (쓰기) / `*Facade` (다중 서비스 조합)
+- **서비스 분리:** `*Reader` / `*Appender`·`*Modifier` 는 의미있는 도메인 로직이 있을 때만 생성. 단순 Repository 위임이면 Service에서 직접 호출. / `*Facade` 는 다중 Service 조합 또는 외부 API 호출 포함 시 사용
 - **외부 API 에러:** Feign 에러 디코더 (예: `TossPaymentsErrorDecoder`)가 외부 HTTP 에러를 `MavisException`으로 변환
 - **민감 설정:** DB 자격증명, OAuth 키, TossPayments 키, 메일 비밀번호는 AWS Parameter Store로 주입 — `application.yml`에 직접 기입 금지
 
@@ -81,3 +81,42 @@ Mavis-Infrastructure     (External: OAuth, TossPayments, S3, Email, Discord)
 | DB | MySQL | — |
 
 <!-- MANUAL: -->
+
+## 서비스 레이어 아키텍처 규약
+
+### 레이어 구조
+
+```
+Controller
+    ↓
+Service (비즈니스 로직)
+    ↓
+Repository
+```
+
+### 규칙
+
+**1. Service 간 참조 허용**
+
+같은 Service 계층끼리 참조 가능. 순환 참조 금지 (`A → B → A`).
+
+**2. Reader / Appender 사용 기준**
+
+| 케이스 | 처리 |
+|--------|------|
+| Repository 얇게 감싸기만 함 | 삭제 → Service에서 Repository 직접 호출 |
+| 의미있는 도메인 로직 포함 | Service 계층 내부 컴포넌트로 유지 |
+
+Reader/Appender는 별도 계층이 아님. Service 계층 내부 협력 객체.
+Controller 등 외부에서 직접 주입/호출 금지.
+
+**3. 도메인 로직 위치**
+
+규칙/불변식은 Entity에 우선 배치.
+Entity가 담기 어려운 흐름 조합은 Service에서 처리.
+
+**4. Facade 사용 기준**
+
+여러 Service를 조합하는 복잡한 흐름에만 사용.
+단일 Service 호출 수준이면 Facade 불필요.
+외부 API 호출(결제, OAuth 등) 포함 시 허용.
