@@ -2,6 +2,7 @@ package com.mavis.domain.domains.inquiry.repository;
 
 import com.mavis.domain.domains.inquiry.domain.AnswerStatus;
 import com.mavis.domain.domains.inquiry.domain.Inquiry;
+import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.user.domain.User;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -24,12 +25,12 @@ public class InquiryCustomRepositoryImpl implements InquiryCustomRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<Inquiry> findInquiryByProductId(Long productId, boolean onlyUnanswered, Pageable pageable) {
+    public Page<Inquiry> findInquiryByProduct(Product product, boolean onlyUnanswered, Pageable pageable) {
         List<Inquiry> inquiryList = queryFactory.select(inquiry)
                 .from(inquiry)
                 .join(inquiry.user, user).fetchJoin()
                 .leftJoin(inquiryAnswer).on(inquiryAnswer.inquiry.eq(inquiry))
-                .where(inquiry.product.id.eq(productId)
+                .where(inquiry.product.id.eq(product.getId())
                         .and(inquiry.isDeleted.eq(false))
                         .and(onlyUnanswered ? unansweredCondition() : null)
                 )
@@ -41,7 +42,7 @@ public class InquiryCustomRepositoryImpl implements InquiryCustomRepository {
         JPAQuery<Long> countQuery = queryFactory.select(inquiry.count())
                 .from(inquiry)
                 .leftJoin(inquiryAnswer).on(inquiryAnswer.inquiry.eq(inquiry))
-                .where(inquiry.product.id.eq(productId)
+                .where(inquiry.product.id.eq(product.getId())
                         .and(inquiry.isDeleted.eq(false))
                         .and(onlyUnanswered ? unansweredCondition() : null)
                 );
