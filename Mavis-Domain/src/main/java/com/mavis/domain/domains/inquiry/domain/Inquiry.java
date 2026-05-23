@@ -5,9 +5,6 @@ import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLRestriction;
-import org.hibernate.annotations.Where;
-
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -32,17 +29,10 @@ public class Inquiry extends BaseEntity {
 
     private boolean isPrivate;
 
-    @OneToOne(mappedBy = "inquiry")
-    private InquiryAnswer inquiryAnswer;
-
     @Builder.Default
     private boolean isDeleted = false;
 
     public void delete() {
         this.isDeleted = true;
-        if (this.inquiryAnswer != null) {
-            this.inquiryAnswer.delete();
-        }
     }
-
 }

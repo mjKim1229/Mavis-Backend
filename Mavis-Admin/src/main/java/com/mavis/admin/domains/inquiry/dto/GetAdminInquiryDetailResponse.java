@@ -2,6 +2,7 @@ package com.mavis.admin.domains.inquiry.dto;
 
 import com.mavis.common.util.DateFormatters;
 import com.mavis.domain.domains.inquiry.domain.Inquiry;
+import com.mavis.domain.domains.inquiry.domain.InquiryAnswer;
 import lombok.Builder;
 
 @Builder
@@ -17,8 +18,8 @@ public record GetAdminInquiryDetailResponse(
         String answer,
         String answeredAt
 ) {
-    public static GetAdminInquiryDetailResponse from(Inquiry inquiry) {
-        boolean hasAnswer = inquiry.getInquiryAnswer() != null && !inquiry.getInquiryAnswer().isDeleted();
+    public static GetAdminInquiryDetailResponse from(Inquiry inquiry, InquiryAnswer answer) {
+        boolean hasAnswer = answer != null;
 
         return GetAdminInquiryDetailResponse.builder()
                 .inquiryId(inquiry.getId())
@@ -29,8 +30,8 @@ public record GetAdminInquiryDetailResponse(
                 .userName(inquiry.getUser().getName())
                 .createdAt(inquiry.getCreatedAt().format(DateFormatters.DATE_FORMATTER))
                 .isAnswered(hasAnswer)
-                .answer(hasAnswer ? inquiry.getInquiryAnswer().getAnswer() : null)
-                .answeredAt(hasAnswer ? inquiry.getInquiryAnswer().getCreatedAt().format(DateFormatters.DATE_FORMATTER) : null)
+                .answer(hasAnswer ? answer.getAnswer() : null)
+                .answeredAt(hasAnswer ? answer.getCreatedAt().format(DateFormatters.DATE_FORMATTER) : null)
                 .build();
     }
 }

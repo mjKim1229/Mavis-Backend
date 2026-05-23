@@ -8,6 +8,7 @@ import com.mavis.domain.domains.inquiry.domain.AnswerStatus;
 import com.mavis.domain.domains.inquiry.domain.Inquiry;
 import com.mavis.domain.domains.inquiry.domain.InquiryAnswer;
 import com.mavis.domain.domains.inquiry.exception.InquiryNotFoundException;
+import com.mavis.domain.domains.inquiry.repository.InquiryAnswerRepository;
 import com.mavis.domain.domains.inquiry.repository.InquiryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 public class InquiryReader {
 
     private final InquiryRepository inquiryRepository;
+    private final InquiryAnswerRepository inquiryAnswerRepository;
 
     public Inquiry findById(Long inquiryId) {
         return inquiryRepository.findByIdAndIsDeletedFalse(inquiryId)
@@ -32,9 +34,10 @@ public class InquiryReader {
     }
 
     private GetProductInquiryResponse toProductInquiryResponse(Inquiry inquiry) {
+        InquiryAnswer answer = inquiryAnswerRepository.findByInquiryAndIsDeletedFalse(inquiry).orElse(null);
         InquiryResponse inquiryResponse = inquiry.isPrivate() ? null : InquiryResponse.from(inquiry, inquiry.getUser());
-        InquiryAnswerResponse inquiryAnswerResponse = resolveAnswerResponse(inquiry);
-        AnswerStatus answerStatus = resolveAnswerStatus(inquiry);
+        InquiryAnswerResponse inquiryAnswerResponse = resolveAnswerResponse(inquiry, answer);
+        AnswerStatus answerStatus = resolveAnswerStatus(answer);
 
         return GetProductInquiryResponse.builder()
                 .inquiry(inquiryResponse)
@@ -44,16 +47,13 @@ public class InquiryReader {
                 .build();
     }
 
-    private InquiryAnswerResponse resolveAnswerResponse(Inquiry inquiry) {
-        if (inquiry.isPrivate()) return null;
-        InquiryAnswer answer = inquiry.getInquiryAnswer();
-        if (answer == null || answer.isDeleted()) return null;
+    private InquiryAnswerResponse resolveAnswerResponse(Inquiry inquiry, InquiryAnswer answer) {
+        if (inquiry.isPrivate() || answer == null) return null;
         return InquiryAnswerResponse.from(answer);
     }
 
-    private AnswerStatus resolveAnswerStatus(Inquiry inquiry) {
-        InquiryAnswer answer = inquiry.getInquiryAnswer();
-        if (answer != null && !answer.isDeleted()) return AnswerStatus.ANSWERED;
+    private AnswerStatus resolveAnswerStatus(InquiryAnswer answer) {
+        if (answer != null) return AnswerStatus.ANSWERED;
         return AnswerStatus.UNANSWERED;
     }
 }

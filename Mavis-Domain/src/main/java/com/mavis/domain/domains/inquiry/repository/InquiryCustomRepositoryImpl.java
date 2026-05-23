@@ -28,7 +28,7 @@ public class InquiryCustomRepositoryImpl implements InquiryCustomRepository {
         List<Inquiry> inquiryList = queryFactory.select(inquiry)
                 .from(inquiry)
                 .join(inquiry.user, user).fetchJoin()
-                .leftJoin(inquiry.inquiryAnswer, inquiryAnswer).fetchJoin()
+                .leftJoin(inquiryAnswer).on(inquiryAnswer.inquiry.eq(inquiry))
                 .where(inquiry.product.id.eq(productId)
                         .and(inquiry.isDeleted.eq(false))
                         .and(onlyUnanswered ? unansweredCondition() : null)
@@ -40,7 +40,7 @@ public class InquiryCustomRepositoryImpl implements InquiryCustomRepository {
 
         JPAQuery<Long> countQuery = queryFactory.select(inquiry.count())
                 .from(inquiry)
-                .leftJoin(inquiry.inquiryAnswer, inquiryAnswer)
+                .leftJoin(inquiryAnswer).on(inquiryAnswer.inquiry.eq(inquiry))
                 .where(inquiry.product.id.eq(productId)
                         .and(inquiry.isDeleted.eq(false))
                         .and(onlyUnanswered ? unansweredCondition() : null)
@@ -79,7 +79,7 @@ public class InquiryCustomRepositoryImpl implements InquiryCustomRepository {
                 .from(inquiry)
                 .join(inquiry.product, product).fetchJoin()
                 .join(inquiry.user, user).fetchJoin()
-                .leftJoin(inquiry.inquiryAnswer, inquiryAnswer).fetchJoin()
+                .leftJoin(inquiryAnswer).on(inquiryAnswer.inquiry.eq(inquiry))
                 .where(inquiry.isDeleted.eq(false)
                         .and(answerStatusCondition(status))
                 )
@@ -90,7 +90,7 @@ public class InquiryCustomRepositoryImpl implements InquiryCustomRepository {
 
         JPAQuery<Long> countQuery = queryFactory.select(inquiry.count())
                 .from(inquiry)
-                .leftJoin(inquiry.inquiryAnswer, inquiryAnswer)
+                .leftJoin(inquiryAnswer).on(inquiryAnswer.inquiry.eq(inquiry))
                 .where(inquiry.isDeleted.eq(false)
                         .and(answerStatusCondition(status))
                 );

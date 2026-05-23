@@ -279,6 +279,50 @@ class InquiryControllerTest extends ControllerTestSupport {
     }
 
     @Test
+    void 상품_문의_목록_조회_답변_포함() throws Exception {
+        Inquiry inquiry = inquiryRepository.save(Inquiry.builder()
+                .question("답변있는 질문")
+                .isPrivate(false)
+                .product(savedProduct)
+                .user(savedUser)
+                .build());
+        inquiryAnswerRepository.save(InquiryAnswer.builder()
+                .answer("관리자 답변")
+                .inquiry(inquiry)
+                .build());
+        em.flush();
+        em.clear();
+
+        mockMvc.perform(get("/v1/api/inquiry/product/{id}", savedProduct.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.content[0].inquiryAnswer.answer").value("관리자 답변"))
+                .andExpect(jsonPath("$.data.content[0].answerStatus").value("ANSWERED"));
+    }
+
+    @Test
+    void 삭제된_답변_있는_문의는_미답변_필터에_포함() throws Exception {
+        Inquiry inquiry = inquiryRepository.save(Inquiry.builder()
+                .question("답변 삭제된 질문")
+                .isPrivate(false)
+                .product(savedProduct)
+                .user(savedUser)
+                .build());
+        InquiryAnswer deletedAnswer = inquiryAnswerRepository.save(InquiryAnswer.builder()
+                .answer("삭제될 답변")
+                .inquiry(inquiry)
+                .build());
+        deletedAnswer.delete();
+        inquiryAnswerRepository.save(deletedAnswer);
+        em.flush();
+        em.clear();
+
+        mockMvc.perform(get("/v1/api/inquiry/product/{id}", savedProduct.getId())
+                        .param("onlyUnanswered", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.totalElements").value(1));
+    }
+
+    @Test
     void 답변_삭제된_문의는_삭제_가능() throws Exception {
         Inquiry inquiry = inquiryRepository.save(Inquiry.builder()
                 .question("답변 삭제된 질문")

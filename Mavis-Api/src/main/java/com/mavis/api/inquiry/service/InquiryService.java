@@ -11,6 +11,7 @@ import com.mavis.domain.domains.inquiry.domain.Inquiry;
 import com.mavis.domain.domains.inquiry.domain.InquiryAnswer;
 import com.mavis.domain.domains.inquiry.exception.InquiryAlreadyAnsweredCannotDeleteException;
 import com.mavis.domain.domains.inquiry.exception.UnauthorizedInquiryException;
+import com.mavis.domain.domains.inquiry.repository.InquiryAnswerRepository;
 import com.mavis.domain.domains.inquiry.repository.InquiryRepository;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.product.implement.ProductReader;
@@ -28,6 +29,7 @@ public class InquiryService {
     private final UserReader userReader;
     private final ProductReader productReader;
     private final InquiryRepository inquiryRepository;
+    private final InquiryAnswerRepository inquiryAnswerRepository;
 
     @Transactional(readOnly = true)
     public PageResponse<GetProductInquiryResponse> getProductInquiries(Long productId, boolean onlyUnanswered, Pageable pageable) {
@@ -42,7 +44,7 @@ public class InquiryService {
         if (!inquiry.getUser().getId().equals(user.getId())) {
             throw UnauthorizedInquiryException.EXCEPTION;
         }
-        if (inquiry.getInquiryAnswer() != null && !inquiry.getInquiryAnswer().isDeleted()) {
+        if (inquiryAnswerRepository.existsByInquiryAndIsDeletedFalse(inquiry)) {
             throw InquiryAlreadyAnsweredCannotDeleteException.EXCEPTION;
         }
         inquiry.delete();
@@ -63,10 +65,10 @@ public class InquiryService {
         Page<GetUserInquiryResponse> getUserInquiryResponsePage = userInquiryPages.map(
                 inquiry -> {
                     String questionCreatedAt = inquiry.getCreatedAt().format(DateFormatters.DATE_FORMATTER);
-                    if (inquiry.getInquiryAnswer() == null) {
+                    InquiryAnswer inquiryAnswer = inquiryAnswerRepository.findByInquiryAndIsDeletedFalse(inquiry).orElse(null);
+                    if (inquiryAnswer == null) {
                         return new GetUserInquiryResponse(inquiry.getId(), inquiry.getProduct().getId(), inquiry.getProduct().getName(), inquiry.getQuestion(), questionCreatedAt, null, null);
                     }
-                    InquiryAnswer inquiryAnswer = inquiry.getInquiryAnswer();
                     String answerCreatedAt = inquiryAnswer.getCreatedAt().format(DateFormatters.DATE_FORMATTER);
                     return new GetUserInquiryResponse(inquiry.getId(), inquiry.getProduct().getId(), inquiry.getProduct().getName(), inquiry.getQuestion(), questionCreatedAt, inquiryAnswer.getAnswer(), answerCreatedAt);
                 }
