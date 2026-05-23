@@ -82,6 +82,22 @@ Mavis-Infrastructure     (External: OAuth, TossPayments, S3, Email, Discord)
 
 <!-- MANUAL: -->
 
+## 코드 스타일 규약
+
+- 메서드 호출 중첩 금지. 중간 결과는 변수로 먼저 받을 것.
+
+## DTO 네이밍 규약
+
+| 종류 | Suffix | 위치 | 설명 |
+|------|--------|------|------|
+| QueryDSL 프로젝션 결과 | `*Row` | `Mavis-Domain/.../dto/` | DB에서 조회한 raw 데이터. `Projections.constructor`로 직접 매핑 |
+| API 응답 | `*Response` | `Mavis-Api/.../dto/` | 클라이언트에 전달되는 최종 응답 객체 |
+| API 요청 | `*Request` | `Mavis-Api/.../dto/` | 클라이언트로부터 받는 입력 객체 |
+
+**예시:**
+- `ProductInquiryRow` — 문의 + 답변을 단일 쿼리로 조회한 프로젝션 (Domain)
+- `GetProductInquiryResponse` — 클라이언트에 내보내는 문의 응답 (Api)
+
 ## 서비스 레이어 아키텍처 규약
 
 ### 레이어 구조

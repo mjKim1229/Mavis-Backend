@@ -54,7 +54,7 @@ class InquiryControllerTest extends ControllerTestSupport {
 
     @Test
     void 상품_문의_목록_조회_성공() throws Exception {
-        inquiryRepository.save(Inquiry.builder()
+        Inquiry savedInquiry = inquiryRepository.save(Inquiry.builder()
                 .question("질문입니다")
                 .isPrivate(false)
                 .product(savedProduct)
@@ -64,7 +64,14 @@ class InquiryControllerTest extends ControllerTestSupport {
         mockMvc.perform(get("/v1/api/inquiry/product/{id}", savedProduct.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.totalElements").value(1))
-                .andExpect(jsonPath("$.data.content").isArray());
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.content[0].isPrivate").value(false))
+                .andExpect(jsonPath("$.data.content[0].answerStatus").value("UNANSWERED"))
+                .andExpect(jsonPath("$.data.content[0].inquiry.id").value(savedInquiry.getId()))
+                .andExpect(jsonPath("$.data.content[0].inquiry.question").value("질문입니다"))
+                .andExpect(jsonPath("$.data.content[0].inquiry.userName").value("테****"))
+                .andExpect(jsonPath("$.data.content[0].inquiry.createdAt").isNotEmpty())
+                .andExpect(jsonPath("$.data.content[0].inquiryAnswer").isEmpty());
     }
 
     @Test
@@ -78,7 +85,9 @@ class InquiryControllerTest extends ControllerTestSupport {
 
         mockMvc.perform(get("/v1/api/inquiry/product/{id}", savedProduct.getId()))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.totalElements").value(1))
                 .andExpect(jsonPath("$.data.content[0].isPrivate").value(true))
+                .andExpect(jsonPath("$.data.content[0].answerStatus").value("UNANSWERED"))
                 .andExpect(jsonPath("$.data.content[0].inquiry").isEmpty())
                 .andExpect(jsonPath("$.data.content[0].inquiryAnswer").isEmpty());
     }
@@ -111,7 +120,12 @@ class InquiryControllerTest extends ControllerTestSupport {
         mockMvc.perform(get("/v1/api/inquiry/product/{id}", savedProduct.getId())
                         .param("onlyUnanswered", "true"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.totalElements").value(1));
+                .andExpect(jsonPath("$.data.totalElements").value(1))
+                .andExpect(jsonPath("$.data.content[0].answerStatus").value("UNANSWERED"))
+                .andExpect(jsonPath("$.data.content[0].inquiry.question").value("미답변 질문"))
+                .andExpect(jsonPath("$.data.content[0].inquiry.userName").value("테****"))
+                .andExpect(jsonPath("$.data.content[0].isPrivate").value(false))
+                .andExpect(jsonPath("$.data.content[0].inquiryAnswer").isEmpty());
     }
 
     @Test
@@ -133,7 +147,7 @@ class InquiryControllerTest extends ControllerTestSupport {
 
     @Test
     void 사용자_문의_목록_조회_성공() throws Exception {
-        inquiryRepository.save(Inquiry.builder()
+        Inquiry savedInquiry = inquiryRepository.save(Inquiry.builder()
                 .question("내 질문")
                 .isPrivate(false)
                 .product(savedProduct)
@@ -144,8 +158,13 @@ class InquiryControllerTest extends ControllerTestSupport {
                         .with(user(savedUser.getId().toString()).roles("USER")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.totalElements").value(1))
+                .andExpect(jsonPath("$.data.content[0].id").value(savedInquiry.getId()))
+                .andExpect(jsonPath("$.data.content[0].productId").value(savedProduct.getId()))
+                .andExpect(jsonPath("$.data.content[0].productName").value("테스트상품"))
                 .andExpect(jsonPath("$.data.content[0].question").value("내 질문"))
-                .andExpect(jsonPath("$.data.content[0].productName").value("테스트상품"));
+                .andExpect(jsonPath("$.data.content[0].questionCreatedAt").isNotEmpty())
+                .andExpect(jsonPath("$.data.content[0].answer").value((Object) null))
+                .andExpect(jsonPath("$.data.content[0].answerCreatedAt").value((Object) null));
     }
 
     @Test
@@ -166,7 +185,14 @@ class InquiryControllerTest extends ControllerTestSupport {
         mockMvc.perform(get("/v1/api/inquiry/user")
                         .with(user(savedUser.getId().toString()).roles("USER")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.content[0].answer").value("관리자 답변"));
+                .andExpect(jsonPath("$.data.totalElements").value(1))
+                .andExpect(jsonPath("$.data.content[0].id").value(inquiry.getId()))
+                .andExpect(jsonPath("$.data.content[0].productId").value(savedProduct.getId()))
+                .andExpect(jsonPath("$.data.content[0].productName").value("테스트상품"))
+                .andExpect(jsonPath("$.data.content[0].question").value("답변있는 질문"))
+                .andExpect(jsonPath("$.data.content[0].questionCreatedAt").isNotEmpty())
+                .andExpect(jsonPath("$.data.content[0].answer").value("관리자 답변"))
+                .andExpect(jsonPath("$.data.content[0].answerCreatedAt").isNotEmpty());
     }
 
     @Test
@@ -295,8 +321,16 @@ class InquiryControllerTest extends ControllerTestSupport {
 
         mockMvc.perform(get("/v1/api/inquiry/product/{id}", savedProduct.getId()))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.totalElements").value(1))
+                .andExpect(jsonPath("$.data.content[0].isPrivate").value(false))
+                .andExpect(jsonPath("$.data.content[0].answerStatus").value("ANSWERED"))
+                .andExpect(jsonPath("$.data.content[0].inquiry.id").value(inquiry.getId()))
+                .andExpect(jsonPath("$.data.content[0].inquiry.question").value("답변있는 질문"))
+                .andExpect(jsonPath("$.data.content[0].inquiry.userName").value("테****"))
+                .andExpect(jsonPath("$.data.content[0].inquiry.createdAt").isNotEmpty())
                 .andExpect(jsonPath("$.data.content[0].inquiryAnswer.answer").value("관리자 답변"))
-                .andExpect(jsonPath("$.data.content[0].answerStatus").value("ANSWERED"));
+                .andExpect(jsonPath("$.data.content[0].inquiryAnswer.createdAt").isNotEmpty())
+                .andExpect(jsonPath("$.data.content[0].inquiryAnswer.adminName").value("관리자"));
     }
 
     @Test
@@ -319,7 +353,10 @@ class InquiryControllerTest extends ControllerTestSupport {
         mockMvc.perform(get("/v1/api/inquiry/product/{id}", savedProduct.getId())
                         .param("onlyUnanswered", "true"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.totalElements").value(1));
+                .andExpect(jsonPath("$.data.totalElements").value(1))
+                .andExpect(jsonPath("$.data.content[0].answerStatus").value("UNANSWERED"))
+                .andExpect(jsonPath("$.data.content[0].inquiry.question").value("답변 삭제된 질문"))
+                .andExpect(jsonPath("$.data.content[0].inquiryAnswer").isEmpty());
     }
 
     @Test

@@ -1,8 +1,7 @@
 package com.mavis.api.inquiry.dto;
 
-import com.mavis.api.inquiry.service.UserInquiryAnswerResult;
-import com.mavis.api.inquiry.service.UserInquiryResult;
 import com.mavis.common.util.DateFormatters;
+import com.mavis.domain.domains.inquiry.dto.UserInquiryRow;
 
 public record GetUserInquiryResponse(
         Long id,
@@ -13,17 +12,17 @@ public record GetUserInquiryResponse(
         String answer,
         String answerCreatedAt
 ) {
-    public static GetUserInquiryResponse from(UserInquiryResult inquiry, UserInquiryAnswerResult answer) {
-        String answerCreatedAt = answer.answerCreatedAt() != null
-                ? answer.answerCreatedAt().format(DateFormatters.DATE_FORMATTER)
+    public static GetUserInquiryResponse from(UserInquiryRow dto) {
+        String answerCreatedAt = dto.answerCreatedAt() != null
+                ? dto.answerCreatedAt().format(DateFormatters.DATE_FORMATTER)
                 : null;
         return new GetUserInquiryResponse(
-                inquiry.id(),
-                inquiry.productId(),
-                inquiry.productName(),
-                inquiry.question(),
-                inquiry.questionCreatedAt().format(DateFormatters.DATE_FORMATTER),
-                answer.answer(),
+                dto.inquiryId(),
+                dto.productId(),
+                dto.productName(),
+                dto.question(),
+                dto.questionCreatedAt().format(DateFormatters.DATE_FORMATTER),
+                dto.answer(),
                 answerCreatedAt
         );
     }

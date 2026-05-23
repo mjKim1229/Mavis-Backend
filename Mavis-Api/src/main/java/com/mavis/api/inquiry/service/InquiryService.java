@@ -2,11 +2,11 @@ package com.mavis.api.inquiry.service;
 
 import com.mavis.api.auth.implement.UserReader;
 import com.mavis.api.common.page.PageResponse;
-import com.mavis.api.inquiry.dto.CreateInquiryRequest;
-import com.mavis.api.inquiry.dto.GetProductInquiryResponse;
-import com.mavis.api.inquiry.dto.GetUserInquiryResponse;
-import com.mavis.api.inquiry.dto.InquiryResponse;
+import com.mavis.api.inquiry.dto.*;
+import com.mavis.domain.domains.inquiry.domain.AnswerStatus;
 import com.mavis.domain.domains.inquiry.domain.Inquiry;
+import com.mavis.domain.domains.inquiry.dto.ProductInquiryRow;
+import com.mavis.domain.domains.inquiry.dto.UserInquiryRow;
 import com.mavis.domain.domains.inquiry.exception.UnauthorizedInquiryException;
 import com.mavis.domain.domains.inquiry.repository.InquiryRepository;
 import com.mavis.domain.domains.product.domain.Product;
@@ -31,18 +31,18 @@ public class InquiryService {
     @Transactional(readOnly = true)
     public PageResponse<GetProductInquiryResponse> getProductInquiries(Long productId, boolean onlyUnanswered, Pageable pageable) {
         Product product = productReader.readById(productId);
-        Page<GetProductInquiryResponse> getProductInquiryResponsePage = inquiryRepository.findInquiryByProduct(product, onlyUnanswered, pageable)
-                .map(inquiry -> {
-                            InquiryAnswerResult inquiryAnswerResult = inquiryAnswerReader.resolveForInquiry(inquiry);
-                            InquiryResponse inquiryResponse = inquiryReader.resolveInquiryResponse(inquiry);
-                            return GetProductInquiryResponse.builder()
-                                    .inquiry(inquiryResponse)
-                                    .inquiryAnswer(inquiryAnswerResult.answerResponse())
-                                    .isPrivate(inquiry.isPrivate())
-                                    .answerStatus(inquiryAnswerResult.answerStatus())
-                                    .build();
-                        }
-                );
+        Page<ProductInquiryRow> dtoPage = inquiryRepository.findInquiryByProduct(product, onlyUnanswered, pageable);
+        Page<GetProductInquiryResponse> getProductInquiryResponsePage = dtoPage.map(dto -> {
+            InquiryResponse inquiryResponse = dto.isPrivate() ? null : InquiryResponse.from(dto);
+            InquiryAnswerResponse answerResponse = (dto.isPrivate() || dto.answer() == null) ? null : InquiryAnswerResponse.from(dto);
+            AnswerStatus answerStatus = dto.answer() != null ? AnswerStatus.ANSWERED : AnswerStatus.UNANSWERED;
+            return GetProductInquiryResponse.builder()
+                    .inquiry(inquiryResponse)
+                    .inquiryAnswer(answerResponse)
+                    .isPrivate(dto.isPrivate())
+                    .answerStatus(answerStatus)
+                    .build();
+        });
         return PageResponse.of(getProductInquiryResponsePage);
     }
 
@@ -68,14 +68,8 @@ public class InquiryService {
     @Transactional(readOnly = true)
     public PageResponse<GetUserInquiryResponse> getProductInquiriesByUser(Pageable pageable) {
         User user = userReader.getCurrentUser();
-        Page<Inquiry> userInquiryPages = inquiryRepository.findInquiryByUser(user, pageable);
-        Page<GetUserInquiryResponse> getUserInquiryResponsePage = userInquiryPages.map(
-                inquiry -> {
-                    UserInquiryResult inquiryResult = inquiryReader.resolveUserInquiry(inquiry);
-                    UserInquiryAnswerResult answerResult = inquiryAnswerReader.resolveForUserInquiry(inquiry);
-                    return GetUserInquiryResponse.from(inquiryResult, answerResult);
-                }
-        );
+        Page<UserInquiryRow> dtoPage = inquiryRepository.findInquiryByUser(user, pageable);
+        Page<GetUserInquiryResponse> getUserInquiryResponsePage = dtoPage.map(GetUserInquiryResponse::from);
         return PageResponse.of(getUserInquiryResponsePage);
     }
 }
