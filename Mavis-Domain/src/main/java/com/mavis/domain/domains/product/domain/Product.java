@@ -27,9 +27,6 @@ public class Product extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ProductSubCategory subCategory;
 
-    @OneToOne(mappedBy = "product")
-    private ProductNotice productNotice;
-
     @OneToMany(mappedBy = "product")
     @Builder.Default
     @SQLRestriction("is_deleted = false")

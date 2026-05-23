@@ -4,6 +4,7 @@ import com.mavis.admin.domains.product.dto.*;
 import com.mavis.admin.domains.product.implement.ProductColorAppender;
 import com.mavis.admin.domains.product.implement.ProductImageAppender;
 import com.mavis.domain.domains.product.domain.*;
+import com.mavis.domain.domains.product.exception.ProductNoticeNotFoundException;
 import com.mavis.domain.domains.product.implement.ProductReader;
 import com.mavis.domain.domains.product.repository.ProductImageRepository;
 import com.mavis.domain.domains.product.repository.ProductNoticeRepository;
@@ -44,7 +45,8 @@ public class AdminProductService {
         List<String> mainImageUrls = extractImageUrl(product, ProductImageType.MAIN);
         List<String> productImages = extractImageUrl(product, ProductImageType.PRODUCT);
         List<String> detailImages = extractImageUrl(product, ProductImageType.DETAIL);
-        ProductNotice productNotice = product.getProductNotice();
+        ProductNotice productNotice = productNoticeRepository.findByProduct(product)
+                .orElseThrow(() -> ProductNoticeNotFoundException.EXCEPTION);
         ProductNoticeVO productNoticeVO = new ProductNoticeVO(productNotice.getPrecaution(), productNotice.getShippingInfo(), productNotice.getReturnRequest(), productNotice.getReturnProcess());
         return GetProductResponse.from(product, colors, mainImageUrls, productImages, detailImages, productNoticeVO);
     }
@@ -82,7 +84,8 @@ public class AdminProductService {
         product.update(request.name(), request.price(), request.subCategory());
 
         //notice
-        ProductNotice productNotice = product.getProductNotice();
+        ProductNotice productNotice = productNoticeRepository.findByProduct(product)
+                .orElseThrow(() -> ProductNoticeNotFoundException.EXCEPTION);
         ProductNoticeVO notice = request.notice();
         productNotice.update(notice.precaution(), notice.shippingInfo(), notice.returnRequest(), notice.returnProcess());
 
