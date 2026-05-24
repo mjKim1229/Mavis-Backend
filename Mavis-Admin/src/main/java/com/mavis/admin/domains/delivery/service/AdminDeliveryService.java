@@ -8,8 +8,10 @@ import com.mavis.admin.domains.order.dto.GetAdminOrderExcelResponse;
 import com.mavis.admin.domains.order.dto.OrderItemExcelInfo;
 import com.mavis.admin.domains.order.dto.OrderItemInfo;
 import com.mavis.common.annotation.ExcelColumn;
+import com.mavis.common.util.DateFormatters;
 import com.mavis.domain.domains.delivery.domain.Delivery;
 import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
+import com.mavis.domain.domains.delivery.dto.AdminDeliveryRow;
 import com.mavis.domain.domains.delivery.exception.DeliveryCannotBeCompleteException;
 import com.mavis.domain.domains.delivery.exception.DeliveryNotFoundException;
 import com.mavis.domain.domains.delivery.repository.DeliveryRepository;
@@ -17,8 +19,10 @@ import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderAddress;
 import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.domain.OrderStatus;
+import com.mavis.domain.domains.order.dto.AdminOrderItemRow;
 import com.mavis.domain.domains.order.exception.OrderNotToBeConfirmedException;
 import com.mavis.domain.domains.order.implement.OrderReader;
+import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
@@ -31,11 +35,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import com.mavis.common.util.DateFormatters;
-
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -44,28 +47,28 @@ import java.util.stream.Collectors;
 public class AdminDeliveryService {
 
     private final DeliveryRepository deliveryRepository;
+    private final OrderRepository orderRepository;
     private final OrderReader orderReader;
 
     @Transactional(readOnly = true)
     public PageResponse<GetAdminDeliveryResponse> getAdminDeliveryLists(Pageable pageable, DeliveryStatus deliveryStatus) {
-        Page<Delivery> deliveryPages = deliveryRepository.findDeliveryPagesByDeliveryStatus(pageable, deliveryStatus);
-        Page<GetAdminDeliveryResponse> deliveryResponses = deliveryPages.map(delivery -> {
-                    Order order = delivery.getOrder();
-                    OrderAddress orderAddress = order.getOrderAddress();
-                    User user = order.getUser();
-                    List<OrderItem> orderItems = order.getOrderItems();
-                    List<OrderItemInfo> orderItemInfoList = orderItems.stream().map(
-                            orderItem -> OrderItemInfo.builder()
-                                    .productName(orderItem.getProduct().getName())
-                                    .color(orderItem.getColor())
-                                    .quantity(orderItem.getQuantity())
-                                    .build()
-                    ).toList();
-                    String orderedAt = order.getCreatedAt().format(DateFormatters.DATE_FORMATTER);
-                    return GetAdminDeliveryResponse.from(delivery, order, orderedAt, orderAddress, orderItemInfoList, user);
-                }
-        );
-        return PageResponse.of(deliveryResponses);
+        Page<AdminDeliveryRow> deliveryRows = deliveryRepository.findDeliveryRows(pageable, deliveryStatus);
+        List<Long> orderIds = deliveryRows.map(AdminDeliveryRow::orderId).toList();
+        List<AdminOrderItemRow> itemRows = orderRepository.findOrderItemRowsByOrderIds(orderIds);
+        Map<Long, List<AdminOrderItemRow>> itemsByOrderId = itemRows.stream()
+                .collect(Collectors.groupingBy(AdminOrderItemRow::orderId));
+
+        return PageResponse.of(deliveryRows.map(row -> {
+            List<OrderItemInfo> orderItemInfos = itemsByOrderId.getOrDefault(row.orderId(), List.of())
+                    .stream()
+                    .map(item -> OrderItemInfo.builder()
+                            .productName(item.productName())
+                            .color(item.color())
+                            .quantity(item.quantity())
+                            .build())
+                    .toList();
+            return GetAdminDeliveryResponse.from(row, orderItemInfos);
+        }));
     }
 
     @Transactional(readOnly = true)

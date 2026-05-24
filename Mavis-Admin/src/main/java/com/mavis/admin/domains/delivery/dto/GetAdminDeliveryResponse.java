@@ -1,13 +1,10 @@
 package com.mavis.admin.domains.delivery.dto;
 
 import com.mavis.admin.domains.order.dto.OrderItemInfo;
-import com.mavis.domain.domains.delivery.domain.Delivery;
-import com.mavis.domain.domains.order.domain.Order;
-import com.mavis.domain.domains.order.domain.OrderAddress;
-import com.mavis.domain.domains.user.domain.User;
+import com.mavis.common.util.DateFormatters;
+import com.mavis.domain.domains.delivery.dto.AdminDeliveryRow;
 import lombok.Builder;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.mavis.common.util.OrderNumberGenerator.DOMAIN_PREFIX;
@@ -28,28 +25,21 @@ public record GetAdminDeliveryResponse(
         String orderedAt,
         String requestMessage
 ) {
-    public static GetAdminDeliveryResponse from(
-            Delivery delivery,
-            Order order,
-            String orderedAt,
-            OrderAddress orderAddress,
-            List<OrderItemInfo> orderItemInfos,
-            User user
-    ) {
+    public static GetAdminDeliveryResponse from(AdminDeliveryRow row, List<OrderItemInfo> orderItemInfos) {
         return GetAdminDeliveryResponse.builder()
-                .deliveryId(delivery.getId())
+                .deliveryId(row.deliveryId())
+                .orderId(row.tossOrderId().substring(DOMAIN_PREFIX.length()))
+                .carrier(row.carrier())
+                .trackingNumber(row.trackingNumber())
+                .deliveryStatus(row.deliveryStatus().getTitle())
                 .orderItemInfos(orderItemInfos)
-                .orderId(order.getOrderId().substring(DOMAIN_PREFIX.length()))
-                .orderedAt(orderedAt)
-                .totalPrice(order.getTotalPrice())
-                .address(orderAddress.getAddress())
-                .receiverName(orderAddress.getReceiverName())
-                .receiverPhoneNumber(orderAddress.getReceiverPhone())
-                .requestMessage(orderAddress.getAddressMemo())
-                .buyerName(user.getName())
-                .carrier(delivery.getCarrier())
-                .trackingNumber(delivery.getTrackingNumber())
-                .deliveryStatus(delivery.getDeliveryStatus().getTitle())
+                .receiverName(row.receiverName())
+                .receiverPhoneNumber(row.receiverPhone())
+                .address(row.address())
+                .requestMessage(row.addressMemo())
+                .buyerName(row.buyerName())
+                .orderedAt(row.createdAt().format(DateFormatters.DATE_FORMATTER))
+                .totalPrice(row.totalPrice())
                 .build();
     }
 }

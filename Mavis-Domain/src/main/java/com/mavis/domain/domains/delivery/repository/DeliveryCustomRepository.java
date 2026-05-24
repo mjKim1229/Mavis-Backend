@@ -2,6 +2,7 @@ package com.mavis.domain.domains.delivery.repository;
 
 import com.mavis.domain.domains.delivery.domain.Delivery;
 import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
+import com.mavis.domain.domains.delivery.dto.AdminDeliveryRow;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -10,5 +11,6 @@ import java.util.List;
 
 public interface DeliveryCustomRepository {
     Page<Delivery> findDeliveryPagesByDeliveryStatus(Pageable pageable, DeliveryStatus deliveryStatus);
+    Page<AdminDeliveryRow> findDeliveryRows(Pageable pageable, DeliveryStatus deliveryStatus);
     List<Delivery> findDeliveriesByStatusAndDateRange(DeliveryStatus deliveryStatus, LocalDate startDate, LocalDate endDate);
 }
