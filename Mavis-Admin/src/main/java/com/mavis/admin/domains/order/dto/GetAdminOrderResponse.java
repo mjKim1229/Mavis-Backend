@@ -1,8 +1,7 @@
 package com.mavis.admin.domains.order.dto;
 
-import com.mavis.domain.domains.order.domain.Order;
-import com.mavis.domain.domains.order.domain.OrderAddress;
-import com.mavis.domain.domains.user.domain.User;
+import com.mavis.common.util.DateFormatters;
+import com.mavis.domain.domains.order.dto.AdminOrderRow;
 import lombok.Builder;
 
 import java.util.List;
@@ -22,18 +21,18 @@ public record GetAdminOrderResponse(
         int totalPrice,
         String requestMessage
 ) {
-    public static GetAdminOrderResponse from(Order order, OrderAddress orderAddress, String orderedAt, List<OrderItemInfo> orderItemInfos, User user) {
+    public static GetAdminOrderResponse from(AdminOrderRow row, List<OrderItemInfo> orderItemInfos) {
         return GetAdminOrderResponse.builder()
                 .orderItemInfos(orderItemInfos)
-                .orderId(order.getId())
-                .tossOrderId(order.getOrderId().substring(DOMAIN_PREFIX.length()))
-                .orderedAt(orderedAt)
-                .totalPrice(order.getTotalPrice())
-                .address(orderAddress.getAddress())
-                .receiverName(orderAddress.getReceiverName())
-                .receiverPhoneNumber(orderAddress.getReceiverPhone())
-                .requestMessage(orderAddress.getAddressMemo())
-                .buyerName(user.getName())
+                .orderId(row.orderId())
+                .tossOrderId(row.tossOrderId().substring(DOMAIN_PREFIX.length()))
+                .orderedAt(row.createdAt().format(DateFormatters.DATE_FORMATTER))
+                .totalPrice(row.totalPrice())
+                .address(row.address())
+                .receiverName(row.receiverName())
+                .receiverPhoneNumber(row.receiverPhone())
+                .requestMessage(row.addressMemo())
+                .buyerName(row.buyerName())
                 .build();
     }
 }

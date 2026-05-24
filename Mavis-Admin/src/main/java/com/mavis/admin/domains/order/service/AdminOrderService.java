@@ -9,22 +9,21 @@ import com.mavis.domain.domains.delivery.domain.Delivery;
 import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
 import com.mavis.domain.domains.delivery.repository.DeliveryRepository;
 import com.mavis.domain.domains.order.domain.Order;
-import com.mavis.domain.domains.order.domain.OrderAddress;
-import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.domain.OrderStatus;
+import com.mavis.domain.domains.order.dto.AdminOrderItemRow;
+import com.mavis.domain.domains.order.dto.AdminOrderRow;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.refund.domain.RefundStatus;
 import com.mavis.domain.domains.refund.repository.RefundRepository;
-import com.mavis.domain.domains.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.mavis.common.util.DateFormatters;
-
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,28 +34,33 @@ public class AdminOrderService {
 
     @Transactional(readOnly = true)
     public PageResponse<GetAdminOrderResponse> getPaymentConfirmedOrderLists(Pageable pageable) {
-        Page<Order> orderPages = orderRepository.findPaymentConfirmedOrderPages(pageable);
-        return PageResponse.of(orderPages.map(this::toOrderResponse));
+        Page<AdminOrderRow> orderRows = orderRepository.findPaymentConfirmedOrderRows(pageable);
+        return buildOrderPageResponse(orderRows);
     }
 
     @Transactional(readOnly = true)
     public PageResponse<GetAdminOrderResponse> getOrderedOrderLists(Pageable pageable) {
-        Page<Order> orderPages = orderRepository.findOrderedOrderPages(pageable);
-        return PageResponse.of(orderPages.map(this::toOrderResponse));
+        Page<AdminOrderRow> orderRows = orderRepository.findOrderedOrderRows(pageable);
+        return buildOrderPageResponse(orderRows);
     }
 
-    private GetAdminOrderResponse toOrderResponse(Order order) {
-        OrderAddress orderAddress = order.getOrderAddress();
-        User user = order.getUser();
-        List<OrderItemInfo> orderItemInfoList = order.getOrderItems().stream().map(
-                orderItem -> OrderItemInfo.builder()
-                        .productName(orderItem.getProduct().getName())
-                        .color(orderItem.getColor())
-                        .quantity(orderItem.getQuantity())
-                        .build()
-        ).toList();
-        String orderedAt = order.getCreatedAt().format(DateFormatters.DATE_FORMATTER);
-        return GetAdminOrderResponse.from(order, orderAddress, orderedAt, orderItemInfoList, user);
+    private PageResponse<GetAdminOrderResponse> buildOrderPageResponse(Page<AdminOrderRow> orderRows) {
+        List<Long> orderIds = orderRows.map(AdminOrderRow::orderId).toList();
+        List<AdminOrderItemRow> itemRows = orderRepository.findOrderItemRowsByOrderIds(orderIds);
+        Map<Long, List<AdminOrderItemRow>> itemsByOrderId = itemRows.stream()
+                .collect(Collectors.groupingBy(AdminOrderItemRow::orderId));
+
+        return PageResponse.of(orderRows.map(row -> {
+            List<OrderItemInfo> orderItemInfos = itemsByOrderId.getOrDefault(row.orderId(), List.of())
+                    .stream()
+                    .map(item -> OrderItemInfo.builder()
+                            .productName(item.productName())
+                            .color(item.color())
+                            .quantity(item.quantity())
+                            .build())
+                    .toList();
+            return GetAdminOrderResponse.from(row, orderItemInfos);
+        }));
     }
 
     @Transactional(readOnly = true)
