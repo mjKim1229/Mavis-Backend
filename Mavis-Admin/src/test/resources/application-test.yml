@@ -1,0 +1,48 @@
+discord:
+  webhook:
+    url: http://localhost/test-dummy-webhook
+
+aws:
+  s3:
+    access-key: test-access-key
+    secret-key: test-secret-key
+    bucket-name: test-bucket
+  region: ap-northeast-2
+
+auth:
+  jwt:
+    secret-key: test-secret-key-that-is-long-enough-for-hmac-sha256-algorithm
+    access-exp: 3600000
+    refresh-exp: 604800000
+  oauth:
+    kakao:
+      client-id: test-kakao-client-id
+      redirect-url: http://localhost/kakao/callback
+      admin-key: test-kakao-admin-key
+    naver:
+      client-id: test-naver-client-id
+      client-secret: test-naver-client-secret
+      redirect-uri: http://localhost/naver/callback
+      state: test-state
+
+spring:
+  mail:
+    host: localhost
+    username: test@test.com
+    password: test-password
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+
+payments:
+  toss:
+    client-key: test-toss-client-key
+    secret-key: test-toss-secret-key
+    api-url: http://localhost

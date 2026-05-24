@@ -1,7 +1,7 @@
 package com.mavis.domain.domains.inquiry.repository;
 
 import com.mavis.domain.domains.inquiry.domain.AnswerStatus;
-import com.mavis.domain.domains.inquiry.domain.Inquiry;
+import com.mavis.domain.domains.inquiry.dto.AdminInquiryRow;
 import com.mavis.domain.domains.inquiry.dto.ProductInquiryRow;
 import com.mavis.domain.domains.inquiry.dto.UserInquiryRow;
 import com.mavis.domain.domains.product.domain.Product;
@@ -12,5 +12,5 @@ import org.springframework.data.domain.Pageable;
 public interface InquiryCustomRepository {
     Page<ProductInquiryRow> findInquiryByProduct(Product product, boolean onlyUnanswered, Pageable pageable);
     Page<UserInquiryRow> findInquiryByUser(User user, Pageable pageable);
-    Page<Inquiry> findAllInquiries(AnswerStatus status, Pageable pageable);
+    Page<AdminInquiryRow> findAllInquiries(AnswerStatus status, Pageable pageable);
 }

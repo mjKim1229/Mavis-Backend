@@ -1,7 +1,7 @@
 package com.mavis.domain.domains.inquiry.repository;
 
 import com.mavis.domain.domains.inquiry.domain.AnswerStatus;
-import com.mavis.domain.domains.inquiry.domain.Inquiry;
+import com.mavis.domain.domains.inquiry.dto.AdminInquiryRow;
 import com.mavis.domain.domains.inquiry.dto.ProductInquiryRow;
 import com.mavis.domain.domains.inquiry.dto.UserInquiryRow;
 import com.mavis.domain.domains.product.domain.Product;
@@ -104,12 +104,24 @@ public class InquiryCustomRepositoryImpl implements InquiryCustomRepository {
     }
 
     @Override
-    public Page<Inquiry> findAllInquiries(AnswerStatus status, Pageable pageable) {
-        List<Inquiry> inquiryList = queryFactory.select(inquiry)
+    public Page<AdminInquiryRow> findAllInquiries(AnswerStatus status, Pageable pageable) {
+        List<AdminInquiryRow> content = queryFactory
+                .select(Projections.constructor(AdminInquiryRow.class,
+                        inquiry.id,
+                        inquiry.product.id,
+                        inquiry.product.name,
+                        inquiry.question,
+                        user.name,
+                        inquiry.createdAt,
+                        inquiryAnswer.answer
+                ))
                 .from(inquiry)
-                .join(inquiry.product, product).fetchJoin()
-                .join(inquiry.user, user).fetchJoin()
-                .leftJoin(inquiryAnswer).on(inquiryAnswer.inquiry.eq(inquiry))
+                .join(inquiry.product, product)
+                .join(inquiry.user, user)
+                .leftJoin(inquiryAnswer).on(
+                        inquiryAnswer.inquiry.id.eq(inquiry.id)
+                                .and(inquiryAnswer.isDeleted.eq(false))
+                )
                 .where(inquiry.isDeleted.eq(false)
                         .and(answerStatusCondition(status))
                 )
@@ -120,18 +132,21 @@ public class InquiryCustomRepositoryImpl implements InquiryCustomRepository {
 
         JPAQuery<Long> countQuery = queryFactory.select(inquiry.count())
                 .from(inquiry)
-                .leftJoin(inquiryAnswer).on(inquiryAnswer.inquiry.eq(inquiry))
+                .leftJoin(inquiryAnswer).on(
+                        inquiryAnswer.inquiry.id.eq(inquiry.id)
+                                .and(inquiryAnswer.isDeleted.eq(false))
+                )
                 .where(inquiry.isDeleted.eq(false)
                         .and(answerStatusCondition(status))
                 );
 
-        return PageableExecutionUtils.getPage(inquiryList, pageable, countQuery::fetchOne);
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
     private BooleanExpression answerStatusCondition(AnswerStatus status) {
         return switch (status) {
-            case ANSWERED -> inquiryAnswer.isNotNull().and(inquiryAnswer.isDeleted.eq(false));
-            case UNANSWERED -> inquiryAnswer.isNull().or(inquiryAnswer.isDeleted.eq(true));
+            case ANSWERED -> inquiryAnswer.isNotNull();
+            case UNANSWERED -> inquiryAnswer.isNull();
             default -> null;
         };
     }

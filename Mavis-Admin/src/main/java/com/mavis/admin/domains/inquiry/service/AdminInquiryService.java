@@ -26,10 +26,7 @@ public class AdminInquiryService {
     public PageResponse<GetAdminInquiryResponse> getInquiries(AnswerStatus status, Pageable pageable) {
         return PageResponse.of(
                 inquiryRepository.findAllInquiries(status, pageable)
-                        .map(inquiry -> {
-                            InquiryAnswer answer = inquiryAnswerRepository.findByInquiryAndIsDeletedFalse(inquiry).orElse(null);
-                            return GetAdminInquiryResponse.from(inquiry, answer);
-                        })
+                        .map(GetAdminInquiryResponse::from)
         );
     }
 
