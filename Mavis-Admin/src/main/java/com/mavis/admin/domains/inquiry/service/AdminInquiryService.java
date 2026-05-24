@@ -6,7 +6,7 @@ import com.mavis.admin.common.page.PageResponse;
 import com.mavis.domain.domains.inquiry.domain.AnswerStatus;
 import com.mavis.domain.domains.inquiry.domain.Inquiry;
 import com.mavis.domain.domains.inquiry.domain.InquiryAnswer;
-import com.mavis.domain.domains.inquiry.implement.InquiryDomainReader;
+import com.mavis.domain.domains.inquiry.exception.InquiryNotFoundException;
 import com.mavis.domain.domains.inquiry.repository.InquiryAnswerRepository;
 import com.mavis.domain.domains.inquiry.repository.InquiryRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class AdminInquiryService {
 
     private final InquiryRepository inquiryRepository;
-    private final InquiryDomainReader inquiryDomainReader;
     private final InquiryAnswerRepository inquiryAnswerRepository;
 
     @Transactional(readOnly = true)
@@ -32,7 +31,8 @@ public class AdminInquiryService {
 
     @Transactional(readOnly = true)
     public GetAdminInquiryDetailResponse getInquiry(Long inquiryId) {
-        Inquiry inquiry = inquiryDomainReader.findById(inquiryId);
+        Inquiry inquiry = inquiryRepository.findByIdAndIsDeletedFalse(inquiryId)
+                .orElseThrow(() -> InquiryNotFoundException.EXCEPTION);
         InquiryAnswer answer = inquiryAnswerRepository.findByInquiryAndIsDeletedFalse(inquiry).orElse(null);
         return GetAdminInquiryDetailResponse.from(inquiry, answer);
     }
