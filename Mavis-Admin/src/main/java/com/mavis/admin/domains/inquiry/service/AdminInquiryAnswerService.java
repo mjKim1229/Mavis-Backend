@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class InquiryAnswerService {
+public class AdminInquiryAnswerService {
     private final InquiryAnswerRepository inquiryAnswerRepository;
     private final InquiryDomainReader inquiryDomainReader;
     private final AdminReader adminReader;

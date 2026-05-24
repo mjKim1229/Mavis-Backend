@@ -6,7 +6,7 @@ import com.mavis.admin.domains.inquiry.dto.GetAdminInquiryDetailResponse;
 import com.mavis.admin.domains.inquiry.dto.GetAdminInquiryResponse;
 import com.mavis.admin.domains.inquiry.dto.UpdateInquiryAnswerRequest;
 import com.mavis.admin.domains.inquiry.service.AdminInquiryService;
-import com.mavis.admin.domains.inquiry.service.InquiryAnswerService;
+import com.mavis.admin.domains.inquiry.service.AdminInquiryAnswerService;
 import com.mavis.domain.domains.inquiry.domain.AnswerStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "관리자 문의 API")
 public class AdminInquiryController {
 
-    private final InquiryAnswerService inquiryAnswerService;
+    private final AdminInquiryAnswerService adminInquiryAnswerService;
     private final AdminInquiryService adminInquiryService;
 
     @GetMapping("/{inquiryId}")
@@ -41,18 +41,18 @@ public class AdminInquiryController {
     @PostMapping("/answer/{inquiryId}")
     @Operation(summary = "문의 답변 등록")
     public void createInquiryAnswer(@PathVariable Long inquiryId, @RequestBody CreateInquiryAnswerRequest request) {
-        inquiryAnswerService.createInquiryAnswer(inquiryId, request.answer());
+        adminInquiryAnswerService.createInquiryAnswer(inquiryId, request.answer());
     }
 
     @PutMapping("/answer/{inquiryId}")
     @Operation(summary = "문의 답변 수정")
     public void updateInquiryAnswer(@PathVariable Long inquiryId, @RequestBody UpdateInquiryAnswerRequest request) {
-        inquiryAnswerService.updateInquiryAnswer(inquiryId, request.answer());
+        adminInquiryAnswerService.updateInquiryAnswer(inquiryId, request.answer());
     }
 
     @DeleteMapping("/answer/{inquiryId}")
     @Operation(summary = "문의 답변 삭제")
     public void deleteInquiryAnswer(@PathVariable Long inquiryId) {
-        inquiryAnswerService.deleteInquiryAnswer(inquiryId);
+        adminInquiryAnswerService.deleteInquiryAnswer(inquiryId);
     }
 }
