@@ -10,6 +10,7 @@ import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
 import com.mavis.domain.domains.delivery.repository.DeliveryRepository;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderStatus;
+import com.mavis.domain.domains.order.exception.OrderNotFoundException;
 import com.mavis.domain.domains.order.dto.AdminOrderItemRow;
 import com.mavis.domain.domains.order.dto.AdminOrderRow;
 import com.mavis.domain.domains.order.repository.OrderRepository;
@@ -76,6 +77,9 @@ public class AdminOrderService {
     @Transactional
     public void confirmOrder(AdminOrderConfirmRequest request) {
         List<Order> orders = orderRepository.findByIdInAndIsDeletedFalse(request.orderIds());
+        if (orders.size() != request.orderIds().size()) {
+            throw OrderNotFoundException.EXCEPTION;
+        }
         orders.forEach(order -> {
             order.confirmOrder();
             Delivery delivery = Delivery.builder()
