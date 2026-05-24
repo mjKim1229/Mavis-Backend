@@ -105,6 +105,11 @@ class AdminInquiryControllerTest extends ControllerTestSupport {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.totalElements").value(1))
                     .andExpect(jsonPath("$.data.content[0].inquiryId").value(unanswered.getId()))
+                    .andExpect(jsonPath("$.data.content[0].productId").value(savedProduct.getId()))
+                    .andExpect(jsonPath("$.data.content[0].productName").value("테스트상품"))
+                    .andExpect(jsonPath("$.data.content[0].question").value("미답변 질문"))
+                    .andExpect(jsonPath("$.data.content[0].userName").value("테스트유저"))
+                    .andExpect(jsonPath("$.data.content[0].createdAt").isNotEmpty())
                     .andExpect(jsonPath("$.data.content[0].isAnswered").value(false));
         }
 
@@ -135,6 +140,11 @@ class AdminInquiryControllerTest extends ControllerTestSupport {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.totalElements").value(1))
                     .andExpect(jsonPath("$.data.content[0].inquiryId").value(answered.getId()))
+                    .andExpect(jsonPath("$.data.content[0].productId").value(savedProduct.getId()))
+                    .andExpect(jsonPath("$.data.content[0].productName").value("테스트상품"))
+                    .andExpect(jsonPath("$.data.content[0].question").value("답변된 질문"))
+                    .andExpect(jsonPath("$.data.content[0].userName").value("테스트유저"))
+                    .andExpect(jsonPath("$.data.content[0].createdAt").isNotEmpty())
                     .andExpect(jsonPath("$.data.content[0].isAnswered").value(true));
         }
     }
@@ -157,6 +167,7 @@ class AdminInquiryControllerTest extends ControllerTestSupport {
                     .andExpect(jsonPath("$.data.inquiryId").value(inquiry.getId()))
                     .andExpect(jsonPath("$.data.productId").value(savedProduct.getId()))
                     .andExpect(jsonPath("$.data.productName").value("테스트상품"))
+                    .andExpect(jsonPath("$.data.productMainImageUrl").value((Object) null))
                     .andExpect(jsonPath("$.data.question").value("상세 질문"))
                     .andExpect(jsonPath("$.data.userName").value("테스트유저"))
                     .andExpect(jsonPath("$.data.createdAt").isNotEmpty())
@@ -183,6 +194,13 @@ class AdminInquiryControllerTest extends ControllerTestSupport {
             mockMvc.perform(get("/v1/api/inquiry/{inquiryId}", inquiry.getId())
                             .with(user(savedAdmin.getId().toString()).roles("ADMIN")))
                     .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.inquiryId").value(inquiry.getId()))
+                    .andExpect(jsonPath("$.data.productId").value(savedProduct.getId()))
+                    .andExpect(jsonPath("$.data.productName").value("테스트상품"))
+                    .andExpect(jsonPath("$.data.productMainImageUrl").value((Object) null))
+                    .andExpect(jsonPath("$.data.question").value("답변있는 질문"))
+                    .andExpect(jsonPath("$.data.userName").value("테스트유저"))
+                    .andExpect(jsonPath("$.data.createdAt").isNotEmpty())
                     .andExpect(jsonPath("$.data.isAnswered").value(true))
                     .andExpect(jsonPath("$.data.answer").value("관리자 답변"))
                     .andExpect(jsonPath("$.data.answeredAt").isNotEmpty());
