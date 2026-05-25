@@ -48,6 +48,7 @@ public class ReviewImageUploader {
     }
 
     public void saveReviewImages(List<MultipartFile> images, Review review, int startOrder) {
+        if (images == null || images.isEmpty()) return;
         List<CompletableFuture<ReviewImage>> futures = IntStream.range(0, images.size())
                 .mapToObj(i -> CompletableFuture.supplyAsync(
                         () -> {
