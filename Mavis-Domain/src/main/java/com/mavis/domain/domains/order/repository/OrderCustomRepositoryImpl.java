@@ -112,46 +112,6 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
     }
 
     @Override
-    public Page<Order> findPaymentConfirmedOrderPages(Pageable pageable) {
-        List<Order> orders = queryFactory.selectFrom(order)
-                .where(order.isDeleted.eq(false)
-                        .and(order.orderStatus.eq(OrderStatus.PAYMENT_CONFIRMED)))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .orderBy(order.id.desc())
-                .fetch();
-
-        JPAQuery<Long> countQuery = queryFactory.select(order.count())
-                .from(order)
-                .where(order.isDeleted.eq(false)
-                        .and(order.orderStatus.eq(OrderStatus.PAYMENT_CONFIRMED)));
-
-        return PageableExecutionUtils.getPage(orders, pageable, countQuery::fetchOne);
-    }
-
-    @Override
-    public Page<Order> findOrderedOrderPages(Pageable pageable) {
-        List<Order> orders = queryFactory.selectFrom(order)
-                .join(order.delivery, delivery)
-                .where(order.isDeleted.eq(false)
-                        .and(order.orderStatus.eq(OrderStatus.ORDERED))
-                        .and(delivery.deliveryStatus.eq(DeliveryStatus.READY)))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .orderBy(order.id.desc())
-                .fetch();
-
-        JPAQuery<Long> countQuery = queryFactory.select(order.count())
-                .from(order)
-                .join(order.delivery, delivery)
-                .where(order.isDeleted.eq(false)
-                        .and(order.orderStatus.eq(OrderStatus.ORDERED))
-                        .and(delivery.deliveryStatus.eq(DeliveryStatus.READY)));
-
-        return PageableExecutionUtils.getPage(orders, pageable, countQuery::fetchOne);
-    }
-
-    @Override
     public long countOrderedWithReadyDelivery() {
         Long count = queryFactory.select(order.count())
                 .from(order)

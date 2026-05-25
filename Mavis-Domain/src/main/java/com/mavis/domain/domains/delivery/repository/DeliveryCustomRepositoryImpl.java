@@ -26,22 +26,6 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<Delivery> findDeliveryPagesByDeliveryStatus(Pageable pageable, DeliveryStatus deliveryStatus) {
-        List<Delivery> deliveries = queryFactory.selectFrom(delivery)
-                .where(delivery.deliveryStatus.eq(deliveryStatus))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .orderBy(delivery.id.desc())
-                .fetch();
-
-        JPAQuery<Long> countQuery = queryFactory.select(delivery.count())
-                .from(delivery)
-                .where(delivery.deliveryStatus.eq(deliveryStatus));
-
-        return PageableExecutionUtils.getPage(deliveries, pageable, countQuery::fetchOne);
-    }
-
-    @Override
     public Page<AdminDeliveryRow> findDeliveryRows(Pageable pageable, DeliveryStatus deliveryStatus) {
         List<AdminDeliveryRow> content = queryFactory
                 .select(Projections.constructor(AdminDeliveryRow.class,

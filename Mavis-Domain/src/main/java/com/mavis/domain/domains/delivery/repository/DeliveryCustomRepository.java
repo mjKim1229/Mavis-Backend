@@ -10,7 +10,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface DeliveryCustomRepository {
-    Page<Delivery> findDeliveryPagesByDeliveryStatus(Pageable pageable, DeliveryStatus deliveryStatus);
     Page<AdminDeliveryRow> findDeliveryRows(Pageable pageable, DeliveryStatus deliveryStatus);
     List<Delivery> findDeliveriesByStatusAndDateRange(DeliveryStatus deliveryStatus, LocalDate startDate, LocalDate endDate);
 }
