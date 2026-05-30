@@ -21,6 +21,12 @@ public class Admin {
 
     private String password;
 
+    private String email;
+
     @Builder.Default
     private boolean isDeleted = false;
+
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
 }

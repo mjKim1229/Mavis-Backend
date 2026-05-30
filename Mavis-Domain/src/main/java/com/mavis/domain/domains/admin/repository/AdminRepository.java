@@ -9,4 +9,6 @@ public interface AdminRepository extends JpaRepository<Admin, Long> {
 
     Optional<Admin> findByUsernameAndIsDeletedFalse(String username);
     Optional<Admin> findByIdAndIsDeletedFalse(Long id);
+    Optional<Admin> findByEmailAndIsDeletedFalse(String email);
+    boolean existsByEmailAndIsDeletedFalse(String email);
 }
