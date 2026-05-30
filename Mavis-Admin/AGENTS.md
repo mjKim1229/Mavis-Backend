@@ -44,10 +44,12 @@
 - 어드민 전용 엔드포인트이므로 반드시 인증 필터 적용 여부 확인
 - 상품 이미지 업로드는 `Mavis-Infrastructure`의 S3FileUploader 사용
 - 환불 처리는 TossPayments 취소 API 연동 필요 (AdminRefundFacade 참고)
+- **새 엔드포인트 추가 시 반드시 `SecurityConfig` 확인** — 공개(`webSecurityCustomizer`) / 인증 필요(`hasRole("ADMIN")`) 여부를 명시적으로 등록
 
 ### Testing Requirements
 - `./gradlew :Mavis-Admin:test`
 - Admin JWT 필터 테스트: `AdminJwtTokenFilterTest`
+- MockMvc 호출 후 DB 상태 검증 시 `em.flush(); em.clear()` 필요 — 같은 트랜잭션 내 1차 캐시로 인해 실제 DB 반영이 안 보일 수 있음
 
 ### Naming Convention
 - 이 모듈의 모든 클래스는 `Admin` prefix 사용 (예: `AdminInquiryService`, `AdminInquiryAnswerService`, `AdminOrderController`)

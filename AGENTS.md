@@ -61,10 +61,12 @@ Mavis-Infrastructure     (External: OAuth, TossPayments, S3, Email, Discord)
 
 ### Common Patterns
 - **예외 처리:** 모든 에러는 `MavisException(ErrorCode)` 패턴. `ErrorCode` enum은 도메인 패키지별로 정의
-- **리포지토리:** 복잡한 쿼리는 `*RepositoryCustom` 인터페이스 + `*RepositoryImpl` (JPAQueryFactory). Q클래스는 `MavisApiServerApplication` 시작 시 `Class.forName`으로 eager load
+- **리포지토리:** 복잡한 쿼리는 `*RepositoryCustom` 인터페이스 + `*RepositoryImpl` (JPAQueryFactory). Q클래스는 `MavisApiServerApplication` 시작 시 `Class.forName`으로 eager load. 단순 존재 여부 확인은 `findBy().isPresent()` 대신 `existsBy()` 사용 — 불필요한 엔티티 로딩 금지.
 - **서비스 분리:** `*Reader` / `*Appender`·`*Modifier` 는 의미있는 도메인 로직이 있을 때만 생성. 단순 Repository 위임이면 Service에서 직접 호출. / `*Facade` 는 다중 Service 조합 또는 외부 API 호출 포함 시 사용
 - **외부 API 에러:** Feign 에러 디코더 (예: `TossPaymentsErrorDecoder`)가 외부 HTTP 에러를 `MavisException`으로 변환
 - **민감 설정:** DB 자격증명, OAuth 키, TossPayments 키, 메일 비밀번호는 AWS Parameter Store로 주입 — `application.yml`에 직접 기입 금지
+- **트랜잭션:** 조회 전용 서비스 메서드는 `@Transactional(readOnly = true)` 사용 — dirty checking 비활성화로 성능 향상
+- **이벤트:** 이메일 발송 등 사이드 이펙트 이벤트 리스너는 `@TransactionalEventListener(phase = AFTER_COMMIT)` 사용 — DB 커밋 실패 시 외부 호출 방지
 
 ### Tech Stack
 
@@ -85,6 +87,7 @@ Mavis-Infrastructure     (External: OAuth, TossPayments, S3, Email, Discord)
 ## 코드 스타일 규약
 
 - 메서드 호출 중첩 금지. 중간 결과는 변수로 먼저 받을 것.
+- `var` 사용 금지. 모든 변수 선언은 명시적 타입으로 작성.
 
 ## DTO 네이밍 규약
 

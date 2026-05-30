@@ -83,6 +83,7 @@ Payment(CANCEL) 1건 INSERT  ← refund.refundAmount 기준 (부분 금액)
 ### Working In This Directory
 - 엔티티 필드 추가/변경 시 **반드시 Flyway 마이그레이션 SQL 먼저 작성** 후 엔티티 코드 수정
 - QueryDSL 쿼리는 `*RepositoryCustom` 인터페이스 + `*RepositoryImpl` 구현 패턴 사용
+- N+1 확인 시 `application-domain.yml`의 `default_batch_fetch_size: 50` 설정 참고 — 컬렉션 연관관계는 배치 로딩으로 자동 처리됨
 - `BaseEntity`(createdAt, updatedAt) 상속 확인 후 엔티티 작성
 - 도메인 예외는 각 도메인 `exception/` 패키지에 `ErrorCode` enum으로 정의
 

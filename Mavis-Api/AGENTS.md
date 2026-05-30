@@ -47,12 +47,13 @@
 - 새 API 엔드포인트 추가 시 Controller → DTO → Service/Facade 순서로 작성
 - 응답은 `SuccessResponse<T>` 래퍼를 사용
 - 예외는 도메인 전용 ErrorCode enum → `MavisException` 패턴 사용
-- Security 설정 변경 시 `SecurityConfig`에서 URL 패턴 확인 필요
+- **새 엔드포인트 추가 시 반드시 `SecurityConfig` 확인** — 공개(`permitAll` 또는 `webSecurityCustomizer`) / 인증 필요(`hasRole("USER")`) 여부를 명시적으로 등록
 
 ### Testing Requirements
 - `./gradlew :Mavis-Api:test`
 - JWT 필터 테스트: `JwtTokenFilterTest`
 - 주문 서비스 테스트: `OrderServiceTest`, `OrderItemAppenderTest`
+- MockMvc 호출 후 DB 상태 검증 시 `em.flush(); em.clear()` 필요 — 같은 트랜잭션 내 1차 캐시로 인해 실제 DB 반영이 안 보일 수 있음
 
 ### Common Patterns
 - Facade 패턴: 여러 서비스를 조합하는 복잡한 흐름 (예: `OrderFacade`)
