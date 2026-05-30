@@ -26,7 +26,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AdminAuthVerificationService {
 
-    private static final String PASSWORD_RESET_URL = "https://admin.garamall.com/password-reset?token=";
+    private static final String PASSWORD_RESET_URL = "https://www.garamall.com/admin/password-reset?token=";
     private static final long PASSWORD_RESET_LINK_VALID_MINUTES = 10;
 
     private final AdminRepository adminRepository;
