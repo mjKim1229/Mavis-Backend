@@ -5,6 +5,8 @@ import com.mavis.api.common.page.PageResponse;
 import com.mavis.api.order.dto.*;
 import com.mavis.api.order.implement.OrderItemAppender;
 import com.mavis.common.util.OrderNumberGenerator;
+import com.mavis.domain.domains.delivery.domain.Delivery;
+import com.mavis.domain.domains.delivery.repository.DeliveryRepository;
 import com.mavis.domain.domains.order.domain.*;
 import com.mavis.domain.domains.order.exception.CannotCancelOrderException;
 import com.mavis.domain.domains.order.exception.InvalidOrderInfoException;
@@ -35,6 +37,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -51,6 +55,7 @@ public class OrderService {
     private final RefundReader refundReader;
     private final PaymentIdempotencyManager paymentIdempotencyManager;
     private final PaymentReader paymentReader;
+    private final DeliveryRepository deliveryRepository;
 
     @Transactional
     @Retryable(
@@ -245,11 +250,14 @@ public class OrderService {
     public PageResponse<UserOrderInfo> getUserOrderList(Pageable pageable) {
         User user = userReader.getCurrentUser();
         Page<Order> orderPages = orderRepository.findOrderPagesByUser(pageable, user);
+        List<Order> orders = orderPages.getContent();
+        Map<Long, Delivery> deliveryMap = deliveryRepository.findByOrderIn(orders).stream()
+                .collect(Collectors.toMap(d -> d.getOrder().getId(), d -> d));
         return PageResponse.of(orderPages.map(order -> {
             List<OrderProduct> products = order.getOrderItems().stream()
                     .map(item -> OrderProduct.from(item, refundReader.findStatusByOrderItem(item)))
                     .toList();
-            return UserOrderInfo.from(order, products);
+            return UserOrderInfo.from(order, products, deliveryMap.get(order.getId()));
         }));
     }
 

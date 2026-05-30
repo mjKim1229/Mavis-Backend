@@ -13,5 +13,7 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long>, Deliv
 
     Optional<Delivery> findByOrder(Order order);
 
+    List<Delivery> findByOrderIn(List<Order> orders);
+
     long countByDeliveryStatus(DeliveryStatus deliveryStatus);
 }

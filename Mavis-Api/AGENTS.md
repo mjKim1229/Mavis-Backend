@@ -54,6 +54,7 @@
 - JWT 필터 테스트: `JwtTokenFilterTest`
 - 주문 서비스 테스트: `OrderServiceTest`, `OrderItemAppenderTest`
 - MockMvc 호출 후 DB 상태 검증 시 `em.flush(); em.clear()` 필요 — 같은 트랜잭션 내 1차 캐시로 인해 실제 DB 반영이 안 보일 수 있음
+- S3, 외부 HTTP 클라이언트(Feign 등) 포함 API 통합테스트 시 `@MockitoBean`으로 해당 빈 교체 — 실제 외부 호출 방지 (예: `@MockitoBean S3FileUploader`). `@MockBean`은 deprecated
 
 ### Common Patterns
 - Facade 패턴: 여러 서비스를 조합하는 복잡한 흐름 (예: `OrderFacade`)

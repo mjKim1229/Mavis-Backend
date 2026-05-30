@@ -76,7 +76,7 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
                 ))
                 .from(order)
                 .join(order.user, user)
-                .join(order.delivery, delivery)
+                .join(delivery).on(delivery.order.eq(order))
                 .where(order.isDeleted.eq(false)
                         .and(order.orderStatus.eq(OrderStatus.ORDERED))
                         .and(delivery.deliveryStatus.eq(DeliveryStatus.READY)))
@@ -87,7 +87,7 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
 
         JPAQuery<Long> countQuery = queryFactory.select(order.count())
                 .from(order)
-                .join(order.delivery, delivery)
+                .join(delivery).on(delivery.order.eq(order))
                 .where(order.isDeleted.eq(false)
                         .and(order.orderStatus.eq(OrderStatus.ORDERED))
                         .and(delivery.deliveryStatus.eq(DeliveryStatus.READY)));
@@ -115,7 +115,7 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
     public long countOrderedWithReadyDelivery() {
         Long count = queryFactory.select(order.count())
                 .from(order)
-                .join(order.delivery, delivery)
+                .join(delivery).on(delivery.order.eq(order))
                 .where(order.isDeleted.eq(false)
                         .and(order.orderStatus.eq(OrderStatus.ORDERED))
                         .and(delivery.deliveryStatus.eq(DeliveryStatus.READY)))
@@ -126,7 +126,6 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
     @Override
     public Page<Order> findOrderPagesByUser(Pageable pageable, User user) {
         List<Order> orders = queryFactory.selectFrom(order)
-                .leftJoin(order.delivery, delivery).fetchJoin()
                 .where(order.isDeleted.eq(false)
                         .and(order.user.eq(user))
                         .and(order.orderStatus.ne(OrderStatus.READY))
@@ -148,7 +147,7 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
     public Page<OrderItem> findUserOrderItemCanReview(Pageable pageable, User user) {
         List<OrderItem> orderItems = queryFactory.selectFrom(orderItem)
                 .join(orderItem.order, order).fetchJoin()
-                .join(order.delivery, delivery).fetchJoin()
+                .join(delivery).on(delivery.order.eq(order))
                 .leftJoin(review).on(review.orderItem.eq(orderItem))
                 .where(
                         orderItem.isDeleted.eq(false)
@@ -164,7 +163,7 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
         JPAQuery<Long> countQuery = queryFactory.select(orderItem.count())
                 .from(orderItem)
                 .join(orderItem.order, order)
-                .join(order.delivery, delivery)
+                .join(delivery).on(delivery.order.eq(order))
                 .leftJoin(review).on(review.orderItem.eq(orderItem))
                 .where(
                         orderItem.isDeleted.eq(false)

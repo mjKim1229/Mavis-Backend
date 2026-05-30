@@ -5,6 +5,7 @@ import com.mavis.api.refund.dto.RequestReturnRequest;
 import com.mavis.api.refund.implement.RefundImageUploader;
 import com.mavis.domain.domains.delivery.domain.Delivery;
 import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
+import com.mavis.domain.domains.delivery.repository.DeliveryRepository;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.implement.OrderReader;
@@ -32,6 +33,7 @@ public class RefundService {
     private final RefundReader refundReader;
     private final RefundAppender refundAppender;
     private final RefundImageUploader refundImageUploader;
+    private final DeliveryRepository deliveryRepository;
 
     @Transactional
     public void createReturnRefund(Long orderItemId, RequestReturnRequest request, List<MultipartFile> images) {
@@ -43,7 +45,7 @@ public class RefundService {
             throw UnauthorizedRefundException.EXCEPTION;
         }
 
-        Delivery delivery = order.getDelivery();
+        Delivery delivery = deliveryRepository.findByOrder(order).orElse(null);
         if (delivery == null || delivery.getDeliveryStatus() != DeliveryStatus.DELIVERED) {
             throw CannotRefundException.EXCEPTION;
         }

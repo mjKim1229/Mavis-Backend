@@ -1,6 +1,8 @@
 package com.mavis.api.order.dto;
 
 import com.mavis.common.util.DateFormatters;
+import com.mavis.domain.domains.delivery.domain.Delivery;
+import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.PaymentMethod;
 import lombok.Builder;
@@ -23,13 +25,14 @@ public record UserOrderInfo(
         String createdAt,
         String paymentMethod
 ) {
-    public static UserOrderInfo from(Order order, List<OrderProduct> orderProductList) {
+    public static UserOrderInfo from(Order order, List<OrderProduct> orderProductList, Delivery delivery) {
+        DeliveryStatus deliveryStatus = delivery != null ? delivery.getDeliveryStatus() : null;
         return UserOrderInfo.builder()
                 .orderId(order.getId())
                 .tossOrderId(order.getOrderId().substring(DOMAIN_PREFIX.length()))
                 .orderProductList(orderProductList)
-                .orderStatusCode(order.getDisplayStatusCode())
-                .orderStatus(order.getDisplayStatus())
+                .orderStatusCode(order.resolveDisplayStatusCode(deliveryStatus))
+                .orderStatus(order.resolveDisplayStatus(deliveryStatus))
                 .address(order.getOrderAddress().getAddress())
                 .addressInfo(order.getOrderAddress().getAddressDetail())
                 .totalPrice(order.getTotalPrice())
