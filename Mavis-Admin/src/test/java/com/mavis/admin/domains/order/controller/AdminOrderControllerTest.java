@@ -1,5 +1,6 @@
 package com.mavis.admin.domains.order.controller;
 
+import com.mavis.admin.domains.order.dto.AdminOrderConfirmRequest;
 import com.mavis.admin.support.ControllerTestSupport;
 import com.mavis.domain.domains.admin.domain.Admin;
 import com.mavis.domain.domains.admin.repository.AdminRepository;
@@ -21,9 +22,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 class AdminOrderControllerTest extends ControllerTestSupport {
@@ -252,6 +258,134 @@ class AdminOrderControllerTest extends ControllerTestSupport {
         @Test
         void 비인증_요청시_401() throws Exception {
             mockMvc.perform(get("/v1/api/order/ordered"))
+                    .andExpect(status().isUnauthorized());
+        }
+    }
+
+    @Nested
+    class 주문_카운트_조회 {
+
+        @Test
+        void 각_상태별_카운트_정확히_반환() throws Exception {
+            // paymentConfirmedCount = 1
+            createOrder("GARAMCNT001", OrderStatus.PAYMENT_CONFIRMED, 50000);
+
+            // orderedCount = 2 (ORDERED + delivery READY)
+            Order ordered1 = createOrder("GARAMCNT002", OrderStatus.ORDERED, 50000);
+            deliveryRepository.save(Delivery.builder().order(ordered1).deliveryStatus(DeliveryStatus.READY).build());
+            Order ordered2 = createOrder("GARAMCNT003", OrderStatus.ORDERED, 50000);
+            deliveryRepository.save(Delivery.builder().order(ordered2).deliveryStatus(DeliveryStatus.READY).build());
+
+            // ORDERED + SHIPPED → orderedCount 미포함, shippedCount 포함
+            Order orderedShipped = createOrder("GARAMCNT004", OrderStatus.ORDERED, 50000);
+            deliveryRepository.save(Delivery.builder().order(orderedShipped).deliveryStatus(DeliveryStatus.SHIPPED).build());
+
+            // deliveredCount = 1
+            Order orderedDelivered = createOrder("GARAMCNT005", OrderStatus.ORDERED, 50000);
+            deliveryRepository.save(Delivery.builder().order(orderedDelivered).deliveryStatus(DeliveryStatus.DELIVERED).build());
+
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/order/counts")
+                            .with(user(savedAdmin.getId().toString()).roles("ADMIN")))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.paymentConfirmedCount").value(1))
+                    .andExpect(jsonPath("$.data.orderedCount").value(2))
+                    .andExpect(jsonPath("$.data.shippedCount").value(1))
+                    .andExpect(jsonPath("$.data.deliveredCount").value(1))
+                    .andExpect(jsonPath("$.data.refundRequestedCount").value(0));
+        }
+
+        @Test
+        void 데이터_없으면_모두_0() throws Exception {
+            mockMvc.perform(get("/v1/api/order/counts")
+                            .with(user(savedAdmin.getId().toString()).roles("ADMIN")))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.paymentConfirmedCount").value(0))
+                    .andExpect(jsonPath("$.data.orderedCount").value(0))
+                    .andExpect(jsonPath("$.data.shippedCount").value(0))
+                    .andExpect(jsonPath("$.data.deliveredCount").value(0))
+                    .andExpect(jsonPath("$.data.refundRequestedCount").value(0));
+        }
+
+        @Test
+        void 비인증_요청시_401() throws Exception {
+            mockMvc.perform(get("/v1/api/order/counts"))
+                    .andExpect(status().isUnauthorized());
+        }
+    }
+
+    @Nested
+    class 발주_처리 {
+
+        @Test
+        void 성공_주문상태_ORDERED로_변경_및_배송_READY_생성() throws Exception {
+            Order order1 = createOrder("GARAMCONF001", OrderStatus.PAYMENT_CONFIRMED, 50000);
+            Order order2 = createOrder("GARAMCONF002", OrderStatus.PAYMENT_CONFIRMED, 30000);
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(post("/v1/api/order/confirm")
+                            .with(user(savedAdmin.getId().toString()).roles("ADMIN"))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new AdminOrderConfirmRequest(
+                                    List.of(order1.getId(), order2.getId())))))
+                    .andExpect(status().isOk());
+
+            em.flush();
+            em.clear();
+
+            Order updated1 = orderRepository.findById(order1.getId()).orElseThrow();
+            Order updated2 = orderRepository.findById(order2.getId()).orElseThrow();
+            assertThat(updated1.getOrderStatus()).isEqualTo(OrderStatus.ORDERED);
+            assertThat(updated2.getOrderStatus()).isEqualTo(OrderStatus.ORDERED);
+
+            List<Delivery> deliveries = deliveryRepository.findByOrderIn(List.of(updated1, updated2));
+            assertThat(deliveries).hasSize(2);
+            assertThat(deliveries).allMatch(d -> d.getDeliveryStatus() == DeliveryStatus.READY);
+        }
+
+        @Test
+        void 존재하지_않는_주문ID_포함시_404() throws Exception {
+            Order order = createOrder("GARAMCONF003", OrderStatus.PAYMENT_CONFIRMED, 50000);
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(post("/v1/api/order/confirm")
+                            .with(user(savedAdmin.getId().toString()).roles("ADMIN"))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new AdminOrderConfirmRequest(
+                                    List.of(order.getId(), 999999L)))))
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void 삭제된_주문ID_포함시_404() throws Exception {
+            Order active = createOrder("GARAMCONF004", OrderStatus.PAYMENT_CONFIRMED, 50000);
+            Order deleted = orderRepository.save(Order.builder()
+                    .orderId("GARAMCONF005")
+                    .user(savedUser).totalPrice(50000)
+                    .orderStatus(OrderStatus.PAYMENT_CONFIRMED)
+                    .orderAddress(new OrderAddress("수신자", "010-1234-5678", "12345", "서울시 강남구", "101호", ""))
+                    .isDeleted(true)
+                    .build());
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(post("/v1/api/order/confirm")
+                            .with(user(savedAdmin.getId().toString()).roles("ADMIN"))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new AdminOrderConfirmRequest(
+                                    List.of(active.getId(), deleted.getId())))))
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void 비인증_요청시_401() throws Exception {
+            mockMvc.perform(post("/v1/api/order/confirm")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new AdminOrderConfirmRequest(List.of(1L)))))
                     .andExpect(status().isUnauthorized());
         }
     }
