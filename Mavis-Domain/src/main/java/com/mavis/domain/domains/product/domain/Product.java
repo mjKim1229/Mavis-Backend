@@ -30,6 +30,7 @@ public class Product extends BaseEntity {
     @OneToMany(mappedBy = "product")
     @Builder.Default
     @SQLRestriction("is_deleted = false")
+    @OrderBy("orderNum ASC")
     private List<ProductImage> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "product")

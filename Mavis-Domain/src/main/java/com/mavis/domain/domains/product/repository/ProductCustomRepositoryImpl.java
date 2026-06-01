@@ -3,7 +3,6 @@ package com.mavis.domain.domains.product.repository;
 import com.mavis.common.enums.ProductCategory;
 import com.mavis.common.enums.ProductSubCategory;
 import com.mavis.domain.domains.product.domain.Product;
-import com.mavis.domain.domains.product.domain.ProductImageType;
 import com.mavis.domain.domains.product.domain.QProductNotice;
 import com.mavis.domain.domains.product.vo.ColorVO;
 import com.mavis.domain.domains.product.vo.ProductNoticeResponse;
@@ -21,7 +20,6 @@ import java.util.Optional;
 
 import static com.mavis.domain.domains.product.domain.QProduct.product;
 import static com.mavis.domain.domains.product.domain.QProductColor.productColor;
-import static com.mavis.domain.domains.product.domain.QProductImage.productImage;
 import static com.mavis.domain.domains.product.domain.QProductTotalView.productTotalView;
 
 
@@ -85,9 +83,6 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
     public List<Product> getRecentCreatedProducts(Pageable pageable) {
         return queryFactory.selectFrom(product)
-                .leftJoin(product.images, productImage)
-                .on(productImage.imageType.eq(ProductImageType.MAIN)
-                        .and(productImage.orderNum.eq(1)))
                 .where(product.isDeleted.eq(false))
                 .orderBy(product.createdAt.desc())
                 .offset(pageable.getOffset())
@@ -98,9 +93,6 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
     @Override
     public List<Product> getProductsByCategory(ProductCategory productCategory, ProductSubCategory subCategory, Pageable pageable) {
         return queryFactory.selectFrom(product)
-                .leftJoin(product.images, productImage)
-                .on(productImage.imageType.eq(ProductImageType.MAIN)
-                        .and(productImage.orderNum.eq(1)))
                 .where(product.isDeleted.eq(false),
                         eqProductCategory(productCategory, subCategory)
                 )
