@@ -34,9 +34,7 @@ public class AdminRefundService {
 
     @Transactional(readOnly = true)
     public PageResponse<GetAdminRefundResponse> getRefundList(Pageable pageable, RefundStatus refundStatus) {
-        Page<Refund> refundPages = refundStatus == null
-                ? refundRepository.findAll(pageable)
-                : refundRepository.findByRefundStatus(refundStatus, pageable);
+        Page<Refund> refundPages = refundRepository.findRefundPages(refundStatus, pageable);
         return PageResponse.of(refundPages.map(GetAdminRefundResponse::from));
     }
 
