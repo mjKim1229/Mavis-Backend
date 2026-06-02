@@ -15,13 +15,13 @@ import com.mavis.domain.domains.order.exception.PriceMismatchException;
 import com.mavis.domain.domains.order.implement.OrderReader;
 import com.mavis.domain.domains.order.implement.PaymentIdempotencyManager;
 import com.mavis.domain.domains.order.implement.PaymentReader;
+import com.mavis.domain.domains.order.dto.OrderProductRow;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.order.repository.PaymentRepository;
 import com.mavis.domain.domains.refund.domain.Refund;
 import com.mavis.domain.domains.refund.domain.RefundStatus;
 import com.mavis.domain.domains.refund.domain.RefundType;
 import com.mavis.domain.domains.refund.implement.RefundAppender;
-import com.mavis.domain.domains.refund.implement.RefundReader;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsCancels;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
@@ -52,7 +52,6 @@ public class OrderService {
     private final PaymentRepository paymentRepository;
     private final OrderReader orderReader;
     private final RefundAppender refundAppender;
-    private final RefundReader refundReader;
     private final PaymentIdempotencyManager paymentIdempotencyManager;
     private final PaymentReader paymentReader;
     private final DeliveryRepository deliveryRepository;
@@ -251,12 +250,18 @@ public class OrderService {
         User user = userReader.getCurrentUser();
         Page<Order> orderPages = orderRepository.findOrderPagesByUser(pageable, user);
         List<Order> orders = orderPages.getContent();
+
         Map<Long, Delivery> deliveryMap = deliveryRepository.findByOrderIn(orders).stream()
-                .collect(Collectors.toMap(d -> d.getOrder().getId(), d -> d));
+                .collect(Collectors.toMap(delivery -> delivery.getOrder().getId(), delivery -> delivery));
+
+        List<OrderProductRow> productRows = orderRepository.findOrderProductRowsByOrders(orders);
+        Map<Long, List<OrderProduct>> productMap = productRows.stream()
+                .collect(Collectors.groupingBy(
+                        OrderProductRow::orderId,
+                        Collectors.mapping(OrderProduct::from, Collectors.toList())));
+
         return PageResponse.of(orderPages.map(order -> {
-            List<OrderProduct> products = order.getOrderItems().stream()
-                    .map(item -> OrderProduct.from(item, refundReader.findStatusByOrderItem(item)))
-                    .toList();
+            List<OrderProduct> products = productMap.getOrDefault(order.getId(), List.of());
             return UserOrderInfo.from(order, products, deliveryMap.get(order.getId()));
         }));
     }

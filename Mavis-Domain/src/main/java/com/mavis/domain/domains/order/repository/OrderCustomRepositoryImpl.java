@@ -6,6 +6,8 @@ import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.domain.OrderStatus;
 import com.mavis.domain.domains.order.dto.AdminOrderItemRow;
 import com.mavis.domain.domains.order.dto.AdminOrderRow;
+import com.mavis.domain.domains.order.dto.OrderProductRow;
+import com.mavis.domain.domains.product.domain.ProductImageType;
 import com.mavis.domain.domains.user.domain.User;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -21,6 +23,8 @@ import static com.mavis.domain.domains.delivery.domain.QDelivery.delivery;
 import static com.mavis.domain.domains.order.domain.QOrder.order;
 import static com.mavis.domain.domains.order.domain.QOrderItem.orderItem;
 import static com.mavis.domain.domains.product.domain.QProduct.product;
+import static com.mavis.domain.domains.product.domain.QProductImage.productImage;
+import static com.mavis.domain.domains.refund.domain.QRefund.refund;
 import static com.mavis.domain.domains.review.domain.QReview.review;
 import static com.mavis.domain.domains.user.domain.QUser.user;
 
@@ -141,6 +145,32 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
                         .and(order.user.eq(user)));
 
         return PageableExecutionUtils.getPage(orders, pageable, countQuery::fetchOne);
+    }
+
+    @Override
+    public List<OrderProductRow> findOrderProductRowsByOrders(List<Order> orders) {
+        return queryFactory
+                .select(Projections.constructor(OrderProductRow.class,
+                        orderItem.order.id,
+                        orderItem.id,
+                        product.id,
+                        product.name,
+                        orderItem.color,
+                        orderItem.quantity,
+                        orderItem.price,
+                        refund.refundStatus,
+                        productImage.imageUrl))
+                .from(orderItem)
+                .join(orderItem.product, product)
+                .leftJoin(refund).on(refund.orderItem.eq(orderItem))
+                .leftJoin(productImage).on(
+                        productImage.product.eq(product),
+                        productImage.imageType.eq(ProductImageType.MAIN),
+                        productImage.isDeleted.eq(false))
+                .where(orderItem.order.in(orders)
+                        .and(orderItem.isDeleted.eq(false)))
+                .orderBy(orderItem.id.asc())
+                .fetch();
     }
 
     @Override

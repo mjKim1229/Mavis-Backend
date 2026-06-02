@@ -1,7 +1,7 @@
 package com.mavis.api.order.dto;
 
-import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.domain.OrderOption;
+import com.mavis.domain.domains.order.dto.OrderProductRow;
 import com.mavis.domain.domains.refund.domain.RefundStatus;
 
 
@@ -15,17 +15,20 @@ public record OrderProduct(
         String refundStatusTitle,
         String productImageUrl
 ) {
-    public static OrderProduct from(OrderItem orderItem, RefundStatus refundStatus) {
-        String imageUrl = orderItem.getProduct().getMainImageUrl();
+    public static OrderProduct from(OrderProductRow row) {
+        RefundStatus refundStatus = row.refundStatus();
+        String refundStatusTitle = refundStatus != null ? refundStatus.getTitle() : null;
+        OrderOption option = new OrderOption(row.color(), row.quantity());
+        int totalPrice = row.price() * row.quantity();
         return new OrderProduct(
-                orderItem.getId(),
-                orderItem.getProduct().getId(),
-                orderItem.getProduct().getName(),
-                new OrderOption(orderItem.getColor(), orderItem.getQuantity()),
-                orderItem.getTotalPrice(),
+                row.orderItemId(),
+                row.productId(),
+                row.productName(),
+                option,
+                totalPrice,
                 refundStatus,
-                refundStatus != null ? refundStatus.getTitle() : null,
-                imageUrl
+                refundStatusTitle,
+                row.productImageUrl()
         );
     }
 }
