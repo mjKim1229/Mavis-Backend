@@ -17,7 +17,14 @@ import com.mavis.domain.domains.order.domain.PaymentMethod;
 import com.mavis.domain.domains.order.repository.OrderItemRepository;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.product.domain.Product;
+import com.mavis.domain.domains.product.domain.ProductImage;
+import com.mavis.domain.domains.product.domain.ProductImageType;
+import com.mavis.domain.domains.product.repository.ProductImageRepository;
 import com.mavis.domain.domains.product.repository.ProductRepository;
+import com.mavis.domain.domains.refund.domain.Refund;
+import com.mavis.domain.domains.refund.domain.RefundStatus;
+import com.mavis.domain.domains.refund.domain.RefundType;
+import com.mavis.domain.domains.refund.repository.RefundRepository;
 import com.mavis.domain.domains.review.domain.Review;
 import com.mavis.domain.domains.review.repository.ReviewRepository;
 import com.mavis.domain.domains.user.domain.SnsType;
@@ -31,6 +38,7 @@ import org.springframework.http.MediaType;
 
 import java.util.List;
 
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -118,6 +126,8 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
         @Autowired private OrderRepository orderRepository;
         @Autowired private OrderItemRepository orderItemRepository;
         @Autowired private DeliveryRepository deliveryRepository;
+        @Autowired private ProductImageRepository productImageRepository;
+        @Autowired private RefundRepository refundRepository;
         @Autowired private jakarta.persistence.EntityManager em;
 
         private User user;
@@ -242,6 +252,97 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                     .andExpect(jsonPath("$.data.content[3].orderProductList[0].option.color").value("black"))
                     .andExpect(jsonPath("$.data.content[3].orderProductList[0].option.quantity").value(2))
                     .andExpect(jsonPath("$.data.content[3].orderProductList[0].totalPrice").value(20000));
+        }
+
+        @Test
+        void 상품_2개_주문_조회시_상품별_그룹핑되고_환불상태와_MAIN이미지_매핑된다() throws Exception {
+            Product imageProduct = productRepository.save(Product.builder()
+                    .name("이미지상품")
+                    .price(20000)
+                    .subCategory(ProductSubCategory.TENCEL)
+                    .build());
+            productImageRepository.save(ProductImage.builder()
+                    .product(imageProduct)
+                    .imageType(ProductImageType.MAIN)
+                    .imageUrl("https://cdn.test/main.jpg")
+                    .orderNum(0)
+                    .build());
+
+            OrderAddress address = new OrderAddress("홍길동", "010-1234-5678", "12345", "서울시 강남구", "101호", "문 앞에 놔주세요");
+            Order order = orderRepository.save(Order.builder()
+                    .orderId("GARAM999")
+                    .user(user)
+                    .totalPrice(30000)
+                    .orderAddress(address)
+                    .paymentMethod(PaymentMethod.CARD)
+                    .orderStatus(OrderStatus.PAYMENT_CONFIRMED)
+                    .build());
+            orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
+            OrderItem refundedItem = orderItemRepository.save(OrderItem.of(new OrderOption("white", 1), 20000, order, imageProduct));
+            refundRepository.save(Refund.builder()
+                    .orderItem(refundedItem)
+                    .refundType(RefundType.RETURN)
+                    .refundStatus(RefundStatus.REQUESTED)
+                    .refundAmount(20000)
+                    .refundReason("단순 변심")
+                    .carrier("CJ대한통운")
+                    .trackingNumber("1234567890")
+                    .build());
+
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/order")
+                            .header("Authorization", userToken(user.getId())))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.totalElements").value(1))
+                    // 그룹핑: 한 주문에 상품 2개
+                    .andExpect(jsonPath("$.data.content[0].orderProductList.length()").value(2))
+                    // item1 (id asc 먼저) = 이미지/환불 없음
+                    .andExpect(jsonPath("$.data.content[0].orderProductList[0].productName").value("테스트상품"))
+                    .andExpect(jsonPath("$.data.content[0].orderProductList[0].option.color").value("black"))
+                    .andExpect(jsonPath("$.data.content[0].orderProductList[0].productImageUrl", nullValue()))
+                    .andExpect(jsonPath("$.data.content[0].orderProductList[0].refundStatus", nullValue()))
+                    .andExpect(jsonPath("$.data.content[0].orderProductList[0].refundStatusTitle", nullValue()))
+                    // item2 = MAIN 이미지 + 환불 채워짐
+                    .andExpect(jsonPath("$.data.content[0].orderProductList[1].productName").value("이미지상품"))
+                    .andExpect(jsonPath("$.data.content[0].orderProductList[1].option.color").value("white"))
+                    .andExpect(jsonPath("$.data.content[0].orderProductList[1].productImageUrl").value("https://cdn.test/main.jpg"))
+                    .andExpect(jsonPath("$.data.content[0].orderProductList[1].refundStatus").value("REQUESTED"))
+                    .andExpect(jsonPath("$.data.content[0].orderProductList[1].refundStatusTitle", notNullValue()));
+        }
+
+        @Test
+        void 삭제된_주문상품은_목록에서_제외된다() throws Exception {
+            OrderAddress address = new OrderAddress("홍길동", "010-1234-5678", "12345", "서울시 강남구", "101호", "문 앞에 놔주세요");
+            Order order = orderRepository.save(Order.builder()
+                    .orderId("GARAM888")
+                    .user(user)
+                    .totalPrice(10000)
+                    .orderAddress(address)
+                    .paymentMethod(PaymentMethod.CARD)
+                    .orderStatus(OrderStatus.PAYMENT_CONFIRMED)
+                    .build());
+            orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
+            orderItemRepository.save(OrderItem.builder()
+                    .order(order)
+                    .product(product)
+                    .color("white")
+                    .quantity(1)
+                    .price(10000)
+                    .isDeleted(true)
+                    .build());
+
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/order")
+                            .header("Authorization", userToken(user.getId())))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.totalElements").value(1))
+                    // 삭제 안 된 1개만 노출
+                    .andExpect(jsonPath("$.data.content[0].orderProductList.length()").value(1))
+                    .andExpect(jsonPath("$.data.content[0].orderProductList[0].option.color").value("black"));
         }
     }
 
