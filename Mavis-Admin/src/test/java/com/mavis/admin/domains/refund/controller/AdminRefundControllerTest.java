@@ -13,7 +13,9 @@ import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.product.repository.ProductRepository;
 import com.mavis.domain.domains.refund.domain.Refund;
 import com.mavis.domain.domains.refund.domain.RefundStatus;
+import com.mavis.domain.domains.refund.domain.RefundImage;
 import com.mavis.domain.domains.refund.domain.RefundType;
+import com.mavis.domain.domains.refund.repository.RefundImageRepository;
 import com.mavis.domain.domains.refund.repository.RefundRepository;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.domain.domains.user.repository.UserRepository;
@@ -37,6 +39,7 @@ class AdminRefundControllerTest extends ControllerTestSupport {
     @Autowired private OrderRepository orderRepository;
     @Autowired private OrderItemRepository orderItemRepository;
     @Autowired private RefundRepository refundRepository;
+    @Autowired private RefundImageRepository refundImageRepository;
     @Autowired private EntityManager em;
 
     private Admin savedAdmin;
@@ -88,6 +91,13 @@ class AdminRefundControllerTest extends ControllerTestSupport {
                 .refundReason(reason)
                 .carrier("CJ대한통운")
                 .trackingNumber("1234567890")
+                .build());
+    }
+
+    private void createRefundImage(Refund refund, String imageUrl) {
+        refundImageRepository.save(RefundImage.builder()
+                .refund(refund)
+                .imageUrl(imageUrl)
                 .build());
     }
 
@@ -155,6 +165,40 @@ class AdminRefundControllerTest extends ControllerTestSupport {
                             .with(user(savedAdmin.getId().toString()).roles("ADMIN")))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.totalElements").value(2));
+        }
+
+        @Test
+        void 환불_이미지_여러개_imageUrls로_조회() throws Exception {
+            Order order = createOrder("GARAM20240101IMGS", 50000);
+            OrderItem orderItem = createOrderItem(order, "블랙", 1);
+            Refund refund = createRefund(orderItem, RefundStatus.REQUESTED, 50000, "이미지 포함");
+            createRefundImage(refund, "https://cdn.test/refund1.jpg");
+            createRefundImage(refund, "https://cdn.test/refund2.jpg");
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/refund")
+                            .with(user(savedAdmin.getId().toString()).roles("ADMIN")))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.totalElements").value(1))
+                    .andExpect(jsonPath("$.data.content[0].refundInfo.imageUrls.length()").value(2))
+                    .andExpect(jsonPath("$.data.content[0].refundInfo.imageUrls[0]").value("https://cdn.test/refund1.jpg"))
+                    .andExpect(jsonPath("$.data.content[0].refundInfo.imageUrls[1]").value("https://cdn.test/refund2.jpg"));
+        }
+
+        @Test
+        void 환불_이미지_없으면_빈_imageUrls() throws Exception {
+            Order order = createOrder("GARAM20240101NOIM", 50000);
+            OrderItem orderItem = createOrderItem(order, "블랙", 1);
+            createRefund(orderItem, RefundStatus.REQUESTED, 50000, "이미지 없음");
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/refund")
+                            .with(user(savedAdmin.getId().toString()).roles("ADMIN")))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.content[0].refundInfo.imageUrls").isArray())
+                    .andExpect(jsonPath("$.data.content[0].refundInfo.imageUrls").isEmpty());
         }
 
         @Test
