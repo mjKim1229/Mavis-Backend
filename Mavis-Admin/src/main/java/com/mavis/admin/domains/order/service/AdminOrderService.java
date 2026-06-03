@@ -10,9 +10,9 @@ import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
 import com.mavis.domain.domains.delivery.repository.DeliveryRepository;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderStatus;
-import com.mavis.domain.domains.order.exception.OrderNotFoundException;
 import com.mavis.domain.domains.order.dto.AdminOrderItemRow;
 import com.mavis.domain.domains.order.dto.AdminOrderRow;
+import com.mavis.domain.domains.order.exception.OrderNotFoundException;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.refund.domain.RefundStatus;
 import com.mavis.domain.domains.refund.repository.RefundRepository;
@@ -36,28 +36,32 @@ public class AdminOrderService {
     @Transactional(readOnly = true)
     public PageResponse<GetAdminOrderResponse> getPaymentConfirmedOrderLists(Pageable pageable) {
         Page<AdminOrderRow> orderRows = orderRepository.findPaymentConfirmedOrderRows(pageable);
-        return buildOrderPageResponse(orderRows);
+        List<Long> orderIds = orderRows.map(AdminOrderRow::orderId).toList();
+        List<AdminOrderItemRow> itemRows = orderRepository.findOrderItemRowsByOrderIds(orderIds);
+        return buildOrderPageResponse(orderRows, itemRows);
     }
 
     @Transactional(readOnly = true)
     public PageResponse<GetAdminOrderResponse> getOrderedOrderLists(Pageable pageable) {
         Page<AdminOrderRow> orderRows = orderRepository.findOrderedOrderRows(pageable);
-        return buildOrderPageResponse(orderRows);
+        List<Long> orderIds = orderRows.map(AdminOrderRow::orderId).toList();
+
+        List<AdminOrderItemRow> itemRows = orderRepository.findOrderItemRowsByOrderIds(orderIds);
+        return buildOrderPageResponse(orderRows, itemRows);
     }
 
-    private PageResponse<GetAdminOrderResponse> buildOrderPageResponse(Page<AdminOrderRow> orderRows) {
-        List<Long> orderIds = orderRows.map(AdminOrderRow::orderId).toList();
-        List<AdminOrderItemRow> itemRows = orderRepository.findOrderItemRowsByOrderIds(orderIds);
+    private PageResponse<GetAdminOrderResponse> buildOrderPageResponse(Page<AdminOrderRow> orderRows, List<AdminOrderItemRow> itemRows) {
         Map<Long, List<AdminOrderItemRow>> itemsByOrderId = itemRows.stream()
                 .collect(Collectors.groupingBy(AdminOrderItemRow::orderId));
 
-        return PageResponse.of(orderRows.map(row -> {
+        Page<GetAdminOrderResponse> responses = orderRows.map(row -> {
             List<OrderItemInfo> orderItemInfos = itemsByOrderId.getOrDefault(row.orderId(), List.of())
                     .stream()
                     .map(OrderItemInfo::from)
                     .toList();
             return GetAdminOrderResponse.from(row, orderItemInfos);
-        }));
+        });
+        return PageResponse.of(responses);
     }
 
     @Transactional(readOnly = true)
@@ -79,9 +83,9 @@ public class AdminOrderService {
         orders.forEach(order -> {
             order.confirmOrder();
             Delivery delivery = Delivery.builder()
-                    .order(order)
-                    .deliveryStatus(DeliveryStatus.READY)
-                    .build();
+                .order(order)
+                .deliveryStatus(DeliveryStatus.READY)
+                .build();
             deliveryRepository.save(delivery);
         });
     }
