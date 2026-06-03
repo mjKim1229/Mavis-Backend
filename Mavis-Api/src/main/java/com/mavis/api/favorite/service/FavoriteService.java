@@ -31,14 +31,14 @@ public class FavoriteService {
     @Transactional(readOnly = true)
     public PageResponse<GetUserFavoriteResponse> getUserFavorites(Pageable pageable) {
         User user = userReader.getCurrentUser();
-        Page<GetUserFavoriteResponse> userFavoritePages = favoriteRepository.findByUserAndIsDeletedFalse(user, pageable)
-                .map(favorite -> {
-                    Product product = favorite.getProduct();
-                    List<String> colors = product.getColorNames();
-                    String previewImage = product.getMainImageUrl();
-                    GetProductPreviewResponse productResponse = GetProductPreviewResponse.from(product, colors, previewImage);
-                    return new GetUserFavoriteResponse(product.getId(), productResponse);
-                });
+        Page<GetUserFavoriteResponse> userFavoritePages = favoriteRepository.findUserFavorites(user, pageable)
+            .map(favorite -> {
+                Product product = favorite.getProduct();
+                List<String> colors = product.getColorNames();
+                String previewImage = product.getMainImageUrl();
+                GetProductPreviewResponse productResponse = GetProductPreviewResponse.from(product, colors, previewImage);
+                return new GetUserFavoriteResponse(product.getId(), productResponse);
+            });
         return PageResponse.of(userFavoritePages);
     }
 
@@ -50,9 +50,9 @@ public class FavoriteService {
             throw FavoriteAlreadyExistsException.EXCEPTION;
         }
         Favorite favorite = Favorite.builder()
-                .user(user)
-                .product(product)
-                .build();
+            .user(user)
+            .product(product)
+            .build();
         favoriteRepository.save(favorite);
     }
 

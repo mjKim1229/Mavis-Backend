@@ -4,13 +4,20 @@ import com.mavis.api.support.ControllerTestSupport;
 import com.mavis.domain.domains.favorite.domain.Favorite;
 import com.mavis.domain.domains.favorite.repository.FavoriteRepository;
 import com.mavis.domain.domains.product.domain.Product;
+import com.mavis.domain.domains.product.domain.ProductColor;
+import com.mavis.domain.domains.product.domain.ProductImage;
+import com.mavis.domain.domains.product.domain.ProductImageType;
+import com.mavis.domain.domains.product.repository.ProductColorRepository;
+import com.mavis.domain.domains.product.repository.ProductImageRepository;
 import com.mavis.domain.domains.product.repository.ProductRepository;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.domain.domains.user.repository.UserRepository;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import static org.hamcrest.Matchers.hasItems;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -25,6 +32,15 @@ class FavoriteControllerTest extends ControllerTestSupport {
 
     @Autowired
     private FavoriteRepository favoriteRepository;
+
+    @Autowired
+    private ProductColorRepository productColorRepository;
+
+    @Autowired
+    private ProductImageRepository productImageRepository;
+
+    @Autowired
+    private EntityManager em;
 
     private User savedUser;
     private Product savedProduct;
@@ -92,16 +108,34 @@ class FavoriteControllerTest extends ControllerTestSupport {
     }
 
     @Test
-    void 즐겨찾기_목록_조회_성공() throws Exception {
+    void 즐겨찾기_목록_조회_JSON_필드_전체_검증() throws Exception {
+        productColorRepository.save(ProductColor.of(savedProduct, "블랙"));
+        productColorRepository.save(ProductColor.of(savedProduct, "화이트"));
+        productImageRepository.save(ProductImage.builder()
+                .product(savedProduct)
+                .imageUrl("https://s3.test/main.jpg")
+                .imageType(ProductImageType.MAIN)
+                .orderNum(0)
+                .build());
         favoriteRepository.save(Favorite.builder()
                 .user(savedUser)
                 .product(savedProduct)
                 .build());
+        em.flush();
+        em.clear();
 
         mockMvc.perform(get("/v1/api/favorites/user")
                         .with(user(savedUser.getId().toString()).roles("USER")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.totalElements").value(1));
+                .andExpect(jsonPath("$.data.totalElements").value(1))
+                .andExpect(jsonPath("$.data.content[0].productId").value(savedProduct.getId()))
+                .andExpect(jsonPath("$.data.content[0].productResponse.id").value(savedProduct.getId()))
+                .andExpect(jsonPath("$.data.content[0].productResponse.name").value("테스트상품"))
+                .andExpect(jsonPath("$.data.content[0].productResponse.price").value(10000))
+                .andExpect(jsonPath("$.data.content[0].productResponse.isClearance").value(false))
+                .andExpect(jsonPath("$.data.content[0].productResponse.colors").isArray())
+                .andExpect(jsonPath("$.data.content[0].productResponse.colors", hasItems("블랙", "화이트")))
+                .andExpect(jsonPath("$.data.content[0].productResponse.previewImage").value("https://s3.test/main.jpg"));
     }
 
     @Test
