@@ -26,12 +26,6 @@ public class RefundReader {
                 .orElseThrow(() -> RefundNotFoundException.EXCEPTION);
     }
 
-    public RefundStatus findStatusByOrderItem(OrderItem orderItem) {
-        return refundRepository.findByOrderItem(orderItem)
-                .map(Refund::getRefundStatus)
-                .orElse(null);
-    }
-
     public boolean hasActiveRefund(OrderItem orderItem) {
         return refundRepository.existsByOrderItemAndRefundStatusIn(
                 orderItem,

@@ -54,11 +54,7 @@ public class AdminOrderService {
         return PageResponse.of(orderRows.map(row -> {
             List<OrderItemInfo> orderItemInfos = itemsByOrderId.getOrDefault(row.orderId(), List.of())
                     .stream()
-                    .map(item -> OrderItemInfo.builder()
-                            .productName(item.productName())
-                            .color(item.color())
-                            .quantity(item.quantity())
-                            .build())
+                    .map(OrderItemInfo::from)
                     .toList();
             return GetAdminOrderResponse.from(row, orderItemInfos);
         }));

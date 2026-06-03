@@ -54,28 +54,28 @@ public class AdminDeliveryService {
     public PageResponse<GetAdminDeliveryResponse> getAdminDeliveryLists(Pageable pageable, DeliveryStatus deliveryStatus) {
         Page<AdminDeliveryRow> deliveryRows = deliveryRepository.findDeliveryRows(pageable, deliveryStatus);
         List<Long> orderIds = deliveryRows.map(AdminDeliveryRow::orderId).toList();
+
         List<AdminOrderItemRow> itemRows = orderRepository.findOrderItemRowsByOrderIds(orderIds);
         Map<Long, List<AdminOrderItemRow>> itemsByOrderId = itemRows.stream()
-                .collect(Collectors.groupingBy(AdminOrderItemRow::orderId));
+            .collect(Collectors.groupingBy(AdminOrderItemRow::orderId));
 
-        return PageResponse.of(deliveryRows.map(row -> {
-            List<OrderItemInfo> orderItemInfos = itemsByOrderId.getOrDefault(row.orderId(), List.of())
-                    .stream()
-                    .map(item -> OrderItemInfo.builder()
-                            .productName(item.productName())
-                            .color(item.color())
-                            .quantity(item.quantity())
-                            .build())
-                    .toList();
-            return GetAdminDeliveryResponse.from(row, orderItemInfos);
-        }));
+        Page<GetAdminDeliveryResponse> responses = deliveryRows.map(row -> toDeliveryResponse(row, itemsByOrderId));
+        return PageResponse.of(responses);
+    }
+
+    private GetAdminDeliveryResponse toDeliveryResponse(AdminDeliveryRow row, Map<Long, List<AdminOrderItemRow>> itemsByOrderId) {
+        List<AdminOrderItemRow> itemRows = itemsByOrderId.getOrDefault(row.orderId(), List.of());
+        List<OrderItemInfo> orderItemInfos = itemRows.stream()
+            .map(OrderItemInfo::from)
+            .toList();
+        return GetAdminDeliveryResponse.from(row, orderItemInfos);
     }
 
     @Transactional(readOnly = true)
     public byte[] getOrderByExcel(LocalDate startDate, LocalDate endDate) {
         try (
-                SXSSFWorkbook workbook = new SXSSFWorkbook();
-                ByteArrayOutputStream out = new ByteArrayOutputStream()
+            SXSSFWorkbook workbook = new SXSSFWorkbook();
+            ByteArrayOutputStream out = new ByteArrayOutputStream()
         ) {
             List<Delivery> deliveries = deliveryRepository.findDeliveriesByStatusAndDateRange(DeliveryStatus.READY, startDate, endDate);
             List<GetAdminOrderExcelResponse> deliveryExcelResponses = deliveries.stream().map(delivery -> {
@@ -84,8 +84,8 @@ public class AdminDeliveryService {
                 User user = order.getUser();
                 List<OrderItem> orderItems = order.getOrderItems();
                 List<OrderItemExcelInfo> orderItemInfoList = orderItems.stream()
-                        .map(orderItem -> OrderItemExcelInfo.from(orderItem.getProduct().getName(), orderItem.getColor(), orderItem.getQuantity()))
-                        .toList();
+                    .map(orderItem -> OrderItemExcelInfo.from(orderItem.getProduct().getName(), orderItem.getColor(), orderItem.getQuantity()))
+                    .toList();
 
                 String orderedAt = order.getCreatedAt().format(DateFormatters.DATE_FORMATTER);
                 return GetAdminOrderExcelResponse.from(order, orderAddress, orderItemInfoList, user, orderedAt);
@@ -111,28 +111,28 @@ public class AdminDeliveryService {
         AtomicInteger index = new AtomicInteger(0);
 
         Arrays.stream(GetAdminOrderExcelResponse.class.getDeclaredFields())
-                .forEach(field -> {
-                    if (List.class.isAssignableFrom(field.getType())) {
-                        Arrays.stream(OrderItemExcelInfo.class.getDeclaredFields())
-                                .filter(f -> f.isAnnotationPresent(ExcelColumn.class))
-                                .forEach(f -> {
-                                    String headerName = f.getAnnotation(ExcelColumn.class).header();
-                                    Cell cell = header.createCell(index.getAndIncrement());
-                                    cell.setCellValue(headerName);
-                                    cell.setCellStyle(headerStyle);
-                                });
-                        return;
-                    }
+            .forEach(field -> {
+                if (List.class.isAssignableFrom(field.getType())) {
+                    Arrays.stream(OrderItemExcelInfo.class.getDeclaredFields())
+                        .filter(f -> f.isAnnotationPresent(ExcelColumn.class))
+                        .forEach(f -> {
+                            String headerName = f.getAnnotation(ExcelColumn.class).header();
+                            Cell cell = header.createCell(index.getAndIncrement());
+                            cell.setCellValue(headerName);
+                            cell.setCellStyle(headerStyle);
+                        });
+                    return;
+                }
 
-                    if (!field.isAnnotationPresent(ExcelColumn.class)) {
-                        return;
-                    }
+                if (!field.isAnnotationPresent(ExcelColumn.class)) {
+                    return;
+                }
 
-                    String headerName = field.getAnnotation(ExcelColumn.class).header();
-                    Cell cell = header.createCell(index.getAndIncrement());
-                    cell.setCellValue(headerName);
-                    cell.setCellStyle(headerStyle);
-                });
+                String headerName = field.getAnnotation(ExcelColumn.class).header();
+                Cell cell = header.createCell(index.getAndIncrement());
+                cell.setCellValue(headerName);
+                cell.setCellStyle(headerStyle);
+            });
     }
 
     private CellStyle createHeaderStyle(Workbook workbook) {
@@ -180,11 +180,11 @@ public class AdminDeliveryService {
                         List<OrderItemExcelInfo> items = (List<OrderItemExcelInfo>) list;
 
                         String productNames = items.stream()
-                                .map(OrderItemExcelInfo::productName)
-                                .collect(Collectors.joining("\n"));
+                            .map(OrderItemExcelInfo::productName)
+                            .collect(Collectors.joining("\n"));
                         String optionQuantities = items.stream()
-                                .map(OrderItemExcelInfo::optionQuantity)
-                                .collect(Collectors.joining("\n"));
+                            .map(OrderItemExcelInfo::optionQuantity)
+                            .collect(Collectors.joining("\n"));
 
                         writeCell(row, colIndex++, productNames, bodyStyle);
                         writeCell(row, colIndex++, optionQuantities, bodyStyle);
@@ -247,7 +247,7 @@ public class AdminDeliveryService {
         }
 
         Delivery delivery = deliveryRepository.findByOrder(order)
-                .orElseThrow(() -> DeliveryNotFoundException.EXCEPTION);
+            .orElseThrow(() -> DeliveryNotFoundException.EXCEPTION);
         delivery.startDelivery(request.carrier(), request.trackingNumber());
     }
 
