@@ -8,11 +8,15 @@ import com.mavis.domain.domains.order.repository.OrderItemRepository;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.product.repository.ProductRepository;
+import com.mavis.domain.domains.review.domain.Review;
+import com.mavis.domain.domains.review.domain.ReviewImage;
 import com.mavis.domain.domains.review.repository.ReviewImageRepository;
+import com.mavis.domain.domains.review.repository.ReviewRepository;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.domain.domains.user.repository.UserRepository;
 import com.mavis.infrastructure.image.ImageDirectory;
 import com.mavis.infrastructure.image.S3FileUploader;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -25,7 +29,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class ReviewControllerTest extends ControllerTestSupport {
@@ -37,6 +43,8 @@ class ReviewControllerTest extends ControllerTestSupport {
     @Autowired private OrderRepository orderRepository;
     @Autowired private OrderItemRepository orderItemRepository;
     @Autowired private ReviewImageRepository reviewImageRepository;
+    @Autowired private ReviewRepository reviewRepository;
+    @Autowired private EntityManager em;
 
     private User savedUser;
     private Product savedProduct;
@@ -149,6 +157,150 @@ class ReviewControllerTest extends ControllerTestSupport {
         private MockMultipartFile jsonPart(String name, Object value) throws Exception {
             return new MockMultipartFile(name, "", MediaType.APPLICATION_JSON_VALUE,
                     objectMapper.writeValueAsBytes(value));
+        }
+    }
+
+    @Nested
+    class 상품_리뷰_목록_조회 {
+
+        private OrderItem createOrderItem(Product product, String color, int quantity) {
+            return orderItemRepository.save(OrderItem.builder()
+                    .order(savedOrder)
+                    .product(product)
+                    .price(10000)
+                    .color(color)
+                    .quantity(quantity)
+                    .build());
+        }
+
+        private Review createReview(OrderItem orderItem, String content) {
+            return reviewRepository.save(Review.builder()
+                    .content(content)
+                    .orderItem(orderItem)
+                    .user(savedUser)
+                    .build());
+        }
+
+        private void createReviewImage(Review review, String imageUrl, int sortOrder) {
+            reviewImageRepository.save(ReviewImage.builder()
+                    .review(review)
+                    .imageUrl(imageUrl)
+                    .sortOrder(sortOrder)
+                    .build());
+        }
+
+        @Test
+        void 목록_조회_JSON_필드_전체_검증() throws Exception {
+            OrderItem orderItem = createOrderItem(savedProduct, "블랙", 2);
+            Review review = createReview(orderItem, "좋은 상품입니다");
+            createReviewImage(review, "https://s3.test/review/1.jpg", 0);
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/review/product/{productId}", savedProduct.getId()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.totalElements").value(1))
+                    .andExpect(jsonPath("$.data.content[0].reviewId").value(review.getId()))
+                    .andExpect(jsonPath("$.data.content[0].content").value("좋은 상품입니다"))
+                    .andExpect(jsonPath("$.data.content[0].color").value("블랙"))
+                    .andExpect(jsonPath("$.data.content[0].quantity").value(2))
+                    .andExpect(jsonPath("$.data.content[0].name").value("테****"))
+                    .andExpect(jsonPath("$.data.content[0].createdAt").isNotEmpty())
+                    .andExpect(jsonPath("$.data.content[0].imageUrls").isArray())
+                    .andExpect(jsonPath("$.data.content[0].imageUrls[0]").value("https://s3.test/review/1.jpg"));
+        }
+
+        @Test
+        void photoOnly_true시_사진있는_리뷰만_조회() throws Exception {
+            OrderItem withImageItem = createOrderItem(savedProduct, "블랙", 1);
+            Review withImage = createReview(withImageItem, "사진 리뷰");
+            createReviewImage(withImage, "https://s3.test/review/photo.jpg", 0);
+
+            OrderItem noImageItem = createOrderItem(savedProduct, "화이트", 1);
+            createReview(noImageItem, "텍스트만 리뷰");
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/review/product/{productId}", savedProduct.getId())
+                            .param("photoOnly", "true"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.totalElements").value(1))
+                    .andExpect(jsonPath("$.data.content[0].content").value("사진 리뷰"))
+                    .andExpect(jsonPath("$.data.content[0].imageUrls[0]").value("https://s3.test/review/photo.jpg"));
+        }
+
+        @Test
+        void photoOnly_기본값_false시_사진없는_리뷰도_포함() throws Exception {
+            OrderItem withImageItem = createOrderItem(savedProduct, "블랙", 1);
+            Review withImage = createReview(withImageItem, "사진 리뷰");
+            createReviewImage(withImage, "https://s3.test/review/photo.jpg", 0);
+
+            OrderItem noImageItem = createOrderItem(savedProduct, "화이트", 1);
+            createReview(noImageItem, "텍스트만 리뷰");
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/review/product/{productId}", savedProduct.getId()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.totalElements").value(2));
+        }
+
+        @Test
+        void photoOnly_true시_이미지_전부_삭제된_리뷰_제외() throws Exception {
+            OrderItem orderItem = createOrderItem(savedProduct, "블랙", 1);
+            Review review = createReview(orderItem, "이미지 삭제된 리뷰");
+            ReviewImage image = reviewImageRepository.save(ReviewImage.builder()
+                    .review(review)
+                    .imageUrl("https://s3.test/review/deleted.jpg")
+                    .sortOrder(0)
+                    .build());
+            image.delete();
+            reviewImageRepository.save(image);
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/review/product/{productId}", savedProduct.getId())
+                            .param("photoOnly", "true"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.totalElements").value(0));
+        }
+
+        @Test
+        void 삭제된_리뷰_제외() throws Exception {
+            OrderItem orderItem = createOrderItem(savedProduct, "블랙", 1);
+            Review review = createReview(orderItem, "삭제될 리뷰");
+            review.delete();
+            reviewRepository.save(review);
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/review/product/{productId}", savedProduct.getId()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.totalElements").value(0));
+        }
+
+        @Test
+        void 다른_상품_리뷰_제외() throws Exception {
+            Product otherProduct = productRepository.save(Product.builder()
+                    .name("다른상품")
+                    .price(20000)
+                    .build());
+            OrderItem otherItem = createOrderItem(otherProduct, "블랙", 1);
+            createReview(otherItem, "다른 상품 리뷰");
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/review/product/{productId}", savedProduct.getId()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.totalElements").value(0));
+        }
+
+        @Test
+        void 리뷰_없을때_빈_목록_반환() throws Exception {
+            mockMvc.perform(get("/v1/api/review/product/{productId}", savedProduct.getId()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.totalElements").value(0))
+                    .andExpect(jsonPath("$.data.content").isEmpty());
         }
     }
 }
