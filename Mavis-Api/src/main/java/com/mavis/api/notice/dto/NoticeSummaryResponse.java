@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 @Builder
 public record NoticeSummaryResponse(
         Long id,
-        String category,
         String title,
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
         LocalDateTime createdAt
