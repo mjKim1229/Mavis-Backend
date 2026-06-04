@@ -25,7 +25,6 @@ import static com.mavis.domain.domains.order.domain.QOrderItem.orderItem;
 import static com.mavis.domain.domains.product.domain.QProduct.product;
 import static com.mavis.domain.domains.product.domain.QProductImage.productImage;
 import static com.mavis.domain.domains.refund.domain.QRefund.refund;
-import static com.mavis.domain.domains.review.domain.QReview.review;
 import static com.mavis.domain.domains.user.domain.QUser.user;
 
 @RequiredArgsConstructor
@@ -173,35 +172,4 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
                 .fetch();
     }
 
-    @Override
-    public Page<OrderItem> findUserOrderItemCanReview(Pageable pageable, User user) {
-        List<OrderItem> orderItems = queryFactory.selectFrom(orderItem)
-                .join(orderItem.order, order).fetchJoin()
-                .join(delivery).on(delivery.order.eq(order))
-                .leftJoin(review).on(review.orderItem.eq(orderItem))
-                .where(
-                        orderItem.isDeleted.eq(false)
-                                .and(order.user.eq(user))
-                                .and(delivery.deliveryStatus.eq(DeliveryStatus.DELIVERED))
-                                .and(review.id.isNull())
-                )
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .orderBy(orderItem.id.desc())
-                .fetch();
-
-        JPAQuery<Long> countQuery = queryFactory.select(orderItem.count())
-                .from(orderItem)
-                .join(orderItem.order, order)
-                .join(delivery).on(delivery.order.eq(order))
-                .leftJoin(review).on(review.orderItem.eq(orderItem))
-                .where(
-                        orderItem.isDeleted.eq(false)
-                                .and(order.user.eq(user))
-                                .and(delivery.deliveryStatus.eq(DeliveryStatus.DELIVERED))
-                                .and(review.id.isNull())
-                );
-
-        return PageableExecutionUtils.getPage(orderItems, pageable, countQuery::fetchOne);
-    }
 }

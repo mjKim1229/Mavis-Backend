@@ -265,11 +265,4 @@ public class OrderService {
             return UserOrderInfo.from(order, products, deliveryMap.get(order.getId()));
         }));
     }
-
-    @Transactional(readOnly = true)
-    public PageResponse<GetOrderItemUserCanReviewResponse> getUserCanReviewList(Pageable pageable) {
-        User user = userReader.getCurrentUser();
-        Page<OrderItem> orderItemPages = orderRepository.findUserOrderItemCanReview(pageable, user);
-        return PageResponse.of(orderItemPages.map(GetOrderItemUserCanReviewResponse::from));
-    }
 }

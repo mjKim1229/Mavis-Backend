@@ -25,8 +25,6 @@ import com.mavis.domain.domains.refund.domain.Refund;
 import com.mavis.domain.domains.refund.domain.RefundStatus;
 import com.mavis.domain.domains.refund.domain.RefundType;
 import com.mavis.domain.domains.refund.repository.RefundRepository;
-import com.mavis.domain.domains.review.domain.Review;
-import com.mavis.domain.domains.review.repository.ReviewRepository;
 import com.mavis.domain.domains.user.domain.SnsType;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.domain.domains.user.repository.UserRepository;
@@ -346,84 +344,4 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
         }
     }
 
-    @Nested
-    class 리뷰가능목록조회 {
-
-        @Autowired private OrderRepository orderRepository;
-        @Autowired private OrderItemRepository orderItemRepository;
-        @Autowired private DeliveryRepository deliveryRepository;
-        @Autowired private ReviewRepository reviewRepository;
-        @Autowired private jakarta.persistence.EntityManager em;
-
-        private User user;
-        private Product product;
-
-        @BeforeEach
-        void setUp() {
-            user = userRepository.save(User.builder()
-                    .snsType(SnsType.KAKAO)
-                    .name("테스트유저")
-                    .build());
-
-            product = productRepository.save(Product.builder()
-                    .name("테스트상품")
-                    .price(10000)
-                    .subCategory(ProductSubCategory.TENCEL)
-                    .build());
-        }
-
-        @Test
-        void 배송완료_리뷰미작성_아이템만_노출() throws Exception {
-            OrderAddress address = new OrderAddress("홍길동", "010-1234-5678", "12345", "서울시 강남구", "101호", "문 앞에 놔주세요");
-
-            // Case1: DELIVERED + 리뷰 없음 → 포함
-            Order deliveredOrder = orderRepository.save(Order.builder()
-                    .orderId("GARAM001")
-                    .user(user).totalPrice(10000).orderAddress(address)
-                    .orderStatus(OrderStatus.ORDERED).build());
-            OrderItem reviewableItem = orderItemRepository.save(
-                    OrderItem.of(new OrderOption("black", 1), 10000, deliveredOrder, product));
-            deliveryRepository.save(Delivery.builder()
-                    .order(deliveredOrder).deliveryStatus(DeliveryStatus.DELIVERED).build());
-
-            // Case2: DELIVERED + 리뷰 있음 → 제외
-            Order deliveredOrderWithReview = orderRepository.save(Order.builder()
-                    .orderId("GARAM002")
-                    .user(user).totalPrice(10000).orderAddress(address)
-                    .orderStatus(OrderStatus.ORDERED).build());
-            OrderItem reviewedItem = orderItemRepository.save(
-                    OrderItem.of(new OrderOption("white", 1), 10000, deliveredOrderWithReview, product));
-            deliveryRepository.save(Delivery.builder()
-                    .order(deliveredOrderWithReview).deliveryStatus(DeliveryStatus.DELIVERED).build());
-            reviewRepository.save(Review.builder().orderItem(reviewedItem).user(user).content("좋아요").build());
-
-            // Case3: SHIPPED + 리뷰 없음 → 제외 (배송완료 아님)
-            Order shippedOrder = orderRepository.save(Order.builder()
-                    .orderId("GARAM003")
-                    .user(user).totalPrice(10000).orderAddress(address)
-                    .orderStatus(OrderStatus.ORDERED).build());
-            orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, shippedOrder, product));
-            deliveryRepository.save(Delivery.builder()
-                    .order(shippedOrder).deliveryStatus(DeliveryStatus.SHIPPED).build());
-
-            // Case4: PAYMENT_CONFIRMED + 배송 없음 → 제외
-            Order noDeliveryOrder = orderRepository.save(Order.builder()
-                    .orderId("GARAM004")
-                    .user(user).totalPrice(10000).orderAddress(address)
-                    .orderStatus(OrderStatus.PAYMENT_CONFIRMED).build());
-            orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, noDeliveryOrder, product));
-
-            em.flush();
-            em.clear();
-
-            mockMvc.perform(get("/v1/api/order/reviewable")
-                            .header("Authorization", userToken(user.getId())))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.totalElements").value(1))
-                    .andExpect(jsonPath("$.data.content[0].orderItemId").value(reviewableItem.getId()))
-                    .andExpect(jsonPath("$.data.content[0].productName").value("테스트상품"))
-                    .andExpect(jsonPath("$.data.content[0].orderOption.color").value("black"))
-                    .andExpect(jsonPath("$.data.content[0].orderOption.quantity").value(1));
-        }
-    }
 }

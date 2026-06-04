@@ -1,7 +1,6 @@
 package com.mavis.domain.domains.order.repository;
 
 import com.mavis.domain.domains.order.domain.Order;
-import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.dto.AdminOrderItemRow;
 import com.mavis.domain.domains.order.dto.AdminOrderRow;
 import com.mavis.domain.domains.order.dto.OrderProductRow;
@@ -22,8 +21,6 @@ public interface OrderCustomRepository {
     Page<Order> findOrderPagesByUser(Pageable pageable, User user);
 
     List<OrderProductRow> findOrderProductRowsByOrders(List<Order> orders);
-
-    Page<OrderItem> findUserOrderItemCanReview(Pageable pageable, User user);
 
     long countOrderedWithReadyDelivery();
 }
