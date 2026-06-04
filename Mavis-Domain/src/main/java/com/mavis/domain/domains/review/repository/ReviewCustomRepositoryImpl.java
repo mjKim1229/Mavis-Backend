@@ -73,16 +73,18 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
 
     private BooleanExpression hasNonDeletedImage() {
         return JPAExpressions.selectOne()
-                .from(reviewImage)
-                .where(reviewImage.review.eq(review)
-                        .and(reviewImage.isDeleted.eq(false)))
-                .exists();
+            .from(reviewImage)
+            .where(reviewImage.review.eq(review)
+                .and(reviewImage.isDeleted.eq(false)))
+            .exists();
     }
 
     @Override
     public Page<Review> queryProductReviewsByUser(User user, Pageable pageable) {
         List<Review> reviews = queryFactory
             .selectFrom(review)
+            .join(review.orderItem, orderItem).fetchJoin()
+            .join(orderItem.product, product).fetchJoin()
             .where(review.user.eq(user)
                 .and(review.isDeleted.eq(false)))
             .orderBy(review.createdAt.desc())
@@ -98,39 +100,6 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
 
         return PageableExecutionUtils.getPage(reviews, pageable, countQuery::fetchOne);
     }
-
-//    @Override
-//    public Page<OrderItem> queryWritableOrderItemsByUser(User user, Pageable pageable) {
-//        List<OrderItem> orderItems = queryFactory.selectFrom(orderItem)
-//                .join(orderItem.order, order).fetchJoin()
-//                .join(orderItem.product, product).fetchJoin()
-//                .join(delivery).on(delivery.order.eq(order))
-//                .leftJoin(review).on(review.orderItem.eq(orderItem))
-//                .where(
-//                        order.user.eq(user),
-//                        delivery.deliveryStatus.eq(DeliveryStatus.DELIVERED),
-//                        review.id.isNull(),
-//                        orderItem.isDeleted.eq(false)
-//                )
-//                .offset(pageable.getOffset())
-//                .limit(pageable.getPageSize())
-//                .fetch();
-//
-//        JPAQuery<Long> countQuery = queryFactory
-//                .select(orderItem.count())
-//                .from(orderItem)
-//                .join(orderItem.order, order)
-//                .join(delivery).on(delivery.order.eq(order))
-//                .leftJoin(review).on(review.orderItem.eq(orderItem))
-//                .where(
-//                        order.user.eq(user),
-//                        delivery.deliveryStatus.eq(DeliveryStatus.DELIVERED),
-//                        review.id.isNull(),
-//                        orderItem.isDeleted.eq(false)
-//                );
-//
-//        return PageableExecutionUtils.getPage(orderItems, pageable, countQuery::fetchOne);
-//    }
 
     @Override
     public Page<GetWritableUserOrderItemResponseVO> queryWritableOrderItemsByUser(User user, Pageable pageable) {

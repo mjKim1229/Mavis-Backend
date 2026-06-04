@@ -2,11 +2,7 @@ package com.mavis.api.review.service;
 
 import com.mavis.api.auth.implement.UserReader;
 import com.mavis.api.common.page.PageResponse;
-import com.mavis.api.review.dto.CreateReviewRequest;
-import com.mavis.api.review.dto.ReviewImageVO;
-import com.mavis.api.review.dto.ReviewResponse;
-import com.mavis.api.review.dto.UpdateReviewRequest;
-import com.mavis.api.review.dto.UserReviewResponse;
+import com.mavis.api.review.dto.*;
 import com.mavis.api.review.implement.ReviewImageUploader;
 import com.mavis.api.review.implement.ReviewValidator;
 import com.mavis.domain.domains.order.domain.OrderItem;
@@ -54,7 +50,7 @@ public class ReviewService {
     public void updateReview(Long reviewId, UpdateReviewRequest request, List<MultipartFile> images) {
         User user = userReader.getCurrentUser();
         Review review = reviewRepository.findByIdAndIsDeletedFalse(reviewId)
-                .orElseThrow(() -> ReviewNotFoundException.EXCEPTION);
+            .orElseThrow(() -> ReviewNotFoundException.EXCEPTION);
         if (!review.getUser().getId().equals(user.getId())) {
             throw UnauthorizedReviewException.EXCEPTION;
         }
@@ -73,7 +69,7 @@ public class ReviewService {
     public void deleteReview(Long reviewId) {
         User user = userReader.getCurrentUser();
         Review review = reviewRepository.findByIdAndIsDeletedFalse(reviewId)
-                .orElseThrow(() -> ReviewNotFoundException.EXCEPTION);
+            .orElseThrow(() -> ReviewNotFoundException.EXCEPTION);
         if (!review.getUser().getId().equals(user.getId())) {
             throw UnauthorizedReviewException.EXCEPTION;
         }
@@ -84,10 +80,10 @@ public class ReviewService {
     public PageResponse<ReviewResponse> getProductReviews(Long productId, boolean photoOnly, Pageable pageable) {
         Product product = productReader.readById(productId);
         Page<ReviewResponse> reviewPages = reviewRepository.queryProductReviews(product.getId(), photoOnly, pageable)
-                .map(review -> {
-                    List<String> reviewImages = extractReviewImages(review);
-                    return ReviewResponse.of(review, review.getUser(), review.getOrderItem(), reviewImages);
-                });
+            .map(review -> {
+                List<String> reviewImages = extractReviewImages(review);
+                return ReviewResponse.of(review, review.getUser(), review.getOrderItem(), reviewImages);
+            });
 
         return PageResponse.of(reviewPages);
     }
@@ -96,7 +92,7 @@ public class ReviewService {
     public UserReviewResponse getUserReviewById(Long reviewId) {
         User user = userReader.getCurrentUser();
         Review review = reviewRepository.findByIdAndIsDeletedFalse(reviewId)
-                .orElseThrow(() -> ReviewNotFoundException.EXCEPTION);
+            .orElseThrow(() -> ReviewNotFoundException.EXCEPTION);
         if (!review.getUser().getId().equals(user.getId())) {
             throw UnauthorizedReviewException.EXCEPTION;
         }
@@ -108,41 +104,27 @@ public class ReviewService {
     public PageResponse<UserReviewResponse> getUserReviews(Pageable pageable) {
         User user = userReader.getCurrentUser();
         Page<UserReviewResponse> reviewPages = reviewRepository.queryProductReviewsByUser(user, pageable)
-                .map(review -> {
-                    List<String> imageUrls = extractReviewImages(review);
-                    return UserReviewResponse.of(review, review.getOrderItem(), imageUrls);
-                });
+            .map(review -> {
+                List<String> imageUrls = extractReviewImages(review);
+                return UserReviewResponse.of(review, review.getOrderItem(), imageUrls);
+            });
         return PageResponse.of(reviewPages);
     }
 
     private static List<String> extractReviewImages(Review review) {
         return review.getImages()
-                .stream()
-                .filter(image -> !image.isDeleted())
-                .map(ReviewImage::getImageUrl)
-                .toList();
+            .stream()
+            .filter(image -> !image.isDeleted())
+            .map(ReviewImage::getImageUrl)
+            .toList();
     }
 
-    //    @Transactional(readOnly = true)
-//    public PageResponse<GetWritableUserOrderItemResponse> getWritableOrderItems(Pageable pageable) {
-//        User user = userReader.getCurrentUser();
-//        Page<OrderItem> orderItemPages = reviewRepository.queryWritableOrderItemsByUser(user, pageable);
-//        Page<GetWritableUserOrderItemResponse> dtoList = orderItemPages.map(orderItem -> {
-//            Product product = orderItem.getProduct();
-//            String previewImage = product.getImages().stream()
-//                    .map(ProductImage::getImageUrl)
-//                    .findFirst()
-//                    .orElse(null);
-//            return GetWritableUserOrderItemResponse.from(orderItem, product, previewImage);
-//        });
-//        return PageResponse.of(dtoList);
-//    }
     @Transactional(readOnly = true)
     public PageResponse<GetWritableUserOrderItemResponseVO> getWritableOrderItems(Pageable pageable) {
         User user = userReader.getCurrentUser();
 
         Page<GetWritableUserOrderItemResponseVO> dtoList =
-                reviewRepository.queryWritableOrderItemsByUser(user, pageable);
+            reviewRepository.queryWritableOrderItemsByUser(user, pageable);
 
         return PageResponse.of(dtoList);
     }

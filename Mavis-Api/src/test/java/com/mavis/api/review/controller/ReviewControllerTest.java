@@ -303,4 +303,96 @@ class ReviewControllerTest extends ControllerTestSupport {
                     .andExpect(jsonPath("$.data.content").isEmpty());
         }
     }
+
+    @Nested
+    class 내_리뷰_목록_조회 {
+
+        private OrderItem createOrderItem(String color, int quantity) {
+            return orderItemRepository.save(OrderItem.builder()
+                    .order(savedOrder)
+                    .product(savedProduct)
+                    .price(10000)
+                    .color(color)
+                    .quantity(quantity)
+                    .build());
+        }
+
+        private Review createReview(User user, OrderItem orderItem, String content) {
+            return reviewRepository.save(Review.builder()
+                    .content(content)
+                    .orderItem(orderItem)
+                    .user(user)
+                    .build());
+        }
+
+        private void createReviewImage(Review review, String imageUrl, int sortOrder) {
+            reviewImageRepository.save(ReviewImage.builder()
+                    .review(review)
+                    .imageUrl(imageUrl)
+                    .sortOrder(sortOrder)
+                    .build());
+        }
+
+        @Test
+        void 내_리뷰_목록_조회_JSON_필드_전체_검증() throws Exception {
+            OrderItem orderItem = createOrderItem("블랙", 2);
+            Review review = createReview(savedUser, orderItem, "내가 쓴 리뷰");
+            createReviewImage(review, "https://s3.test/review/my.jpg", 0);
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/review/user")
+                            .with(user(savedUser.getId().toString()).roles("USER")))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.totalElements").value(1))
+                    .andExpect(jsonPath("$.data.content[0].reviewId").value(review.getId()))
+                    .andExpect(jsonPath("$.data.content[0].content").value("내가 쓴 리뷰"))
+                    .andExpect(jsonPath("$.data.content[0].createdAt").isNotEmpty())
+                    .andExpect(jsonPath("$.data.content[0].imageUrls[0]").value("https://s3.test/review/my.jpg"))
+                    .andExpect(jsonPath("$.data.content[0].orderItemInfo.productName").value("테스트상품"))
+                    .andExpect(jsonPath("$.data.content[0].orderItemInfo.color").value("블랙"))
+                    .andExpect(jsonPath("$.data.content[0].orderItemInfo.quantity").value(2));
+        }
+
+        @Test
+        void 본인_리뷰만_조회() throws Exception {
+            User otherUser = userRepository.save(User.builder()
+                    .name("다른유저")
+                    .email("other@test.com")
+                    .build());
+            OrderItem myItem = createOrderItem("블랙", 1);
+            OrderItem otherItem = createOrderItem("화이트", 1);
+            createReview(savedUser, myItem, "내 리뷰");
+            createReview(otherUser, otherItem, "남의 리뷰");
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/review/user")
+                            .with(user(savedUser.getId().toString()).roles("USER")))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.totalElements").value(1))
+                    .andExpect(jsonPath("$.data.content[0].content").value("내 리뷰"));
+        }
+
+        @Test
+        void 삭제된_리뷰_제외() throws Exception {
+            OrderItem orderItem = createOrderItem("블랙", 1);
+            Review review = createReview(savedUser, orderItem, "삭제될 리뷰");
+            review.delete();
+            reviewRepository.save(review);
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/review/user")
+                            .with(user(savedUser.getId().toString()).roles("USER")))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.totalElements").value(0));
+        }
+
+        @Test
+        void 비인증_요청시_401() throws Exception {
+            mockMvc.perform(get("/v1/api/review/user"))
+                    .andExpect(status().isUnauthorized());
+        }
+    }
 }
