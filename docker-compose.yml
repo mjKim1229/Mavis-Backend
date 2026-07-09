@@ -1,7 +1,7 @@
 services:
   backend:
     container_name: backend
-    image: mavisgaram/backend
+    image: mavisgaram/mavis:backend
     environment:
       - TZ=Asia/Seoul
       - SPRING_PROFILES_ACTIVE=dev
@@ -14,7 +14,7 @@ services:
 
   admin:
     container_name: admin
-    image: mavisgaram/admin
+    image: mavisgaram/mavis:admin
     environment:
       - TZ=Asia/Seoul
       - SPRING_PROFILES_ACTIVE=dev

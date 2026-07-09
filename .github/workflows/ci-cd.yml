@@ -41,18 +41,16 @@ jobs:
         run: |
           cd Mavis-Api
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}/backend:local -t ${{ secrets.DOCKER_REPO }}/backend .
-          docker push ${{ secrets.DOCKER_REPO }}/backend:local
-          docker push ${{ secrets.DOCKER_REPO }}/backend
+          docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}/mavis:backend .
+          docker push ${{ secrets.DOCKER_REPO }}/mavis:backend
 
       - name: docker build and push to dev [admin]
         if: contains(github.ref, 'dev')
         run: |
           cd Mavis-Admin
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}/admin:local -t ${{ secrets.DOCKER_REPO }}/admin .
-          docker push ${{ secrets.DOCKER_REPO }}/admin:local
-          docker push ${{ secrets.DOCKER_REPO }}/admin
+          docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}/mavis:admin .
+          docker push ${{ secrets.DOCKER_REPO }}/mavis:admin
 
       - name: Copy docker-compose.yml to EC2 DEV
         if: contains(github.ref, 'dev')
@@ -73,8 +71,9 @@ jobs:
           key: ${{ secrets.SSH_KEY_DEV }}
           script: |
             cd /home/ubuntu
-            sudo docker pull ${{ secrets.DOCKER_REPO }}/backend
-            sudo docker pull ${{ secrets.DOCKER_REPO }}/admin
+            sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+            sudo docker pull ${{ secrets.DOCKER_REPO }}/mavis:backend
+            sudo docker pull ${{ secrets.DOCKER_REPO }}/mavis:admin
             sudo docker-compose -f docker-compose.yml up -d --no-deps backend admin
             sudo docker exec nginx nginx -s reload
             sudo docker image prune -f
