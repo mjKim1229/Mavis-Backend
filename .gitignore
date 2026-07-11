@@ -46,3 +46,6 @@ out/
 scripts/
 docker-compose.local.yml
 docker-compose.mysql.yml
+*.local.md
+.env
+.env.*
