@@ -46,7 +46,6 @@ public class S3FileUploader {
             throw new MavisCodeException(GlobalErrorCode.INTERNAL_SERVER_ERROR);
         }
 
-        String resizedFileName = s3FileName.replace("original/", "resized/");
-        return s3Client.utilities().getUrl(url -> url.bucket(bucketName).key(resizedFileName)).toString();
+        return s3Client.utilities().getUrl(url -> url.bucket(bucketName).key(s3FileName)).toString();
     }
 }
