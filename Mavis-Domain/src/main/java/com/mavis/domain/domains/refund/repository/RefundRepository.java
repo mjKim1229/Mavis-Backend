@@ -13,6 +13,8 @@ import java.util.Optional;
 public interface RefundRepository extends JpaRepository<Refund, Long>, RefundCustomRepository {
     boolean existsByOrderItemAndRefundStatusIn(OrderItem orderItem, List<RefundStatus> statuses);
 
+    boolean existsByOrderItem(OrderItem orderItem);
+
     long countByRefundStatus(RefundStatus refundStatus);
 
     long countByOrderItemInAndRefundStatus(List<OrderItem> orderItems, RefundStatus refundStatus);

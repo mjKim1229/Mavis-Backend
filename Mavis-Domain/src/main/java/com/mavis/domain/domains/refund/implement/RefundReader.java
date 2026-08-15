@@ -2,13 +2,10 @@ package com.mavis.domain.domains.refund.implement;
 
 import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.refund.domain.Refund;
-import com.mavis.domain.domains.refund.domain.RefundStatus;
 import com.mavis.domain.domains.refund.exception.RefundNotFoundException;
 import com.mavis.domain.domains.refund.repository.RefundRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -27,9 +24,7 @@ public class RefundReader {
     }
 
     public boolean hasActiveRefund(OrderItem orderItem) {
-        return refundRepository.existsByOrderItemAndRefundStatusIn(
-                orderItem,
-                List.of(RefundStatus.REQUESTED)
-        );
+        // 상태 무관 — 환불 이력(요청/완료/거절)이 있으면 재신청 차단
+        return refundRepository.existsByOrderItem(orderItem);
     }
 }
