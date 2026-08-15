@@ -2,10 +2,12 @@ package com.mavis.admin.domains.refund.dto;
 
 import com.mavis.admin.domains.order.dto.OrderItemInfo;
 import com.mavis.domain.domains.order.domain.Order;
+import com.mavis.domain.domains.order.domain.OrderAddress;
 import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.refund.domain.Refund;
 import com.mavis.domain.domains.refund.domain.RefundImage;
 import com.mavis.domain.domains.refund.domain.RefundStatus;
+import com.mavis.domain.domains.user.domain.User;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
@@ -20,8 +22,10 @@ public record GetAdminRefundResponse(
 ) {
     public record OrderInfo(
             String tossOrderId,
+            String userName,
             String receiverName,
             String receiverPhoneNumber,
+            String address,
             Long orderItemId,
             OrderItemInfo orderItemInfo
     ) {}
@@ -40,11 +44,15 @@ public record GetAdminRefundResponse(
     public static GetAdminRefundResponse from(Refund refund) {
         OrderItem orderItem = refund.getOrderItem();
         Order order = orderItem.getOrder();
+        User user = order.getUser();
+        OrderAddress orderAddress = order.getOrderAddress();
         return GetAdminRefundResponse.builder()
                 .orderInfo(new OrderInfo(
                         order.getOrderId().substring(DOMAIN_PREFIX.length()),
-                        order.getOrderAddress().getReceiverName(),
-                        order.getOrderAddress().getReceiverPhone(),
+                        user.getName(),
+                        orderAddress.getReceiverName(),
+                        orderAddress.getReceiverPhone(),
+                        orderAddress.getFullAddress(),
                         orderItem.getId(),
                         new OrderItemInfo(orderItem.getProduct().getName(), orderItem.getColor(), orderItem.getQuantity())
                 ))

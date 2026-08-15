@@ -47,7 +47,7 @@ public record GetAdminOrderExcelResponse(
                 .tossOrderId(order.getOrderId().substring(DOMAIN_PREFIX.length()))
                 .orderedAt(orderedAt)
                 .totalPrice(order.getTotalPrice())
-                .address(orderAddress.getAddress())
+                .address(orderAddress.getFullAddress())
                 .receiverName(orderAddress.getReceiverName())
                 .receiverPhoneNumber(orderAddress.getReceiverPhone())
                 .requestMessage(orderAddress.getAddressMemo())

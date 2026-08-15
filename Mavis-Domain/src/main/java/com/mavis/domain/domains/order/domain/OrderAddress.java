@@ -17,4 +17,11 @@ public class OrderAddress {
     private String address;
     private String addressDetail;
     private String addressMemo;
+
+    public String getFullAddress() {
+        if (addressDetail == null) {
+            return address;
+        }
+        return address + " " + addressDetail;
+    }
 }
