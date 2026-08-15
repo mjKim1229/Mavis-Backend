@@ -6,6 +6,7 @@ import com.mavis.domain.domains.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -46,6 +47,8 @@ public class Order extends BaseEntity {
     @Builder.Default
     private boolean isDeleted = false;
 
+    private LocalDateTime orderedAt;
+
     public void setTotalPrice(int totalPrice) {
         this.totalPrice = totalPrice;
     }
@@ -72,6 +75,7 @@ public class Order extends BaseEntity {
 
     public void confirmOrder() {
         this.orderStatus = OrderStatus.ORDERED;
+        this.orderedAt = LocalDateTime.now();
     }
 
     public String resolveDisplayStatus(DeliveryStatus deliveryStatus) {

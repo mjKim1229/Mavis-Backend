@@ -5,6 +5,7 @@ import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.domain.Payment;
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,6 +49,8 @@ public class Refund extends BaseEntity {
 
     private String trackingNumber;
 
+    private LocalDateTime processedAt;
+
     @Builder.Default
     @OneToMany(mappedBy = "refund", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<RefundImage> images = new ArrayList<>();
@@ -58,10 +61,12 @@ public class Refund extends BaseEntity {
 
     public void reject() {
         this.refundStatus = RefundStatus.REJECTED;
+        this.processedAt = LocalDateTime.now();
     }
 
     public void complete(String cancelTransactionKey) {
         this.refundStatus = RefundStatus.COMPLETED;
         this.cancelTransactionKey = cancelTransactionKey;
+        this.processedAt = LocalDateTime.now();
     }
 }

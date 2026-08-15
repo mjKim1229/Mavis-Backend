@@ -5,6 +5,8 @@ import com.mavis.domain.domains.order.domain.Order;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Entity
 @Builder
@@ -29,6 +31,10 @@ public class Delivery extends BaseEntity {
 
     private String trackingNumber;
 
+    private LocalDateTime shippedAt;
+
+    private LocalDateTime deliveredAt;
+
     public void updateDeliveryStatus(DeliveryStatus deliveryStatus) {
         this.deliveryStatus = deliveryStatus;
     }
@@ -37,10 +43,12 @@ public class Delivery extends BaseEntity {
         this.carrier = carrier;
         this.trackingNumber = trackingNumber;
         this.deliveryStatus = DeliveryStatus.SHIPPED;
+        this.shippedAt = LocalDateTime.now();
     }
 
     public void complete() {
         this.deliveryStatus = DeliveryStatus.DELIVERED;
+        this.deliveredAt = LocalDateTime.now();
     }
 
 }
