@@ -10,6 +10,7 @@ import com.mavis.domain.domains.order.dto.OrderProductRow;
 import com.mavis.domain.domains.product.domain.ProductImageType;
 import com.mavis.domain.domains.user.domain.User;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -128,11 +129,12 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
 
     @Override
     public Page<Order> findOrderPagesByUser(Pageable pageable, User user) {
+        BooleanExpression condition = order.isDeleted.eq(false)
+                .and(order.user.eq(user))
+                .and(order.orderStatus.notIn(OrderStatus.READY, OrderStatus.PAYMENT_REQUESTED));
+
         List<Order> orders = queryFactory.selectFrom(order)
-                .where(order.isDeleted.eq(false)
-                        .and(order.user.eq(user))
-                        .and(order.orderStatus.ne(OrderStatus.READY))
-                )
+                .where(condition)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(order.id.desc())
@@ -140,8 +142,7 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
 
         JPAQuery<Long> countQuery = queryFactory.select(order.count())
                 .from(order)
-                .where(order.isDeleted.eq(false)
-                        .and(order.user.eq(user)));
+                .where(condition);
 
         return PageableExecutionUtils.getPage(orders, pageable, countQuery::fetchOne);
     }
