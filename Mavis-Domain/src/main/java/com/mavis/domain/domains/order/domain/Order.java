@@ -29,6 +29,8 @@ public class Order extends BaseEntity {
 
     private int totalPrice;
 
+    private int deliveryFee;
+
     @Column(columnDefinition = "varchar(255)")
     @Enumerated(EnumType.STRING)
     @Builder.Default
@@ -51,6 +53,10 @@ public class Order extends BaseEntity {
 
     public void setTotalPrice(int totalPrice) {
         this.totalPrice = totalPrice;
+    }
+
+    public void setDeliveryFee(int deliveryFee) {
+        this.deliveryFee = deliveryFee;
     }
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {

@@ -78,6 +78,7 @@ public class OrderService {
             throw PriceMismatchException.EXCEPTION;
         }
         order.setTotalPrice(totalPrice);
+        order.setDeliveryFee(DELIVERY_FEE);
         return CreateOrderResponse.from(order.getOrderId());
     }
 
