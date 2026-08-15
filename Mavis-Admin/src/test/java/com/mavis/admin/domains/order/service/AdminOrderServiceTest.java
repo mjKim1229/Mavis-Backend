@@ -141,6 +141,27 @@ class AdminOrderServiceTest extends ControllerTestSupport {
         }
 
         @Test
+        void 이미_발주된_주문_재확인시_중복_배송_생성_안함() {
+            Order order = createOrder("GARAM0015", OrderStatus.PAYMENT_CONFIRMED);
+            em.flush();
+            em.clear();
+
+            AdminOrderConfirmRequest request = new AdminOrderConfirmRequest(List.of(order.getId()));
+            adminOrderService.confirmOrder(request);
+            em.flush();
+            em.clear();
+
+            // 따닥 — 이미 발주된 주문 재확인해도 예외 없이 no-op, 배송 중복 생성 안 됨
+            adminOrderService.confirmOrder(request);
+            em.flush();
+            em.clear();
+
+            Order reloaded = orderRepository.findById(order.getId()).orElseThrow();
+            assertThat(reloaded.getOrderStatus()).isEqualTo(OrderStatus.ORDERED);
+            assertThat(deliveryRepository.count()).isEqualTo(1);
+        }
+
+        @Test
         void 존재하지_않는_주문ID_포함시_예외_발생() {
             Order order = createOrder("GARAM0014", OrderStatus.PAYMENT_CONFIRMED);
             em.flush();

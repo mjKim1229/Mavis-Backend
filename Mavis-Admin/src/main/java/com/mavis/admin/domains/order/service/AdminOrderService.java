@@ -81,6 +81,9 @@ public class AdminOrderService {
             throw OrderNotFoundException.EXCEPTION;
         }
         orders.forEach(order -> {
+            if (order.getOrderStatus() == OrderStatus.ORDERED) {
+                return; // 이미 발주됨 — 중복 Delivery 생성 방지 (멱등 처리)
+            }
             order.confirmOrder();
             Delivery delivery = Delivery.builder()
                 .order(order)
