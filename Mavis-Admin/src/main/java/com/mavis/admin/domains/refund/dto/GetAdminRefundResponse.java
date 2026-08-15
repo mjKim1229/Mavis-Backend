@@ -26,6 +26,7 @@ public record GetAdminRefundResponse(
             String receiverName,
             String receiverPhoneNumber,
             String address,
+            LocalDateTime orderCreatedAt,
             Long orderItemId,
             OrderItemInfo orderItemInfo
     ) {}
@@ -53,6 +54,7 @@ public record GetAdminRefundResponse(
                         orderAddress.getReceiverName(),
                         orderAddress.getReceiverPhone(),
                         orderAddress.getFullAddress(),
+                        order.getCreatedAt(),
                         orderItem.getId(),
                         new OrderItemInfo(orderItem.getProduct().getName(), orderItem.getColor(), orderItem.getQuantity())
                 ))
