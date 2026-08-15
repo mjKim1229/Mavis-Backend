@@ -23,14 +23,16 @@ public class PaymentReconciliationScheduler {
     private final PaymentsQueryByOrderClient paymentsQueryByOrderClient;
     private final TossPaymentsProperties tossPaymentsProperties;
 
-    @Scheduled(fixedDelay = 5 * 60 * 1000)
+    // 결제 보정 스케줄러 비활성화 (재활성 시 @Scheduled 주석 해제)
+    // @Scheduled(fixedDelay = 5 * 60 * 1000)
     public void reconcile() {
         String authorization = tossPaymentsProperties.getAuthorizationHeader();
         reconcileWaitingDeposit(authorization);
         reconcileReadyOrders(authorization);
     }
 
-    @Scheduled(cron = "0 0 * * * *")
+    // 결제 보정 스케줄러 비활성화 (재활성 시 @Scheduled 주석 해제)
+    // @Scheduled(cron = "0 0 * * * *")
     public void expireVirtualAccounts() {
         paymentReconciliationService.expireAllExpiredVirtualAccounts();
     }
