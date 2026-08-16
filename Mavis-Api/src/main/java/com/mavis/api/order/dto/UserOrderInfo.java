@@ -4,6 +4,7 @@ import com.mavis.common.util.DateFormatters;
 import com.mavis.domain.domains.delivery.domain.Delivery;
 import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
 import com.mavis.domain.domains.order.domain.Order;
+import com.mavis.domain.domains.order.domain.OrderStatus;
 import com.mavis.domain.domains.order.domain.PaymentMethod;
 import lombok.Builder;
 
@@ -21,12 +22,14 @@ public record UserOrderInfo(
         String address,
         String addressInfo,
         int totalPrice,
+        Integer refundAmount,
         String userName,
         String createdAt,
         String paymentMethod
 ) {
     public static UserOrderInfo from(Order order, List<OrderProduct> orderProductList, Delivery delivery) {
         DeliveryStatus deliveryStatus = delivery != null ? delivery.getDeliveryStatus() : null;
+        Integer refundAmount = order.getOrderStatus() == OrderStatus.CANCELED ? order.getTotalPrice() : null;
         return UserOrderInfo.builder()
                 .orderId(order.getId())
                 .tossOrderId(order.getOrderId().substring(DOMAIN_PREFIX.length()))
@@ -36,6 +39,7 @@ public record UserOrderInfo(
                 .address(order.getOrderAddress().getAddress())
                 .addressInfo(order.getOrderAddress().getAddressDetail())
                 .totalPrice(order.getTotalPrice())
+                .refundAmount(refundAmount)
                 .userName(order.getUser().getName())
                 .createdAt(order.getCreatedAt().format(DateFormatters.DATE_FORMATTER))
                 .paymentMethod(order.getPaymentMethod() != null ? order.getPaymentMethod().name() : null)

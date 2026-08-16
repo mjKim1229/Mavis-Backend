@@ -159,6 +159,7 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
                         orderItem.quantity,
                         orderItem.price,
                         refund.refundStatus,
+                        refund.refundType,
                         productImage.imageUrl))
                 .from(orderItem)
                 .join(orderItem.product, product)
