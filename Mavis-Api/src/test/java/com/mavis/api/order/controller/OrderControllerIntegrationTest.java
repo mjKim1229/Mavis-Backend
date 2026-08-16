@@ -158,7 +158,7 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                     .paymentMethod(PaymentMethod.CARD)
                     .orderStatus(OrderStatus.PAYMENT_CONFIRMED)
                     .build());
-            orderItemRepository.save(OrderItem.of(new OrderOption("black", 2), 10000, orderNoDelivery, product));
+            orderItemRepository.save(OrderItem.of(new OrderOption("black", 2), 20000, orderNoDelivery, product));
 
             // Order2: ORDERED + delivery READY → deliveryStatus READY 노출
             Order orderDeliveryReady = orderRepository.save(Order.builder()
@@ -209,6 +209,8 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                     .andExpect(jsonPath("$.data.content[0].orderStatusCode").value("CANCELED"))
                     .andExpect(jsonPath("$.data.content[0].orderStatus").value("주문 취소"))
                     .andExpect(jsonPath("$.data.content[0].totalPrice").value(10000))
+                    // 취소 주문 → 주문 레벨 환불금액(배송비 포함 총액) 노출
+                    .andExpect(jsonPath("$.data.content[0].refundAmount").value(10000))
                     .andExpect(jsonPath("$.data.content[0].userName").value("테스트유저"))
                     .andExpect(jsonPath("$.data.content[0].address").value("서울시 강남구"))
                     .andExpect(jsonPath("$.data.content[0].addressInfo").value("101호"))
@@ -224,6 +226,7 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                     .andExpect(jsonPath("$.data.content[0].orderProductList[0].totalPrice").value(10000))
                     .andExpect(jsonPath("$.data.content[0].orderProductList[0].refundStatus", nullValue()))
                     .andExpect(jsonPath("$.data.content[0].orderProductList[0].refundStatusTitle", nullValue()))
+                    .andExpect(jsonPath("$.data.content[0].orderProductList[0].refundAmount", nullValue()))
                     .andExpect(jsonPath("$.data.content[0].orderProductList[0].productImageUrl", nullValue()))
                     // content[1] = Order3 — SHIPPED
                     .andExpect(jsonPath("$.data.content[1].tossOrderId").value("333"))
@@ -246,6 +249,7 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                     .andExpect(jsonPath("$.data.content[3].orderStatusCode").value("PAYMENT_CONFIRMED"))
                     .andExpect(jsonPath("$.data.content[3].orderStatus").value("결제 완료"))
                     .andExpect(jsonPath("$.data.content[3].totalPrice").value(20000))
+                    .andExpect(jsonPath("$.data.content[3].refundAmount", nullValue()))
                     .andExpect(jsonPath("$.data.content[3].paymentMethod").value("CARD"))
                     .andExpect(jsonPath("$.data.content[3].orderProductList[0].option.color").value("black"))
                     .andExpect(jsonPath("$.data.content[3].orderProductList[0].option.quantity").value(2))
@@ -294,6 +298,8 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                             .header("Authorization", userToken(user.getId())))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.totalElements").value(1))
+                    // 반품(RETURN)은 주문 취소가 아니므로 주문 레벨 환불금액 없음
+                    .andExpect(jsonPath("$.data.content[0].refundAmount", nullValue()))
                     // 그룹핑: 한 주문에 상품 2개
                     .andExpect(jsonPath("$.data.content[0].orderProductList.length()").value(2))
                     // item1 (id asc 먼저) = 이미지/환불 없음
@@ -302,12 +308,14 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                     .andExpect(jsonPath("$.data.content[0].orderProductList[0].productImageUrl", nullValue()))
                     .andExpect(jsonPath("$.data.content[0].orderProductList[0].refundStatus", nullValue()))
                     .andExpect(jsonPath("$.data.content[0].orderProductList[0].refundStatusTitle", nullValue()))
-                    // item2 = MAIN 이미지 + 환불 채워짐
+                    .andExpect(jsonPath("$.data.content[0].orderProductList[0].refundAmount", nullValue()))
+                    // item2 = MAIN 이미지 + 환불 채워짐, 반품이므로 상품 레벨 환불금액(배송비 제외 상품값) 노출
                     .andExpect(jsonPath("$.data.content[0].orderProductList[1].productName").value("이미지상품"))
                     .andExpect(jsonPath("$.data.content[0].orderProductList[1].option.color").value("white"))
                     .andExpect(jsonPath("$.data.content[0].orderProductList[1].productImageUrl").value("https://cdn.test/main.jpg"))
                     .andExpect(jsonPath("$.data.content[0].orderProductList[1].refundStatus").value("REQUESTED"))
-                    .andExpect(jsonPath("$.data.content[0].orderProductList[1].refundStatusTitle", notNullValue()));
+                    .andExpect(jsonPath("$.data.content[0].orderProductList[1].refundStatusTitle", notNullValue()))
+                    .andExpect(jsonPath("$.data.content[0].orderProductList[1].refundAmount").value(20000));
         }
 
         @Test
@@ -341,6 +349,43 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                     // 삭제 안 된 1개만 노출
                     .andExpect(jsonPath("$.data.content[0].orderProductList.length()").value(1))
                     .andExpect(jsonPath("$.data.content[0].orderProductList[0].option.color").value("black"));
+        }
+
+        @Test
+        void 주문취소시_환불금액은_주문레벨_배송비포함_상품레벨은_노출안된다() throws Exception {
+            OrderAddress address = new OrderAddress("홍길동", "010-1234-5678", "12345", "서울시 강남구", "101호", "문 앞에 놔주세요");
+            // 상품 20000 + 배송비 4000 = 총 24000, 전체 취소
+            Order order = orderRepository.save(Order.builder()
+                    .orderId("GARAM777")
+                    .user(user)
+                    .totalPrice(24000)
+                    .deliveryFee(4000)
+                    .orderAddress(address)
+                    .orderStatus(OrderStatus.CANCELED)
+                    .build());
+            OrderItem orderItem = orderItemRepository.save(OrderItem.of(new OrderOption("black", 2), 20000, order, product));
+            // 주문 취소는 상품별 CANCEL Refund 생성 (RETURN 아님)
+            refundRepository.save(Refund.builder()
+                    .orderItem(orderItem)
+                    .refundType(RefundType.CANCEL)
+                    .refundStatus(RefundStatus.COMPLETED)
+                    .refundAmount(20000)
+                    .refundReason("주문 취소")
+                    .build());
+
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/order")
+                            .header("Authorization", userToken(user.getId())))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.totalElements").value(1))
+                    // 주문 레벨: 배송비 포함 총액
+                    .andExpect(jsonPath("$.data.content[0].totalPrice").value(24000))
+                    .andExpect(jsonPath("$.data.content[0].refundAmount").value(24000))
+                    // 상품 레벨: CANCEL 유형은 상품 환불금액 미노출(null)
+                    .andExpect(jsonPath("$.data.content[0].orderProductList[0].refundStatus").value("COMPLETED"))
+                    .andExpect(jsonPath("$.data.content[0].orderProductList[0].refundAmount", nullValue()));
         }
     }
 
