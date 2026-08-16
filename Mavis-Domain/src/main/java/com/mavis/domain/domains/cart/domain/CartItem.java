@@ -28,20 +28,16 @@ public class CartItem extends BaseEntity {
 
     private String color;
 
-    private int totalPrice;
-
     @Builder.Default
     private boolean isDeleted = false;
 
     public void update(int quantity, String color) {
         this.quantity = quantity;
         this.color = color;
-        this.totalPrice = product.getPrice() * quantity;
     }
 
     public void increaseQuantity(int additionalQuantity) {
         this.quantity += additionalQuantity;
-        this.totalPrice = product.getPrice() * this.quantity;
     }
 
     public void delete() {

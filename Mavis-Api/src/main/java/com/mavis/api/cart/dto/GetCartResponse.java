@@ -15,6 +15,7 @@ public record GetCartResponse(
         int totalPrice
 ) {
     public static GetCartResponse from(CartItem cartItem, Product product) {
+        int totalPrice = product.getPrice() * cartItem.getQuantity();
         return GetCartResponse.builder()
                 .cartItemId(cartItem.getId())
                 .productId(product.getId())
@@ -22,7 +23,7 @@ public record GetCartResponse(
                 .productImageUrl(product.getMainImageUrl())
                 .color(cartItem.getColor())
                 .quantity(cartItem.getQuantity())
-                .totalPrice(cartItem.getTotalPrice())
+                .totalPrice(totalPrice)
                 .build();
     }
 }

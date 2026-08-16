@@ -61,7 +61,6 @@ class CartControllerTest extends ControllerTestSupport {
                 .product(savedProduct)
                 .color(color)
                 .quantity(quantity)
-                .totalPrice(savedProduct.getPrice() * quantity)
                 .build());
     }
 
@@ -81,7 +80,6 @@ class CartControllerTest extends ControllerTestSupport {
         List<CartItem> items = cartItemRepository.findUserCartItem(savedUser);
         assertThat(items).hasSize(1);
         assertThat(items.get(0).getQuantity()).isEqualTo(2);
-        assertThat(items.get(0).getTotalPrice()).isEqualTo(20000);
     }
 
     @Test
@@ -101,7 +99,6 @@ class CartControllerTest extends ControllerTestSupport {
         List<CartItem> items = cartItemRepository.findUserCartItem(savedUser);
         assertThat(items).hasSize(1);
         assertThat(items.get(0).getQuantity()).isEqualTo(5);
-        assertThat(items.get(0).getTotalPrice()).isEqualTo(50000);
     }
 
     @Test
@@ -142,7 +139,6 @@ class CartControllerTest extends ControllerTestSupport {
         CartItem updated = cartItemRepository.findById(cartItem.getId()).orElseThrow();
         assertThat(updated.getColor()).isEqualTo("화이트");
         assertThat(updated.getQuantity()).isEqualTo(5);
-        assertThat(updated.getTotalPrice()).isEqualTo(50000);
     }
 
     @Test
