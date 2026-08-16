@@ -17,7 +17,7 @@ public record GetWritableUserOrderItemResponseVO(
         return GetWritableUserOrderItemResponseVO.builder()
                 .id(orderItem.getId())
                 .name(product.getName())
-                .price(orderItem.getPrice())
+                .price(orderItem.getTotalPrice())
                 .color(orderItem.getColor())
                 .quantity(orderItem.getQuantity())
                 .previewImage(previewImage)

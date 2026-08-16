@@ -335,7 +335,7 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                     .product(product)
                     .color("white")
                     .quantity(1)
-                    .price(10000)
+                    .totalPrice(10000)
                     .isDeleted(true)
                     .build());
 

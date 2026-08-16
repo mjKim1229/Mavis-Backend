@@ -15,6 +15,7 @@ import java.util.List;
 
 import static com.mavis.domain.domains.order.domain.QOrder.order;
 import static com.mavis.domain.domains.order.domain.QOrderItem.orderItem;
+import static com.mavis.domain.domains.order.domain.QPayment.payment;
 import static com.mavis.domain.domains.product.domain.QProduct.product;
 import static com.mavis.domain.domains.refund.domain.QRefund.refund;
 
@@ -30,6 +31,7 @@ public class RefundCustomRepositoryImpl implements RefundCustomRepository {
                 .join(refund.orderItem, orderItem).fetchJoin()
                 .join(orderItem.order, order).fetchJoin()
                 .join(orderItem.product, product).fetchJoin()
+                .leftJoin(refund.payment, payment).fetchJoin()
                 .where(eqRefundType(refundType), eqRefundStatus(refundStatus))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())

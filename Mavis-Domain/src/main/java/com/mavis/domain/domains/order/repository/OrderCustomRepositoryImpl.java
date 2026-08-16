@@ -157,7 +157,7 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
                         product.name,
                         orderItem.color,
                         orderItem.quantity,
-                        orderItem.price,
+                        orderItem.totalPrice,
                         refund.refundStatus,
                         refund.refundType,
                         productImage.imageUrl))

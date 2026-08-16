@@ -35,7 +35,7 @@ class ReviewRepositoryTest extends RepositoryTestSupport {
         OrderItem orderItem = OrderItem.builder()
                 .product(product)
                 .order(order)
-                .price(10000)
+                .totalPrice(10000)
                 .quantity(1)
                 .color("BLACK")
                 .build();

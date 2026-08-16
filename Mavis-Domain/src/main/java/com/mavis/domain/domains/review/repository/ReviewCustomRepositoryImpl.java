@@ -107,7 +107,7 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
             .select(Projections.constructor(GetWritableUserOrderItemResponseVO.class,
                 orderItem.id,
                 product.name,
-                orderItem.price,
+                orderItem.totalPrice,
                 orderItem.color,
                 orderItem.quantity,
                 productImage.imageUrl

@@ -191,7 +191,7 @@ public class OrderService {
                         .orderItem(orderItem)
                         .payment(cancelPayment)
                         .refundReason(refundReason)
-                        .refundAmount(orderItem.getPrice() * orderItem.getQuantity())
+                        .refundAmount(orderItem.getTotalPrice())
                         .refundStatus(RefundStatus.COMPLETED)
                         .refundType(RefundType.CANCEL)
                         .cancelTransactionKey(cancelEntry.transactionKey())

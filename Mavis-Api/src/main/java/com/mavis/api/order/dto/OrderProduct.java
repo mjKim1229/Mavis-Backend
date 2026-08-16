@@ -21,8 +21,8 @@ public record OrderProduct(
         RefundStatus refundStatus = row.refundStatus();
         String refundStatusTitle = refundStatus != null ? refundStatus.getTitle() : null;
         OrderOption option = new OrderOption(row.color(), row.quantity());
-        int totalPrice = row.price();
-        Integer refundAmount = row.refundType() == RefundType.RETURN ? row.price() : null;
+        int totalPrice = row.totalPrice();
+        Integer refundAmount = row.refundType() == RefundType.RETURN ? row.totalPrice() : null;
         return new OrderProduct(
                 row.orderItemId(),
                 row.productId(),

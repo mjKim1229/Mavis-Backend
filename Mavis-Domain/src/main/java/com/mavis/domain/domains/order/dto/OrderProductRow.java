@@ -10,7 +10,7 @@ public record OrderProductRow(
         String productName,
         String color,
         int quantity,
-        int price,
+        int totalPrice,
         RefundStatus refundStatus,
         RefundType refundType,
         String productImageUrl

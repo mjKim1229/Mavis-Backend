@@ -53,7 +53,7 @@ public record GetAdminCanceledRefundResponse(
                 ))
                 .cancelInfo(new CancelInfo(
                         refund.getId(),
-                        refund.getRefundAmount(),
+                        refund.getPayment().getCancelAmount(),
                         refund.getRefundReason(),
                         refund.getCreatedAt()
                 ))

@@ -77,7 +77,7 @@ class AdminDeliveryControllerTest extends ControllerTestSupport {
                 .product(savedProduct)
                 .color(color)
                 .quantity(quantity)
-                .price(savedProduct.getPrice())
+                .totalPrice(savedProduct.getPrice())
                 .build());
     }
 

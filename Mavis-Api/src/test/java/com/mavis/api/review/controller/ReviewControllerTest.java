@@ -67,7 +67,7 @@ class ReviewControllerTest extends ControllerTestSupport {
         savedOrderItem = orderItemRepository.save(OrderItem.builder()
                 .order(savedOrder)
                 .product(savedProduct)
-                .price(10000)
+                .totalPrice(10000)
                 .quantity(1)
                 .build());
     }
@@ -119,7 +119,7 @@ class ReviewControllerTest extends ControllerTestSupport {
             OrderItem otherOrderItem = orderItemRepository.save(OrderItem.builder()
                     .order(otherOrder)
                     .product(savedProduct)
-                    .price(10000)
+                    .totalPrice(10000)
                     .quantity(1)
                     .build());
 
@@ -167,7 +167,7 @@ class ReviewControllerTest extends ControllerTestSupport {
             return orderItemRepository.save(OrderItem.builder()
                     .order(savedOrder)
                     .product(product)
-                    .price(10000)
+                    .totalPrice(10000)
                     .color(color)
                     .quantity(quantity)
                     .build());
@@ -311,7 +311,7 @@ class ReviewControllerTest extends ControllerTestSupport {
             return orderItemRepository.save(OrderItem.builder()
                     .order(savedOrder)
                     .product(savedProduct)
-                    .price(10000)
+                    .totalPrice(10000)
                     .color(color)
                     .quantity(quantity)
                     .build());

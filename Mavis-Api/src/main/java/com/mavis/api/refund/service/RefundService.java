@@ -54,7 +54,7 @@ public class RefundService {
             throw AlreadyRefundRequestedException.EXCEPTION;
         }
 
-        int refundAmount = orderItem.getPrice() * orderItem.getQuantity();
+        int refundAmount = orderItem.getTotalPrice();
 
         Refund refund = Refund.builder()
                 .orderItem(orderItem)

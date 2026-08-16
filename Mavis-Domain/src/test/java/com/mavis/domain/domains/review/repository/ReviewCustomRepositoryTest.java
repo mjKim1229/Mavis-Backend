@@ -52,7 +52,7 @@ class ReviewCustomRepositoryTest extends RepositoryTestSupport {
         Order order = Order.builder().orderId("ORDER-001").user(user).build();
         em.persist(order);
         em.persist(Delivery.builder().order(order).deliveryStatus(DeliveryStatus.DELIVERED).build());
-        em.persist(OrderItem.builder().product(product).order(order).price(10000).quantity(1).color("BLACK").build());
+        em.persist(OrderItem.builder().product(product).order(order).totalPrice(10000).quantity(1).color("BLACK").build());
         em.flush();
         em.clear();
 
@@ -67,7 +67,7 @@ class ReviewCustomRepositoryTest extends RepositoryTestSupport {
         Order order = Order.builder().orderId("ORDER-002").user(user).build();
         em.persist(order);
         em.persist(Delivery.builder().order(order).deliveryStatus(DeliveryStatus.READY).build());
-        em.persist(OrderItem.builder().product(product).order(order).price(10000).quantity(1).color("BLACK").build());
+        em.persist(OrderItem.builder().product(product).order(order).totalPrice(10000).quantity(1).color("BLACK").build());
         em.flush();
         em.clear();
 
@@ -82,7 +82,7 @@ class ReviewCustomRepositoryTest extends RepositoryTestSupport {
         Order order = Order.builder().orderId("ORDER-003").user(user).build();
         em.persist(order);
         em.persist(Delivery.builder().order(order).deliveryStatus(DeliveryStatus.DELIVERED).build());
-        OrderItem orderItem = OrderItem.builder().product(product).order(order).price(10000).quantity(1).color("BLACK").build();
+        OrderItem orderItem = OrderItem.builder().product(product).order(order).totalPrice(10000).quantity(1).color("BLACK").build();
         em.persist(orderItem);
         em.persist(Review.builder().orderItem(orderItem).user(user).content("리뷰내용").build());
         em.flush();
@@ -101,7 +101,7 @@ class ReviewCustomRepositoryTest extends RepositoryTestSupport {
         Order order = Order.builder().orderId("ORDER-004").user(other).build();
         em.persist(order);
         em.persist(Delivery.builder().order(order).deliveryStatus(DeliveryStatus.DELIVERED).build());
-        em.persist(OrderItem.builder().product(product).order(order).price(10000).quantity(1).color("BLACK").build());
+        em.persist(OrderItem.builder().product(product).order(order).totalPrice(10000).quantity(1).color("BLACK").build());
         em.flush();
         em.clear();
 
@@ -116,7 +116,7 @@ class ReviewCustomRepositoryTest extends RepositoryTestSupport {
         Order order = Order.builder().orderId("ORDER-005").user(user).build();
         em.persist(order);
         em.persist(Delivery.builder().order(order).deliveryStatus(DeliveryStatus.DELIVERED).build());
-        em.persist(OrderItem.builder().product(product).order(order).price(10000).quantity(1).color("BLACK").isDeleted(true).build());
+        em.persist(OrderItem.builder().product(product).order(order).totalPrice(10000).quantity(1).color("BLACK").isDeleted(true).build());
         em.flush();
         em.clear();
 
