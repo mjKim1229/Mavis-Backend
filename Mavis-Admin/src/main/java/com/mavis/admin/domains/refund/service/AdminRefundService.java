@@ -1,6 +1,7 @@
 package com.mavis.admin.domains.refund.service;
 
 import com.mavis.admin.common.page.PageResponse;
+import com.mavis.admin.domains.refund.dto.GetAdminCanceledRefundResponse;
 import com.mavis.admin.domains.refund.dto.GetAdminRefundResponse;
 import com.mavis.admin.domains.refund.dto.RefundValidateInfo;
 import com.mavis.domain.domains.order.domain.CardInfo;
@@ -15,6 +16,7 @@ import com.mavis.domain.domains.order.implement.PaymentReader;
 import com.mavis.domain.domains.order.repository.PaymentRepository;
 import com.mavis.domain.domains.refund.domain.Refund;
 import com.mavis.domain.domains.refund.domain.RefundStatus;
+import com.mavis.domain.domains.refund.domain.RefundType;
 import com.mavis.domain.domains.refund.exception.CannotRefundException;
 import com.mavis.domain.domains.refund.implement.RefundReader;
 import com.mavis.domain.domains.refund.repository.RefundRepository;
@@ -37,8 +39,14 @@ public class AdminRefundService {
 
     @Transactional(readOnly = true)
     public PageResponse<GetAdminRefundResponse> getRefundList(Pageable pageable, RefundStatus refundStatus) {
-        Page<Refund> refundPages = refundRepository.findRefundPages(refundStatus, pageable);
+        Page<Refund> refundPages = refundRepository.findRefundPages(RefundType.RETURN, refundStatus, pageable);
         return PageResponse.of(refundPages.map(GetAdminRefundResponse::from));
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<GetAdminCanceledRefundResponse> getCanceledRefundList(Pageable pageable) {
+        Page<Refund> refundPages = refundRepository.findRefundPages(RefundType.CANCEL, null, pageable);
+        return PageResponse.of(refundPages.map(GetAdminCanceledRefundResponse::from));
     }
 
     @Transactional(readOnly = true)

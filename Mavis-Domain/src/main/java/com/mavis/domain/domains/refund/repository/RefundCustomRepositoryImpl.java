@@ -2,6 +2,7 @@ package com.mavis.domain.domains.refund.repository;
 
 import com.mavis.domain.domains.refund.domain.Refund;
 import com.mavis.domain.domains.refund.domain.RefundStatus;
+import com.mavis.domain.domains.refund.domain.RefundType;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -23,13 +24,13 @@ public class RefundCustomRepositoryImpl implements RefundCustomRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<Refund> findRefundPages(RefundStatus refundStatus, Pageable pageable) {
+    public Page<Refund> findRefundPages(RefundType refundType, RefundStatus refundStatus, Pageable pageable) {
         List<Refund> content = queryFactory
                 .selectFrom(refund)
                 .join(refund.orderItem, orderItem).fetchJoin()
                 .join(orderItem.order, order).fetchJoin()
                 .join(orderItem.product, product).fetchJoin()
-                .where(eqRefundStatus(refundStatus))
+                .where(eqRefundType(refundType), eqRefundStatus(refundStatus))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(refund.id.desc())
@@ -38,9 +39,16 @@ public class RefundCustomRepositoryImpl implements RefundCustomRepository {
         JPAQuery<Long> countQuery = queryFactory
                 .select(refund.count())
                 .from(refund)
-                .where(eqRefundStatus(refundStatus));
+                .where(eqRefundType(refundType), eqRefundStatus(refundStatus));
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    private BooleanExpression eqRefundType(RefundType refundType) {
+        if (refundType == null) {
+            return null;
+        }
+        return refund.refundType.eq(refundType);
     }
 
     private BooleanExpression eqRefundStatus(RefundStatus refundStatus) {

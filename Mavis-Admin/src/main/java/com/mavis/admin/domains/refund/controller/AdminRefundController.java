@@ -1,6 +1,7 @@
 package com.mavis.admin.domains.refund.controller;
 
 import com.mavis.admin.common.page.PageResponse;
+import com.mavis.admin.domains.refund.dto.GetAdminCanceledRefundResponse;
 import com.mavis.admin.domains.refund.dto.GetAdminRefundResponse;
 import com.mavis.admin.domains.refund.facade.AdminRefundFacade;
 import com.mavis.admin.domains.refund.service.AdminRefundService;
@@ -20,10 +21,16 @@ public class AdminRefundController {
     private final AdminRefundService adminRefundService;
     private final AdminRefundFacade adminRefundFacade;
 
-    @Operation(summary = "환불 목록 조회")
+    @Operation(summary = "반품(RETURN) 목록 조회")
     @GetMapping
     public PageResponse<GetAdminRefundResponse> getRefundList(Pageable pageable, @RequestParam(required = false) RefundStatus refundStatus) {
         return adminRefundService.getRefundList(pageable, refundStatus);
+    }
+
+    @Operation(summary = "주문취소(CANCEL) 목록 조회")
+    @GetMapping("/canceled")
+    public PageResponse<GetAdminCanceledRefundResponse> getCanceledRefundList(Pageable pageable) {
+        return adminRefundService.getCanceledRefundList(pageable);
     }
 
     @Operation(summary = "환불 승인 (반품 → Toss cancel)")
