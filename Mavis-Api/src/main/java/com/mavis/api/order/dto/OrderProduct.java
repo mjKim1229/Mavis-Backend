@@ -19,7 +19,7 @@ public record OrderProduct(
         RefundStatus refundStatus = row.refundStatus();
         String refundStatusTitle = refundStatus != null ? refundStatus.getTitle() : null;
         OrderOption option = new OrderOption(row.color(), row.quantity());
-        int totalPrice = row.price() * row.quantity();
+        int totalPrice = row.price();
         return new OrderProduct(
                 row.orderItemId(),
                 row.productId(),
