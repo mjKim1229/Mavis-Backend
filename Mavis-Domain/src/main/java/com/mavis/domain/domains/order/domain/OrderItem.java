@@ -21,6 +21,8 @@ public class OrderItem extends BaseEntity {
 
     private int quantity;
 
+    private int unitPrice;
+
     private int totalPrice;
 
     private String color;
@@ -33,12 +35,13 @@ public class OrderItem extends BaseEntity {
     private boolean isDeleted = false;
 
 
-    public static OrderItem of(OrderOption option, int totalPrice, Order order, Product product) {
+    public static OrderItem of(OrderOption option, int unitPrice, int totalPrice, Order order, Product product) {
         return OrderItem.builder()
                 .color(option.color())
                 .quantity(option.quantity())
                 .order(order)
                 .product(product)
+                .unitPrice(unitPrice)
                 .totalPrice(totalPrice)
                 .build();
     }

@@ -27,9 +27,10 @@ public class OrderItemAppender {
         for (OrderItemRequest orderItemRequest : orderItemRequests) {
             Product product = productReader.readById(orderItemRequest.productId());
             OrderOption option = orderItemRequest.option();
-            int orderItemPrice = countPrice(option.quantity(), product.getPrice());
+            int unitPrice = product.getPrice();
+            int orderItemPrice = countPrice(option.quantity(), unitPrice);
             totalPrice += orderItemPrice;
-            OrderItem orderItem = OrderItem.of(option, orderItemPrice, order, product);
+            OrderItem orderItem = OrderItem.of(option, unitPrice, orderItemPrice, order, product);
             orderItems.add(orderItem);
         }
         orderItemRepository.saveAll(orderItems);
