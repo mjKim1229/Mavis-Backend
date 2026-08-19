@@ -17,8 +17,6 @@ public interface RefundRepository extends JpaRepository<Refund, Long>, RefundCus
 
     long countByRefundStatus(RefundStatus refundStatus);
 
-    long countByOrderItemInAndRefundStatus(List<OrderItem> orderItems, RefundStatus refundStatus);
-
     @Query("SELECT r FROM Refund r JOIN FETCH r.orderItem oi JOIN FETCH oi.order WHERE r.id = :id")
     Optional<Refund> findByIdWithOrderItemAndOrder(@Param("id") Long id);
 }

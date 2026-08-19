@@ -6,7 +6,6 @@ import com.mavis.admin.domains.refund.dto.GetAdminRefundResponse;
 import com.mavis.admin.domains.refund.dto.RefundValidateInfo;
 import com.mavis.domain.domains.order.domain.CardInfo;
 import com.mavis.domain.domains.order.domain.Order;
-import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.domain.Payment;
 import com.mavis.domain.domains.order.domain.PaymentMethod;
 import com.mavis.domain.domains.order.domain.PaymentType;
@@ -26,7 +25,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -88,13 +86,6 @@ public class AdminRefundService {
         Payment saved = paymentRepository.save(cancelPayment);
         refund.linkPayment(saved);
         refund.complete(cancelEntry.transactionKey());
-
-        List<OrderItem> orderItems = order.getOrderItems();
-        long completedRefundCount = refundRepository.countByOrderItemInAndRefundStatus(orderItems, RefundStatus.COMPLETED);
-        boolean allRefunded = completedRefundCount == orderItems.size();
-        if (allRefunded) {
-            order.cancel();
-        }
     }
 
     @Transactional
