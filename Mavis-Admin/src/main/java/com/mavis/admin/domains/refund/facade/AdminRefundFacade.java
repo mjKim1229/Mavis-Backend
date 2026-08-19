@@ -4,11 +4,15 @@ import com.mavis.admin.domains.refund.dto.RefundValidateInfo;
 import com.mavis.admin.domains.refund.service.AdminRefundService;
 import com.mavis.common.properties.TossPaymentsProperties;
 import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsCancelClient;
+import com.mavis.domain.domains.order.domain.IdempotencyStatus;
+import com.mavis.domain.domains.order.domain.PaymentApiType;
+import com.mavis.domain.domains.order.domain.PaymentIdempotency;
+import com.mavis.domain.domains.order.domain.RefundReceiveAccount;
 import com.mavis.domain.domains.order.exception.CancelEntryNotFoundException;
+import com.mavis.domain.domains.order.implement.PaymentIdempotencyManager;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.CancelPaymentsRequest;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsCancels;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
-import com.mavis.domain.domains.order.domain.RefundReceiveAccount;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.RefundReceiveAccountRequest;
 
 import lombok.RequiredArgsConstructor;
@@ -24,8 +28,14 @@ public class AdminRefundFacade {
     private final TossPaymentsProperties tossPaymentsProperties;
     private final PaymentsCancelClient paymentsCancelClient;
     private final AdminRefundService adminRefundService;
+    private final PaymentIdempotencyManager paymentIdempotencyManager;
 
     public void approveRefund(String idempotencyKey, String testCode, Long refundId) {
+        PaymentIdempotency idempotency = paymentIdempotencyManager.startProcessing(idempotencyKey, PaymentApiType.REFUND);
+        if (idempotency.getStatus() == IdempotencyStatus.SUCCESS) {
+            return;
+        }
+
         // TX1 (read-only): 상태 검증 + paymentKey 조회
         RefundValidateInfo info = adminRefundService.validateForApproval(refundId);
 
@@ -48,6 +58,7 @@ public class AdminRefundFacade {
             log.info("[TOSS][REFUND] 완료 - {}", response);
         } catch (Exception e) {
             log.error("[TOSS][REFUND] 실패 - {}", cancelRequest, e);
+            paymentIdempotencyManager.markFailure(idempotency.getId(), e.getMessage());
             throw e;
         }
 
@@ -56,5 +67,6 @@ public class AdminRefundFacade {
 
         // TX2: approve + Payment(CANCEL) INSERT + complete
         adminRefundService.approveAndComplete(info.refundId(), response, cancelEntry);
+        paymentIdempotencyManager.markSuccess(idempotency.getId());
     }
 }
