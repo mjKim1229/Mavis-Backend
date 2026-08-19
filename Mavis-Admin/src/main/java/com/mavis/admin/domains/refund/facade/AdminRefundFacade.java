@@ -66,7 +66,13 @@ public class AdminRefundFacade {
         if (cancelEntry == null) throw CancelEntryNotFoundException.EXCEPTION;
 
         // TX2: approve + Payment(CANCEL) INSERT + complete
-        adminRefundService.approveAndComplete(info.refundId(), response, cancelEntry);
-        paymentIdempotencyManager.markSuccess(idempotency.getId());
+        try {
+            adminRefundService.approveAndComplete(info.refundId(), response, cancelEntry);
+            paymentIdempotencyManager.markSuccess(idempotency.getId());
+        } catch (Exception e) {
+            log.error("[TOSS][REFUND] 후처리 실패 - {}", response, e);
+            paymentIdempotencyManager.markFailure(idempotency.getId(), e.getMessage());
+            throw e;
+        }
     }
 }

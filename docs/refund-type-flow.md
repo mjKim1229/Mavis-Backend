@@ -41,7 +41,6 @@
 |--------|------|---------|
 | `Payment(CANCEL)` | 1건 INSERT | `totalAmount` = `cancelAmount` = `refund.refundAmount` (부분 취소금액) |
 | `Refund` | UPDATE | `linkPayment()` 연결, `status → COMPLETED`, `cancelTransactionKey`, `processedAt` |
-| `orders.order_status` | UPDATE (조건부) | 해당 주문의 모든 RETURN Refund가 COMPLETED이면 `CANCELED` |
 
 ### 2단계 — 어드민 거절
 **진입점:** `AdminRefundService.rejectRefund`
