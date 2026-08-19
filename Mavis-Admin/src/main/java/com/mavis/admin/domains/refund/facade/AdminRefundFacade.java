@@ -36,19 +36,18 @@ public class AdminRefundFacade {
             return;
         }
 
-        // TX1 (read-only): 상태 검증 + paymentKey 조회
-        RefundValidateInfo info = adminRefundService.validateForApproval(refundId);
-
-        RefundReceiveAccount account = info.refundReceiveAccount();
-        RefundReceiveAccountRequest refundReceiveAccountRequest = account != null
-                ? new RefundReceiveAccountRequest(account.getRefundReceiveBankCode(), account.getRefundReceiveAccountNumber(), account.getRefundReceiveHolderName())
-                : null;
-
-        CancelPaymentsRequest cancelRequest = new CancelPaymentsRequest(info.refundReason(), info.refundAmount(), refundReceiveAccountRequest);
-        log.info("[TOSS][REFUND] 요청 - {}", cancelRequest);
-        PaymentsResponse response;
         try {
-            response = paymentsCancelClient.cancelPayments(
+            // TX1 (read-only): 상태 검증 + paymentKey 조회
+            RefundValidateInfo info = adminRefundService.validateForApproval(refundId);
+
+            RefundReceiveAccount account = info.refundReceiveAccount();
+            RefundReceiveAccountRequest refundReceiveAccountRequest = account != null
+                    ? new RefundReceiveAccountRequest(account.getRefundReceiveBankCode(), account.getRefundReceiveAccountNumber(), account.getRefundReceiveHolderName())
+                    : null;
+
+            CancelPaymentsRequest cancelRequest = new CancelPaymentsRequest(info.refundReason(), info.refundAmount(), refundReceiveAccountRequest);
+            log.info("[TOSS][REFUND] 요청 - {}", cancelRequest);
+            PaymentsResponse response = paymentsCancelClient.cancelPayments(
                     tossPaymentsProperties.getAuthorizationHeader(),
                     idempotencyKey,
                     testCode,
@@ -56,21 +55,15 @@ public class AdminRefundFacade {
                     cancelRequest
             );
             log.info("[TOSS][REFUND] 완료 - {}", response);
-        } catch (Exception e) {
-            log.error("[TOSS][REFUND] 실패 - {}", cancelRequest, e);
-            paymentIdempotencyManager.markFailure(idempotency.getId(), e.getMessage());
-            throw e;
-        }
 
-        PaymentsCancels cancelEntry = response.currentCancelEntry();
-        if (cancelEntry == null) throw CancelEntryNotFoundException.EXCEPTION;
+            PaymentsCancels cancelEntry = response.currentCancelEntry();
+            if (cancelEntry == null) throw CancelEntryNotFoundException.EXCEPTION;
 
-        // TX2: approve + Payment(CANCEL) INSERT + complete
-        try {
+            // TX2: approve + Payment(CANCEL) INSERT + complete
             adminRefundService.approveAndComplete(info.refundId(), response, cancelEntry);
             paymentIdempotencyManager.markSuccess(idempotency.getId());
         } catch (Exception e) {
-            log.error("[TOSS][REFUND] 후처리 실패 - {}", response, e);
+            log.error("[TOSS][REFUND] 실패 - refundId={}", refundId, e);
             paymentIdempotencyManager.markFailure(idempotency.getId(), e.getMessage());
             throw e;
         }

@@ -63,4 +63,4 @@
 
 - `OrderItem ↔ Refund` = OneToOne → 동일 OrderItem 중복 환불 DB 레벨 차단
 - `Payment`는 insert-only 원장 — 기존 행 UPDATE 없음
-- 전체취소 판정: COMPLETED Refund count == OrderItem count (REJECTED 섞이면 영원히 `CANCELED` 미도달)
+- RETURN 전체 완료 시 Order.status 변경 없음 — CANCELED는 배송 전 전체 취소(CANCEL)에만 해당
