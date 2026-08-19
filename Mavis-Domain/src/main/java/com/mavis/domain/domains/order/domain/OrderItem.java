@@ -21,6 +21,8 @@ public class OrderItem extends BaseEntity {
 
     private int quantity;
 
+    private String productName;
+
     private int unitPrice;
 
     private int totalPrice;
@@ -41,6 +43,7 @@ public class OrderItem extends BaseEntity {
                 .quantity(option.quantity())
                 .order(order)
                 .product(product)
+                .productName(product.getName())
                 .unitPrice(unitPrice)
                 .totalPrice(totalPrice)
                 .build();
