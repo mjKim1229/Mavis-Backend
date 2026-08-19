@@ -29,6 +29,7 @@ public record UserOrderInfo(
 ) {
     public static UserOrderInfo from(Order order, List<OrderProduct> orderProductList, Delivery delivery) {
         DeliveryStatus deliveryStatus = delivery != null ? delivery.getDeliveryStatus() : null;
+        // 전체 취소 시 총 환불액(배송비 포함). 배송 후 반품은 OrderProduct.refundAmount(상품 단위)로 노출, 여기는 null
         Integer refundAmount = order.getOrderStatus() == OrderStatus.CANCELED ? order.getTotalPrice() : null;
         return UserOrderInfo.builder()
                 .orderId(order.getId())
