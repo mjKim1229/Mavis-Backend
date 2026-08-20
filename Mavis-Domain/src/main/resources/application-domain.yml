@@ -32,7 +32,6 @@ spring:
         persistence:
           query:
             timeout: 5000
-    show-sql: true
     hibernate:
       ddl-auto: validate
   datasource:
@@ -49,7 +48,6 @@ spring:
     activate:
       on-profile: dev
   jpa:
-    show-sql: true
     hibernate:
       ddl-auto: validate
   datasource:
