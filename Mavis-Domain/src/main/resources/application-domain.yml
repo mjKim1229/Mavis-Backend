@@ -58,6 +58,7 @@ spring:
       connection-timeout: 5000
 logging:
   level:
-    org.hibernate.orm.jdbc.bind: trace
+    # datasource-proxy로 대체 — 테스트 후 제거
+    # org.hibernate.orm.jdbc.bind: trace
     com.zaxxer.hikari: warn
     com.zaxxer.hikari.HikariConfig: warn
