@@ -40,7 +40,3 @@ spring:
   config:
     activate:
       on-profile: local
-# datasource-proxy로 대체 — 테스트 후 제거
-# logging:
-#   level:
-#     org.hibernate.orm.jdbc.bind: trace
