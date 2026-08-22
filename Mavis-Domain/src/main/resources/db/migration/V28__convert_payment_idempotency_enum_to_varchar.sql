@@ -1,0 +1,3 @@
+ALTER TABLE payment_idempotency
+    MODIFY COLUMN api_type VARCHAR(20) NOT NULL,
+    MODIFY COLUMN status   VARCHAR(20) NOT NULL;

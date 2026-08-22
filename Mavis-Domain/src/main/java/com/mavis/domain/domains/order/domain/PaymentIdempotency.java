@@ -25,11 +25,11 @@ public class PaymentIdempotency extends BaseEntity {
     private String idempotencyKey;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "api_type", nullable = false)
+    @Column(name = "api_type", nullable = false, columnDefinition = "varchar(20)")
     private PaymentApiType apiType;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "varchar(20)")
     private IdempotencyStatus status;
 
     @Column(columnDefinition = "TEXT")
