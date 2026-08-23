@@ -8,17 +8,6 @@ server:
 spring:
   lifecycle:
     timeout-per-shutdown-phase: 30s
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health
-  endpoint:
-    health:
-      show-details: never
-
-spring:
   application:
     name: mavis-admin
   flyway:
@@ -36,6 +25,15 @@ spring:
     aws:
       region:
         static: ap-northeast-2
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
 
 ---
 
