@@ -22,6 +22,7 @@ public record UserOrderInfo(
         String address,
         String addressInfo,
         int totalPrice,
+        int deliveryFee,
         Integer refundAmount,
         String userName,
         String createdAt,
@@ -40,6 +41,7 @@ public record UserOrderInfo(
                 .address(order.getOrderAddress().getAddress())
                 .addressInfo(order.getOrderAddress().getAddressDetail())
                 .totalPrice(order.getTotalPrice())
+                .deliveryFee(order.getDeliveryFee())
                 .refundAmount(refundAmount)
                 .userName(order.getUser().getName())
                 .createdAt(order.getCreatedAt().format(DateFormatters.DATE_FORMATTER))
