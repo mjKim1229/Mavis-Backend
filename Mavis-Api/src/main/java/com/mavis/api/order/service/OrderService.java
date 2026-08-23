@@ -82,7 +82,7 @@ public class OrderService {
         return CreateOrderResponse.from(order.getOrderId());
     }
 
-    public int getShippingFee() {
+    public int getDeliveryFee() {
         return DELIVERY_FEE;
     }
 

@@ -60,7 +60,7 @@ public class OrderController {
     @Operation(summary = "배송비 조회")
     @GetMapping("/delivery-fee")
     public DeliveryFeeResponse getDeliveryFee() {
-        return DeliveryFeeResponse.of(orderService.getShippingFee());
+        return DeliveryFeeResponse.of(orderService.getDeliveryFee());
     }
 
     @Operation(summary = "토스 PG 가상계좌 입금 콜백")
