@@ -3,6 +3,20 @@ server:
     max-swallow-size: -1
     max-http-form-post-size: -1
   port: 8080
+  shutdown: graceful
+
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
 
 spring:
   application:

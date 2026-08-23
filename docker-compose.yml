@@ -11,6 +11,7 @@ services:
     ports:
       - "8080:8080"
     restart: always
+    stop_grace_period: 40s
 
   admin:
     container_name: admin
@@ -24,6 +25,7 @@ services:
     ports:
       - "8081:8081"
     restart: always
+    stop_grace_period: 40s
   nginx:
     container_name: nginx
     image: nginx:latest

@@ -54,7 +54,8 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-resources/**", "/swagger-ui/**", "/v3/api-docs/**",
                         "/v3/api-docs")
                 .requestMatchers("/v1/api/admin/auth", "/v1/api/admin/auth/refresh",
-                        "/v1/api/admin/auth/password/reset");
+                        "/v1/api/admin/auth/password/reset")
+                .requestMatchers("/actuator/health");
     }
 
     @Bean

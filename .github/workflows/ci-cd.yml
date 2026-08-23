@@ -75,5 +75,7 @@ jobs:
             sudo docker pull ${{ secrets.DOCKER_REPO }}/mavis:backend
             sudo docker pull ${{ secrets.DOCKER_REPO }}/mavis:admin
             sudo docker-compose -f docker-compose.yml up -d --no-deps backend admin
+            for i in $(seq 1 20); do curl -sf http://localhost:8080/actuator/health && break; sleep 3; done
+            for i in $(seq 1 20); do curl -sf http://localhost:8081/actuator/health && break; sleep 3; done
             sudo docker exec nginx nginx -s reload
             sudo docker image prune -f
