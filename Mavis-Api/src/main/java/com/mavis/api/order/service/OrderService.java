@@ -82,6 +82,10 @@ public class OrderService {
         return CreateOrderResponse.from(order.getOrderId());
     }
 
+    public int getShippingFee() {
+        return DELIVERY_FEE;
+    }
+
     @Transactional
     public Long validateAndMarkPaymentRequested(String idempotencyKey, String orderId, int amount) {
         PaymentIdempotency idempotency = paymentIdempotencyManager.startProcessing(idempotencyKey, PaymentApiType.CONFIRM);
