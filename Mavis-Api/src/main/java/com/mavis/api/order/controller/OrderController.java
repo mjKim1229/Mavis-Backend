@@ -5,7 +5,7 @@ import com.mavis.api.order.dto.CancelOrderRequest;
 import com.mavis.api.order.dto.ConfirmPaymentResponse;
 import com.mavis.api.order.dto.CreateOrderRequest;
 import com.mavis.api.order.dto.CreateOrderResponse;
-import com.mavis.api.order.dto.ShippingFeeResponse;
+import com.mavis.api.order.dto.DeliveryFeeResponse;
 import com.mavis.api.order.dto.UserOrderInfo;
 import com.mavis.api.order.facade.OrderFacade;
 import com.mavis.api.order.service.OrderService;
@@ -58,9 +58,9 @@ public class OrderController {
     }
 
     @Operation(summary = "배송비 조회")
-    @GetMapping("/shipping-fee")
-    public ShippingFeeResponse getShippingFee() {
-        return ShippingFeeResponse.of(orderService.getShippingFee());
+    @GetMapping("/delivery-fee")
+    public DeliveryFeeResponse getDeliveryFee() {
+        return DeliveryFeeResponse.of(orderService.getShippingFee());
     }
 
     @Operation(summary = "토스 PG 가상계좌 입금 콜백")
