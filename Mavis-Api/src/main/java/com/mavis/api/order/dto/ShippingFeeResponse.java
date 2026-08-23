@@ -1,9 +1,9 @@
 package com.mavis.api.order.dto;
 
 public record ShippingFeeResponse(
-        int shippingFee
+        int deliveryFee
 ) {
-    public static ShippingFeeResponse of(int shippingFee) {
-        return new ShippingFeeResponse(shippingFee);
+    public static ShippingFeeResponse of(int deliveryFee) {
+        return new ShippingFeeResponse(deliveryFee);
     }
 }
