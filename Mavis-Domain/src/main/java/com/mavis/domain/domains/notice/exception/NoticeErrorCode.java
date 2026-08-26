@@ -14,6 +14,6 @@ public enum NoticeErrorCode implements BaseErrorCode {
 
     @Override
     public ErrorReason getErrorReason() {
-        return new ErrorReason(status, message, code);
+        return new ErrorReason(status, code, message);
     }
 }

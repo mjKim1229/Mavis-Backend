@@ -18,6 +18,6 @@ public enum RefundErrorCode implements BaseErrorCode {
 
     @Override
     public ErrorReason getErrorReason() {
-        return new ErrorReason(status, message, code);
+        return new ErrorReason(status, code, message);
     }
 }
