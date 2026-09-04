@@ -11,7 +11,7 @@ public record UserProfileResponse(
         return new UserProfileResponse(
                 user.getId(),
                 user.getNickname(),
-                user.getSnsType().getTitle()
+                user.getSnsType().getCode()
         );
     }
 }
