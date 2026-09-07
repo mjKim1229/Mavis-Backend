@@ -34,7 +34,8 @@ public record GetAdminCanceledRefundResponse(
             int refundAmount,
             String cancelReason,
             LocalDateTime canceledAt,
-            PaymentMethod paymentMethod
+            String paymentMethod,
+            String paymentMethodTitle
     ) {}
 
     public static GetAdminCanceledRefundResponse from(Refund refund) {
@@ -42,6 +43,7 @@ public record GetAdminCanceledRefundResponse(
         Order order = orderItem.getOrder();
         User user = order.getUser();
         OrderAddress orderAddress = order.getOrderAddress();
+        PaymentMethod paymentMethod = refund.getPayment().getMethod();
         return GetAdminCanceledRefundResponse.builder()
                 .orderInfo(new OrderInfo(
                         order.getOrderId().substring(DOMAIN_PREFIX.length()),
@@ -58,7 +60,8 @@ public record GetAdminCanceledRefundResponse(
                         refund.getPayment().getCancelAmount(),
                         refund.getRefundReason(),
                         refund.getCreatedAt(),
-                        refund.getPayment().getMethod()
+                        paymentMethod.name(),
+                        paymentMethod.getKr()
                 ))
                 .build();
     }
