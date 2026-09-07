@@ -243,7 +243,9 @@ public class OrderService {
         if (!order.getUser().equals(currentUser)) {
             throw InvalidOrderInfoException.EXCEPTION;
         }
-        if (!order.getOrderStatus().equals(OrderStatus.PAYMENT_CONFIRMED)) {
+        boolean cancelable = order.getOrderStatus() == OrderStatus.PAYMENT_CONFIRMED
+                || order.getOrderStatus() == OrderStatus.WAITING_FOR_DEPOSIT;
+        if (!cancelable) {
             throw CannotCancelOrderException.EXCEPTION;
         }
         Payment confirmPayment = paymentReader.findConfirmByOrder(order);
