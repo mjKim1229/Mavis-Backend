@@ -26,7 +26,8 @@ public record UserOrderInfo(
         Integer refundAmount,
         String userName,
         String createdAt,
-        String paymentMethod
+        String paymentMethod,
+        String paymentMethodTitle
 ) {
     public static UserOrderInfo from(Order order, List<OrderProduct> orderProductList, Delivery delivery) {
         DeliveryStatus deliveryStatus = delivery != null ? delivery.getDeliveryStatus() : null;
@@ -46,6 +47,7 @@ public record UserOrderInfo(
                 .userName(order.getUser().getName())
                 .createdAt(order.getCreatedAt().format(DateFormatters.DATE_FORMATTER))
                 .paymentMethod(order.getPaymentMethod() != null ? order.getPaymentMethod().name() : null)
+                .paymentMethodTitle(order.getPaymentMethod() != null ? order.getPaymentMethod().getKr() : null)
                 .build();
     }
 }
