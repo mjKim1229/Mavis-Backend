@@ -4,9 +4,12 @@
 
 **진입점:** `OrderFacade` → `OrderService.processCancelSuccess`
 
+**허용 상태:** `OrderStatus.PAYMENT_CONFIRMED` 또는 `WAITING_FOR_DEPOSIT` (2026-09-07부터 가상계좌 입금 전 취소도 허용)
+
 ### Toss API
 - `PaymentsCancelClient.cancelPayments(paymentKey, cancelRequest)` — 전액 취소
 - `cancelRequest.cancelAmount` = `order.totalPrice` (배송비 포함 전체금액)
+- `refundReceiveAccount`: `PAYMENT_CONFIRMED`(입금 후)면 전달, `WAITING_FOR_DEPOSIT`(입금 전)면 null (Toss 정책)
 
 ### DB 변경
 | 테이블 | 건수 | 주요 값 |
@@ -14,6 +17,13 @@
 | `Payment(CANCEL)` | 1건 INSERT | `totalAmount` = `cancelAmount` = 전체 취소금액 |
 | `Refund(CANCEL, COMPLETED)` | N건 INSERT | OrderItem 수만큼, `refundAmount` = `orderItem.totalPrice` (배송비 제외 상품금액), `payment` → 위 Payment |
 | `orders.order_status` | UPDATE | `CANCELED` |
+
+### 입금 전/후 취소 구분 (실측, 2026-09-07)
+- 가상계좌 입금 전 취소해도 Toss 응답 `cancels[].cancelAmount`는 원래 금액 그대로 내려옴(0 아님). 실환급 여부는 `cancels[].refundableAmount`로만 판별 가능(입금 전이면 0) — 현재 이 값은 DB 미저장.
+- DB 레벨 구분법: `Payment(DEPOSIT)` row 존재 여부
+  - 없음 → `CONFIRM` + `CANCEL`만 존재 → 입금 전 취소
+  - 있음 → `CONFIRM` + `DEPOSIT` + `CANCEL` 전부 존재 → 입금 후 취소
+- Admin 취소 조회 응답(`GetAdminCanceledRefundResponse`)엔 `paymentMethod`만 노출, 입금 전/후 구분 플래그는 추가 안 하기로 함(2026-09-07 결정 — 필요성 낮음)
 
 ---
 
