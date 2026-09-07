@@ -4,6 +4,7 @@ import com.mavis.admin.domains.order.dto.OrderItemInfo;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderAddress;
 import com.mavis.domain.domains.order.domain.OrderItem;
+import com.mavis.domain.domains.order.domain.PaymentMethod;
 import com.mavis.domain.domains.refund.domain.Refund;
 import com.mavis.domain.domains.user.domain.User;
 import lombok.Builder;
@@ -32,7 +33,8 @@ public record GetAdminCanceledRefundResponse(
             Long refundId,
             int refundAmount,
             String cancelReason,
-            LocalDateTime canceledAt
+            LocalDateTime canceledAt,
+            PaymentMethod paymentMethod
     ) {}
 
     public static GetAdminCanceledRefundResponse from(Refund refund) {
@@ -55,7 +57,8 @@ public record GetAdminCanceledRefundResponse(
                         refund.getId(),
                         refund.getPayment().getCancelAmount(),
                         refund.getRefundReason(),
-                        refund.getCreatedAt()
+                        refund.getCreatedAt(),
+                        refund.getPayment().getMethod()
                 ))
                 .build();
     }
