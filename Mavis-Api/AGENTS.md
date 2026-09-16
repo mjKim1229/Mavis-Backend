@@ -57,8 +57,6 @@
 - S3, 외부 HTTP 클라이언트(Feign 등) 포함 API 통합테스트 시 `@MockitoBean`으로 해당 빈 교체 — 실제 외부 호출 방지 (예: `@MockitoBean S3FileUploader`). `@MockBean`은 deprecated
 
 ### Common Patterns
-- Facade 패턴: 여러 서비스를 조합하는 복잡한 흐름 (예: `OrderFacade`)
-- Reader/Appender 분리: 조회는 `*Reader`, 저장은 `*Appender`로 분리
 - DTO 명명: `*Request`, `*Response` suffix 사용
 
 ## Dependencies
