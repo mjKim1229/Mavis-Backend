@@ -91,7 +91,7 @@ class RefundControllerTest extends ControllerTestSupport {
     @Test
     void 반품_신청_성공() throws Exception {
         Order order = savedDeliveredOrder("GARAM001");
-        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, 10000, order, product));
+        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
 
         em.flush();
         em.clear();
@@ -110,7 +110,7 @@ class RefundControllerTest extends ControllerTestSupport {
             .orderAddress(address).orderStatus(OrderStatus.ORDERED).build());
         deliveryRepository.save(Delivery.builder()
             .order(order).deliveryStatus(DeliveryStatus.SHIPPED).build());
-        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, 10000, order, product));
+        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
 
         em.flush();
         em.clear();
@@ -125,7 +125,7 @@ class RefundControllerTest extends ControllerTestSupport {
     @Test
     void 이미_환불_신청된_주문_재신청시_409() throws Exception {
         Order order = savedDeliveredOrder("GARAM003");
-        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, 10000, order, product));
+        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
         refundRepository.save(Refund.builder()
             .orderItem(item).refundType(RefundType.RETURN).refundAmount(10000).build());
 
@@ -142,7 +142,7 @@ class RefundControllerTest extends ControllerTestSupport {
     @Test
     void 환불_완료된_주문_재신청시_409() throws Exception {
         Order order = savedDeliveredOrder("GARAM005");
-        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, 10000, order, product));
+        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
         refundRepository.save(Refund.builder()
             .orderItem(item).refundType(RefundType.RETURN).refundAmount(10000)
             .refundStatus(RefundStatus.COMPLETED).build());
@@ -160,7 +160,7 @@ class RefundControllerTest extends ControllerTestSupport {
     @Test
     void 환불_거절된_주문_재신청시_409() throws Exception {
         Order order = savedDeliveredOrder("GARAM006");
-        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, 10000, order, product));
+        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
         refundRepository.save(Refund.builder()
             .orderItem(item).refundType(RefundType.RETURN).refundAmount(10000)
             .refundStatus(RefundStatus.REJECTED).build());
@@ -181,7 +181,7 @@ class RefundControllerTest extends ControllerTestSupport {
             .snsType(SnsType.KAKAO).name("다른유저").build());
 
         Order order = savedDeliveredOrder("GARAM004");
-        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, 10000, order, product));
+        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
 
         em.flush();
         em.clear();

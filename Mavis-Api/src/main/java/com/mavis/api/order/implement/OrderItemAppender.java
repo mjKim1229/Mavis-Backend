@@ -3,6 +3,7 @@ package com.mavis.api.order.implement;
 import com.mavis.api.order.dto.OrderItemRequest;
 import com.mavis.domain.domains.product.implement.ProductReader;
 import com.mavis.domain.domains.order.domain.Order;
+import com.mavis.domain.domains.order.domain.OrderAmounts;
 import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.domain.OrderOption;
 import com.mavis.domain.domains.order.repository.OrderItemRepository;
@@ -10,7 +11,6 @@ import com.mavis.domain.domains.product.domain.Product;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,16 +28,11 @@ public class OrderItemAppender {
             Product product = productReader.readById(orderItemRequest.productId());
             OrderOption option = orderItemRequest.option().toOrderOption();
             int unitPrice = product.getPrice();
-            int orderItemPrice = countPrice(option.quantity(), unitPrice);
-            totalPrice += orderItemPrice;
-            OrderItem orderItem = OrderItem.of(option, unitPrice, orderItemPrice, order, product);
+            OrderItem orderItem = OrderItem.of(option, unitPrice, order, product);
+            totalPrice = OrderAmounts.add(totalPrice, orderItem.getTotalPrice());
             orderItems.add(orderItem);
         }
         orderItemRepository.saveAll(orderItems);
         return totalPrice;
-    }
-
-    private int countPrice(int quantity, int price) {
-        return quantity * price;
     }
 }

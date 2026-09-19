@@ -73,7 +73,7 @@ public class OrderService {
         Order savedOrder = orderRepository.saveAndFlush(order);
 
         int itemsTotalPrice = orderItemAppender.saveOrderItems(request.orderItems(), savedOrder);
-        int totalPrice = itemsTotalPrice + DELIVERY_FEE;
+        int totalPrice = OrderAmounts.add(itemsTotalPrice, DELIVERY_FEE);
         if (totalPrice != request.amount()) {
             throw PriceMismatchException.EXCEPTION;
         }

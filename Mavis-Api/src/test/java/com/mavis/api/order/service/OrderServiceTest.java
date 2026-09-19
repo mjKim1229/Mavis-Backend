@@ -6,6 +6,7 @@ import com.mavis.api.order.dto.OrderAddressRequest;
 import com.mavis.api.order.implement.OrderItemAppender;
 import com.mavis.domain.domains.order.domain.*;
 import com.mavis.domain.domains.order.exception.InvalidOrderInfoException;
+import com.mavis.domain.domains.order.exception.OrderAmountExceededException;
 import com.mavis.domain.domains.order.exception.PriceMismatchException;
 import com.mavis.domain.domains.order.implement.OrderReader;
 import com.mavis.domain.domains.order.implement.PaymentIdempotencyManager;
@@ -126,5 +127,23 @@ class OrderServiceTest {
         // when & then
         assertThatThrownBy(() -> orderService.createOrder(request))
                 .isInstanceOf(PriceMismatchException.class);
+    }
+
+    @Test
+    void 아이템_총액과_배송비_합산이_int_범위를_넘으면_OrderAmountExceededException을_던진다() {
+        // given: 아이템 총액이 Integer.MAX_VALUE — 배송비를 더하면 음수로 뒤집히는 경계
+        int itemsTotalPrice = Integer.MAX_VALUE;
+
+        OrderAddressRequest addressRequest = new OrderAddressRequest("홍길동", "010-1234-5678", "12345", "서울시", "101호", "문 앞");
+        CreateOrderRequest request = new CreateOrderRequest(10000, addressRequest, List.of());
+
+        User user = User.builder().id(1L).build();
+        given(userReader.getCurrentUser()).willReturn(user);
+        given(orderRepository.saveAndFlush(any())).willAnswer(invocation -> invocation.getArgument(0));
+        given(orderItemAppender.saveOrderItems(any(), any())).willReturn(itemsTotalPrice);
+
+        // when & then
+        assertThatThrownBy(() -> orderService.createOrder(request))
+                .isInstanceOf(OrderAmountExceededException.class);
     }
 }

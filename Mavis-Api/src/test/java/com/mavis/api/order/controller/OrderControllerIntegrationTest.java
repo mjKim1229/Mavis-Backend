@@ -159,7 +159,7 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                     .paymentMethod(PaymentMethod.CARD)
                     .orderStatus(OrderStatus.PAYMENT_CONFIRMED)
                     .build());
-            orderItemRepository.save(OrderItem.of(new OrderOption("black", 2), 10000, 20000, orderNoDelivery, product));
+            orderItemRepository.save(OrderItem.of(new OrderOption("black", 2), 10000, orderNoDelivery, product));
 
             // Order2: ORDERED + delivery READY → deliveryStatus READY 노출
             Order orderDeliveryReady = orderRepository.save(Order.builder()
@@ -170,7 +170,7 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                     .paymentMethod(PaymentMethod.CARD)
                     .orderStatus(OrderStatus.ORDERED)
                     .build());
-            orderItemRepository.save(OrderItem.of(new OrderOption("white", 1), 10000, 10000, orderDeliveryReady, product));
+            orderItemRepository.save(OrderItem.of(new OrderOption("white", 1), 10000, orderDeliveryReady, product));
             deliveryRepository.save(Delivery.builder().order(orderDeliveryReady).build());
 
             // Order3: ORDERED + delivery SHIPPED → deliveryStatus SHIPPED 노출
@@ -182,7 +182,7 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                     .paymentMethod(PaymentMethod.CARD)
                     .orderStatus(OrderStatus.ORDERED)
                     .build());
-            orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, 10000, orderDeliveryShipped, product));
+            orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, orderDeliveryShipped, product));
             deliveryRepository.save(Delivery.builder().order(orderDeliveryShipped).deliveryStatus(DeliveryStatus.SHIPPED).build());
 
             // Order4: CANCELED → 배송 유무 무관하게 CANCELED 노출
@@ -193,7 +193,7 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                     .orderAddress(address)
                     .orderStatus(OrderStatus.CANCELED)
                     .build());
-            orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, 10000, orderCanceled, product));
+            orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, orderCanceled, product));
 
             em.flush();
             em.clear();
@@ -280,8 +280,8 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                     .paymentMethod(PaymentMethod.CARD)
                     .orderStatus(OrderStatus.PAYMENT_CONFIRMED)
                     .build());
-            orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, 10000, order, product));
-            OrderItem refundedItem = orderItemRepository.save(OrderItem.of(new OrderOption("white", 1), 20000, 20000, order, imageProduct));
+            orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
+            OrderItem refundedItem = orderItemRepository.save(OrderItem.of(new OrderOption("white", 1), 20000, order, imageProduct));
             refundRepository.save(Refund.builder()
                     .orderItem(refundedItem)
                     .refundType(RefundType.RETURN)
@@ -330,7 +330,7 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                     .paymentMethod(PaymentMethod.CARD)
                     .orderStatus(OrderStatus.PAYMENT_CONFIRMED)
                     .build());
-            orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, 10000, order, product));
+            orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
             orderItemRepository.save(OrderItem.builder()
                     .order(order)
                     .product(product)
@@ -364,7 +364,7 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                     .orderAddress(address)
                     .orderStatus(OrderStatus.CANCELED)
                     .build());
-            OrderItem orderItem = orderItemRepository.save(OrderItem.of(new OrderOption("black", 2), 10000, 20000, order, product));
+            OrderItem orderItem = orderItemRepository.save(OrderItem.of(new OrderOption("black", 2), 10000, order, product));
             // 주문 취소는 상품별 CANCEL Refund 생성 (RETURN 아님)
             refundRepository.save(Refund.builder()
                     .orderItem(orderItem)
