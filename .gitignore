@@ -49,3 +49,6 @@ docker-compose.mysql.yml
 *.local.md
 .env
 .env.*
+
+### DB dump ###
+mavis_backup_*.sql
