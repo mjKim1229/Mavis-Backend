@@ -1,6 +1,3 @@
-<!-- Parent: ../AGENTS.md -->
-<!-- Generated: 2026-04-18 | Updated: 2026-04-18 -->
-
 # Mavis-Admin
 
 ## Purpose
@@ -55,19 +52,9 @@
 - 이 모듈의 모든 클래스는 `Admin` prefix 사용 (예: `AdminInquiryService`, `AdminInquiryAnswerService`, `AdminOrderController`)
 - Mavis-Api 모듈의 동명 클래스와 충돌 방지 및 어드민 전용임을 명시
 
-### Common Patterns
-- Mavis-Api와 유사한 Controller → Service 구조
-- Implementer 패턴: 복잡한 저장 로직을 `*Implementer`로 분리
-
 ## Dependencies
 
 ### Internal
 - `Mavis-Common` - JWT 유틸, 공통 DTO
 - `Mavis-Domain` - 엔티티, 리포지토리
 - `Mavis-Infrastructure` - S3, TossPayments, Discord
-
-### External
-- Spring Boot Web, Security
-- Spring Data JPA
-
-<!-- MANUAL: -->

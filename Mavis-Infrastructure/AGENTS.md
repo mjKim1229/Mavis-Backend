@@ -1,6 +1,3 @@
-<!-- Parent: ../AGENTS.md -->
-<!-- Generated: 2026-04-18 | Updated: 2026-04-18 -->
-
 # Mavis-Infrastructure
 
 ## Purpose
@@ -71,11 +68,3 @@ AWS S3 파일 업로드, 이메일 발송, Discord 웹훅 알림을 Feign Client
 
 ### Internal
 - `Mavis-Common` - 공통 예외, 프로퍼티
-
-### External
-- Spring Cloud OpenFeign
-- AWS SDK (S3)
-- Spring Mail (JavaMailSender)
-- Thymeleaf (이메일 템플릿)
-
-<!-- MANUAL: -->

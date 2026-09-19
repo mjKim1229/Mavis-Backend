@@ -1,6 +1,3 @@
-<!-- Parent: ../AGENTS.md -->
-<!-- Generated: 2026-04-18 | Updated: 2026-04-18 -->
-
 # Mavis-Api
 
 ## Purpose
@@ -65,10 +62,3 @@
 - `Mavis-Common` - JWT 유틸, 공통 DTO, 예외
 - `Mavis-Domain` - 엔티티, 리포지토리
 - `Mavis-Infrastructure` - OAuth, 결제, S3, 이메일
-
-### External
-- Spring Boot Web, Security
-- Spring Data JPA
-- QueryDSL
-
-<!-- MANUAL: -->

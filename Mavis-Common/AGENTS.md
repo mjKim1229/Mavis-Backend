@@ -1,6 +1,3 @@
-<!-- Parent: ../AGENTS.md -->
-<!-- Generated: 2026-04-18 | Updated: 2026-04-18 -->
-
 # Mavis-Common
 
 ## Purpose
@@ -47,9 +44,3 @@
 
 ### Internal
 - 다른 모듈에 의존하지 않음 (최하위 공통 모듈)
-
-### External
-- Spring Boot
-- JJWT (JWT 라이브러리)
-
-<!-- MANUAL: -->

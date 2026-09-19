@@ -1,6 +1,3 @@
-<!-- Parent: ../AGENTS.md -->
-<!-- Generated: 2026-04-18 | Updated: 2026-04-18 -->
-
 # Mavis-Domain
 
 ## Purpose
@@ -71,10 +68,3 @@
 ### Internal
 - `Mavis-Common` - 공통 예외, 상수
 - `Mavis-Infrastructure` - `PaymentMethod` → `TossPaymentMethod` 참조 1건뿐 (신규 참조 추가 금지)
-
-### External
-- Spring Data JPA
-- QueryDSL
-- Hibernate
-
-<!-- MANUAL: -->
