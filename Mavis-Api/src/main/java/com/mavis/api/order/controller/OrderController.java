@@ -13,6 +13,7 @@ import com.mavis.infrastructure.outer.api.tosspayments.dto.ConfirmPaymentRequest
 import com.mavis.infrastructure.outer.api.tosspayments.dto.VirtualAccountDepositCallbackRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +29,7 @@ public class OrderController {
 
     @Operation(summary = "주문 생성")
     @PostMapping
-    public CreateOrderResponse createOrder(@RequestBody CreateOrderRequest request) {
+    public CreateOrderResponse createOrder(@RequestBody @Valid CreateOrderRequest request) {
         return orderService.createOrder(request);
     }
 
