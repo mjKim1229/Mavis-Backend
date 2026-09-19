@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.*;
+import org.hibernate.annotations.Comment;
 
 @Getter
 @Builder
@@ -26,6 +27,7 @@ public class Refund extends BaseEntity {
     @JoinColumn(name = "order_item_id")
     private OrderItem orderItem;
 
+    @Comment("FK → payment.id (CANCEL 행). RETURN은 어드민 승인 전까지 NULL")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_id")
     private Payment payment;
@@ -41,12 +43,16 @@ public class Refund extends BaseEntity {
 
     private String refundReason;
 
+    @Comment("배송비 제외 순수 상품 환불금액 (OrderItem.total_price 기준)")
     private int refundAmount;
 
+    @Comment("환불 완료 시 Toss 취소 거래 키 (연결된 payment.last_transaction_key와 같은 값)")
     private String cancelTransactionKey;
 
+    @Comment("RETURN: 고객이 반품 발송한 택배사 (배송 송장은 delivery 테이블)")
     private String carrier;
 
+    @Comment("RETURN: 고객이 반품 발송한 송장번호")
     private String trackingNumber;
 
     private LocalDateTime processedAt;

@@ -5,6 +5,7 @@ import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
 import com.mavis.domain.domains.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Comment;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,6 +21,7 @@ public class Order extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Comment("Toss PG orderId (GARAM 접두어 포함). 내부 PK는 id — payment.order_id는 이 컬럼이 아니라 orders.id 참조")
     @Column(unique = true)
     private String orderId;
 
@@ -27,8 +29,10 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Comment("상품금액 합계 + 배송비 포함 총 결제금액")
     private int totalPrice;
 
+    @Comment("배송비 (현재 고정 4000원). total_price에 포함됨")
     private int deliveryFee;
 
     @Column(columnDefinition = "varchar(255)")

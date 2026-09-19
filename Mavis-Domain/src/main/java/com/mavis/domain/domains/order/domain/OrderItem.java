@@ -4,6 +4,7 @@ import com.mavis.domain.domains.common.jpa.BaseEntity;
 import com.mavis.domain.domains.product.domain.Product;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Comment;
 
 @Getter
 @Builder
@@ -23,8 +24,10 @@ public class OrderItem extends BaseEntity {
 
     private String productName;
 
+    @Comment("주문 시점 상품 단가 (product.price 스냅샷)")
     private int unitPrice;
 
+    @Comment("unit_price × quantity. 배송비 미포함")
     private int totalPrice;
 
     private String color;

@@ -52,6 +52,7 @@
 - 버전: 정수 순증 (V1 → V2 → V3 ...)
 - **기존 파일 내용/이름 절대 수정 금지** — Flyway checksum 검증 실패
 - 작업 순서: SQL 파일 작성 → 엔티티 수정 → 로컬 실행 검증
+- 컬럼 코멘트: Flyway SQL(`COMMENT`)과 엔티티 `@Comment`(org.hibernate.annotations)를 같은 문장으로 함께 수정. `MODIFY COLUMN`은 타입·NULL·DEFAULT를 기존 정의 그대로 다시 적을 것
 
 ### Testing Requirements
 - `./gradlew :Mavis-Domain:test`
