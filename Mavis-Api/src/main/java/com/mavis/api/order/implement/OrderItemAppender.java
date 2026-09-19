@@ -26,7 +26,7 @@ public class OrderItemAppender {
         List<OrderItem> orderItems = new ArrayList<>();
         for (OrderItemRequest orderItemRequest : orderItemRequests) {
             Product product = productReader.readById(orderItemRequest.productId());
-            OrderOption option = orderItemRequest.option();
+            OrderOption option = orderItemRequest.option().toOrderOption();
             int unitPrice = product.getPrice();
             int orderItemPrice = countPrice(option.quantity(), unitPrice);
             totalPrice += orderItemPrice;

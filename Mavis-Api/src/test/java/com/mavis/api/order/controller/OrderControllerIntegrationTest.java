@@ -3,6 +3,7 @@ package com.mavis.api.order.controller;
 import com.mavis.api.order.dto.CreateOrderRequest;
 import com.mavis.api.order.dto.OrderAddressRequest;
 import com.mavis.api.order.dto.OrderItemRequest;
+import com.mavis.api.order.dto.OrderOptionRequest;
 import com.mavis.api.support.ControllerTestSupport;
 import com.mavis.common.enums.ProductSubCategory;
 import com.mavis.domain.domains.delivery.domain.Delivery;
@@ -67,7 +68,7 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
         CreateOrderRequest request = new CreateOrderRequest(
                 14000,
                 new OrderAddressRequest("홍길동", "010-1234-5678", "12345", "서울시 강남구", "101호", "문 앞에 놔주세요"),
-                List.of(new OrderItemRequest(product.getId(), new OrderOption("black", 1)))
+                List.of(new OrderItemRequest(product.getId(), new OrderOptionRequest("black", 1)))
         );
 
         mockMvc.perform(post("/v1/api/order")
@@ -94,7 +95,7 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
         CreateOrderRequest request = new CreateOrderRequest(
                 99999, // 틀린 금액
                 new OrderAddressRequest("홍길동", "010-1234-5678", "12345", "서울시 강남구", "101호", "문 앞에 놔주세요"),
-                List.of(new OrderItemRequest(product.getId(), new OrderOption("black", 1)))
+                List.of(new OrderItemRequest(product.getId(), new OrderOptionRequest("black", 1)))
         );
 
         mockMvc.perform(post("/v1/api/order")

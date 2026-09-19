@@ -5,9 +5,9 @@ import com.mavis.api.order.dto.CreateOrderRequest;
 import com.mavis.api.order.dto.CreateOrderResponse;
 import com.mavis.api.order.dto.OrderAddressRequest;
 import com.mavis.api.order.dto.OrderItemRequest;
+import com.mavis.api.order.dto.OrderOptionRequest;
 import com.mavis.api.order.facade.OrderFacade;
 import com.mavis.api.order.service.OrderService;
-import com.mavis.domain.domains.order.domain.OrderOption;
 import com.mavis.infrastructure.outer.discord.DiscordNotificationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -57,9 +57,17 @@ class OrderControllerTest {
     }
 
     private List<OrderItemRequest> validItems() {
-        OrderOption option = new OrderOption("black", 1);
-        OrderItemRequest item = new OrderItemRequest(1L, option);
+        OrderOptionRequest option = new OrderOptionRequest("black", 1);
+        return itemsOf(1L, option);
+    }
+
+    private List<OrderItemRequest> itemsOf(Long productId, OrderOptionRequest option) {
+        OrderItemRequest item = new OrderItemRequest(productId, option);
         return List.of(item);
+    }
+
+    private CreateOrderRequest requestWithItems(List<OrderItemRequest> items) {
+        return new CreateOrderRequest(14000, validAddress(), items);
     }
 
     private ResultActions postOrder(Object request) throws Exception {
@@ -137,5 +145,58 @@ class OrderControllerTest {
         CreateOrderRequest request = new CreateOrderRequest(14000, address, validItems());
 
         assertValidationFailed(postOrder(request));
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1, Integer.MIN_VALUE})
+    void 수량이_1_미만이면_400(int quantity) throws Exception {
+        OrderOptionRequest option = new OrderOptionRequest("black", quantity);
+        CreateOrderRequest request = requestWithItems(itemsOf(1L, option));
+
+        assertValidationFailed(postOrder(request));
+    }
+
+    @Test
+    void 여러_상품중_하나만_수량이_음수여도_400() throws Exception {
+        OrderItemRequest normal = new OrderItemRequest(1L, new OrderOptionRequest("black", 3));
+        OrderItemRequest negative = new OrderItemRequest(2L, new OrderOptionRequest("black", -2));
+        CreateOrderRequest request = requestWithItems(List.of(normal, negative));
+
+        assertValidationFailed(postOrder(request));
+    }
+
+    @Test
+    void 상품ID가_null이면_400() throws Exception {
+        OrderOptionRequest option = new OrderOptionRequest("black", 1);
+        CreateOrderRequest request = requestWithItems(itemsOf(null, option));
+
+        assertValidationFailed(postOrder(request));
+    }
+
+    @Test
+    void 옵션이_null이면_400() throws Exception {
+        CreateOrderRequest request = requestWithItems(itemsOf(1L, null));
+
+        assertValidationFailed(postOrder(request));
+    }
+
+    @Test
+    void 색상이_null이면_400() throws Exception {
+        OrderOptionRequest option = new OrderOptionRequest(null, 1);
+        CreateOrderRequest request = requestWithItems(itemsOf(1L, option));
+
+        assertValidationFailed(postOrder(request));
+    }
+
+    @Test
+    void 색상없는_상품은_빈문자열_색상으로_주문_성공() throws Exception {
+        CreateOrderResponse response = CreateOrderResponse.from("GARAM-TEST");
+        given(orderService.createOrder(any())).willReturn(response);
+        OrderOptionRequest option = new OrderOptionRequest("", 1);
+        CreateOrderRequest request = requestWithItems(itemsOf(1L, option));
+
+        postOrder(request).andExpect(status().isOk());
+
+        verify(orderService, times(1)).createOrder(any());
     }
 }
