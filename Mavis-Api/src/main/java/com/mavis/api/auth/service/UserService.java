@@ -10,11 +10,15 @@ import com.mavis.domain.domains.user.domain.Gender;
 import com.mavis.domain.domains.user.domain.MarketingAgreement;
 import com.mavis.domain.domains.user.domain.SnsType;
 import com.mavis.domain.domains.user.domain.User;
+import com.mavis.domain.domains.user.domain.VerificationCode;
+import com.mavis.domain.domains.user.domain.VerificationType;
 import com.mavis.domain.domains.user.exception.DuplicateEmailException;
+import com.mavis.domain.domains.user.exception.EmailNotVerifiedException;
 import com.mavis.domain.domains.user.exception.InvalidPasswordException;
 import com.mavis.domain.domains.user.exception.SnsUserCannotChangePasswordException;
 import com.mavis.domain.domains.user.exception.UserNotFoundException;
 import com.mavis.domain.domains.user.repository.UserRepository;
+import com.mavis.domain.domains.user.repository.VerificationCodeRepository;
 import com.mavis.infrastructure.outer.api.oauth.dto.KakaoUserInfoResponse;
 import com.mavis.infrastructure.outer.api.oauth.dto.NaverProfile;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +27,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Component
@@ -33,6 +38,7 @@ public class UserService {
     private final JwtTokenUtil jwtTokenUtil;
     private final PasswordEncoder passwordEncoder;
     private final UserReader userReader;
+    private final VerificationCodeRepository verificationCodeRepository;
 
     private static final DateTimeFormatter NAVER_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMM-dd");
     private static final DateTimeFormatter KAKAO_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -98,9 +104,21 @@ public class UserService {
         if (userRepository.existsBySnsTypeAndEmailAndIsDeletedFalse(SnsType.MANUAL, request.email())) {
             throw DuplicateEmailException.EXCEPTION;
         }
+
+        // 이메일 인증을 마친 요청인지 서버에서 확인 — 인증 단계를 건너뛴 직접 호출 차단
+        VerificationCode verificationCode = verificationCodeRepository
+                .findByVerificationTypeAndEmail(VerificationType.SIGN_UP, request.email())
+                .orElseThrow(() -> EmailNotVerifiedException.EXCEPTION);
+        LocalDateTime now = LocalDateTime.now();
+        if (!verificationCode.isUsableForSignUp(now)) {
+            throw EmailNotVerifiedException.EXCEPTION;
+        }
+
         String encodedPassword = passwordEncoder.encode(request.password());
         User user = request.toEntity(encodedPassword);
         userRepository.save(user);
+
+        verificationCodeRepository.delete(verificationCode);
     }
 
     @Transactional(readOnly = true)

@@ -34,6 +34,7 @@ import static com.mavis.domain.domains.user.domain.VerificationType.UPDATE_EMAIL
 public class AuthVerificationService {
     private static final String PASSWORD_RESET_URL = "https://www.garamall.com/password-reset?token=";
     private static final long VERIFICATION_CODE_VALID_MINUTES = 5;
+    private static final long SIGN_UP_COMPLETION_VALID_MINUTES = 30;
     private static final long PASSWORD_RESET_LINK_VALID_MINUTES = 10;
 
     private final VerificationCodeRepository verificationCodeRepository;
@@ -124,7 +125,9 @@ public class AuthVerificationService {
         if (verificationCode.getExpiredAt().isBefore(LocalDateTime.now())) {
             throw VerificationCodeExpiredException.EXCEPTION;
         }
-        verificationCodeRepository.delete(verificationCode);
+        // 인증 완료 표시만 하고 행은 남긴다 — 회원가입 시 인증 여부를 서버가 확인해야 한다
+        LocalDateTime signUpDeadline = LocalDateTime.now().plusMinutes(SIGN_UP_COMPLETION_VALID_MINUTES);
+        verificationCode.verify(signUpDeadline);
     }
 
     @Transactional
