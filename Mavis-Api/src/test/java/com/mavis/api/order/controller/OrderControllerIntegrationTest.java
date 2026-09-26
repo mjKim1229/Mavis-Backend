@@ -18,8 +18,10 @@ import com.mavis.domain.domains.order.domain.PaymentMethod;
 import com.mavis.domain.domains.order.repository.OrderItemRepository;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.product.domain.Product;
+import com.mavis.domain.domains.product.domain.ProductColor;
 import com.mavis.domain.domains.product.domain.ProductImage;
 import com.mavis.domain.domains.product.domain.ProductImageType;
+import com.mavis.domain.domains.product.repository.ProductColorRepository;
 import com.mavis.domain.domains.product.repository.ProductImageRepository;
 import com.mavis.domain.domains.product.repository.ProductRepository;
 import com.mavis.domain.domains.refund.domain.Refund;
@@ -52,6 +54,22 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private ProductColorRepository productColorRepository;
+
+    @Autowired
+    private jakarta.persistence.EntityManager entityManager;
+
+    // 색상 저장 후 flush+clear — 영속성 컨텍스트의 Product.colors는 이미 초기화된 빈 리스트라 재조회가 필요하다
+    private Product withColors(Product product, String... colors) {
+        for (String color : colors) {
+            productColorRepository.save(ProductColor.of(product, color));
+        }
+        entityManager.flush();
+        entityManager.clear();
+        return productRepository.findById(product.getId()).orElseThrow();
+    }
+
     @Test
     void 주문_생성_성공() throws Exception {
         User user = userRepository.save(User.builder()
@@ -64,6 +82,7 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                 .price(10000)
                 .subCategory(ProductSubCategory.TENCEL)
                 .build());
+        product = withColors(product, "black", "white");
 
         CreateOrderRequest request = new CreateOrderRequest(
                 14000,
@@ -91,6 +110,7 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                 .price(10000)
                 .subCategory(ProductSubCategory.TENCEL)
                 .build());
+        product = withColors(product, "black", "white");
 
         CreateOrderRequest request = new CreateOrderRequest(
                 99999, // 틀린 금액
@@ -144,6 +164,8 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                     .price(10000)
                     .subCategory(ProductSubCategory.TENCEL)
                     .build());
+            product = withColors(product, "black", "white");
+            user = userRepository.findById(user.getId()).orElseThrow(); // withColors의 clear로 준영속 상태가 되므로 재조회
         }
 
         @Test
@@ -264,6 +286,9 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                     .price(20000)
                     .subCategory(ProductSubCategory.TENCEL)
                     .build());
+            imageProduct = withColors(imageProduct, "black", "white");
+            product = productRepository.findById(product.getId()).orElseThrow(); // withColors의 clear로 준영속 상태가 되므로 재조회
+            user = userRepository.findById(user.getId()).orElseThrow();
             productImageRepository.save(ProductImage.builder()
                     .product(imageProduct)
                     .imageType(ProductImageType.MAIN)

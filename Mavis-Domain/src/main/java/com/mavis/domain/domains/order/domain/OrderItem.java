@@ -1,6 +1,7 @@
 package com.mavis.domain.domains.order.domain;
 
 import com.mavis.domain.domains.common.jpa.BaseEntity;
+import com.mavis.domain.domains.order.exception.InvalidOrderColorException;
 import com.mavis.domain.domains.order.exception.InvalidOrderQuantityException;
 import com.mavis.domain.domains.product.domain.Product;
 import jakarta.persistence.*;
@@ -44,6 +45,9 @@ public class OrderItem extends BaseEntity {
     public static OrderItem of(OrderOption option, int unitPrice, Order order, Product product) {
         if (option.quantity() < 1) {
             throw InvalidOrderQuantityException.EXCEPTION;
+        }
+        if (!product.supportsColor(option.color())) {
+            throw InvalidOrderColorException.EXCEPTION;
         }
         int totalPrice = OrderAmounts.multiply(unitPrice, option.quantity());
         return OrderItem.builder()

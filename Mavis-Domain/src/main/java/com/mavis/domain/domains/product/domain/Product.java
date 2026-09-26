@@ -62,6 +62,21 @@ public class Product extends BaseEntity {
                 .toList();
     }
 
+    /**
+     * 판매 중인 색상인지 확인한다. 색상 옵션이 없는 상품은 빈 값만 허용한다.
+     */
+    public boolean supportsColor(String color) {
+        List<String> activeColors = colors.stream()
+                .filter(productColor -> !productColor.isDeleted())
+                .map(ProductColor::getColor)
+                .toList();
+        boolean hasNoColorOption = activeColors.isEmpty();
+        if (hasNoColorOption) {
+            return color == null || color.isBlank();
+        }
+        return activeColors.contains(color);
+    }
+
     public void update(String name, Integer price, ProductSubCategory subCategory) {
         this.name = name;
         this.price = price;

@@ -10,6 +10,8 @@ import com.mavis.domain.domains.order.domain.*;
 import com.mavis.domain.domains.order.repository.OrderItemRepository;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.product.domain.Product;
+import com.mavis.domain.domains.product.domain.ProductColor;
+import com.mavis.domain.domains.product.repository.ProductColorRepository;
 import com.mavis.domain.domains.product.repository.ProductRepository;
 import com.mavis.domain.domains.refund.domain.Refund;
 import com.mavis.domain.domains.refund.domain.RefundStatus;
@@ -40,6 +42,8 @@ class RefundControllerTest extends ControllerTestSupport {
     @Autowired
     private ProductRepository productRepository;
     @Autowired
+    private ProductColorRepository productColorRepository;
+    @Autowired
     private OrderRepository orderRepository;
     @Autowired
     private OrderItemRepository orderItemRepository;
@@ -66,6 +70,14 @@ class RefundControllerTest extends ControllerTestSupport {
             .price(10000)
             .subCategory(ProductSubCategory.TENCEL)
             .build());
+
+        productColorRepository.save(ProductColor.of(product, "black"));
+        productColorRepository.save(ProductColor.of(product, "white"));
+        // Product.colors는 이미 초기화된 빈 리스트라 색상 저장 후 재조회가 필요하다
+        em.flush();
+        em.clear();
+        product = productRepository.findById(product.getId()).orElseThrow();
+        user = userRepository.findById(user.getId()).orElseThrow();
 
         address = new OrderAddress("홍길동", "010-1234-5678", "12345", "서울시 강남구", "101호", "문 앞에 놔주세요");
     }

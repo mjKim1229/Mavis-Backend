@@ -15,6 +15,8 @@ public enum OrderErrorCode implements BaseErrorCode {
     CANNOT_CANCEL_ORDER(400, "주문 취소가 불가능한 상태입니다. 고객센터에 문의하세요", "ORDER_400_5"),
     INVALID_ORDER_QUANTITY(400, "주문 수량은 1개 이상이어야 합니다.", "ORDER_400_6"),
     ORDER_AMOUNT_EXCEEDED(400, "주문 금액이 허용 범위를 초과했습니다.", "ORDER_400_7"),
+    INVALID_ORDER_COLOR(400, "선택한 색상은 해당 상품에서 판매하지 않는 옵션입니다.", "ORDER_400_8"),
+    INVALID_ORDER_STATUS_TRANSITION(400, "현재 주문 상태에서는 처리할 수 없습니다.", "ORDER_400_9"),
     DUPLICATE_PAYMENT(409, "이미 처리된 결제입니다.", "ORDER_409_1"),
     PAYMENT_ALREADY_PROCESSING(409, "결제가 처리 중입니다. 잠시 후 다시 시도해주세요.", "ORDER_409_2"),
     PREVIOUS_PAYMENT_FAILED(409, "이전 결제 시도가 실패했습니다.", "ORDER_409_3"),

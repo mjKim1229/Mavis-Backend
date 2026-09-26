@@ -6,6 +6,7 @@ import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.exception.OrderAmountExceededException;
 import com.mavis.domain.domains.order.repository.OrderItemRepository;
 import com.mavis.domain.domains.product.domain.Product;
+import com.mavis.domain.domains.product.domain.ProductColor;
 import com.mavis.domain.domains.product.implement.ProductReader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,11 +36,24 @@ class OrderItemAppenderTest {
     @Mock
     private ProductReader productReader;
 
+    private Product productWithColors(Long id, int price, String... colors) {
+        Product product = Product.builder()
+                .id(id)
+                .price(price)
+                .colors(new ArrayList<>())
+                .build();
+        List<ProductColor> productColors = product.getColors();
+        for (String color : colors) {
+            productColors.add(ProductColor.of(product, color));
+        }
+        return product;
+    }
+
     @Test
     void 여러_상품의_수량과_단가를_곱한_합산_금액을_반환한다() {
         // given
-        Product productA = Product.builder().id(1L).price(10000).build();
-        Product productB = Product.builder().id(2L).price(5000).build();
+        Product productA = productWithColors(1L, 10000, "black");
+        Product productB = productWithColors(2L, 5000, "white");
 
         OrderItemRequest itemA = new OrderItemRequest(1L, new OrderOptionRequest("black", 2));
         OrderItemRequest itemB = new OrderItemRequest(2L, new OrderOptionRequest("white", 3));
@@ -62,8 +77,8 @@ class OrderItemAppenderTest {
     void 품목별_금액은_정상이어도_합계가_int_범위를_넘으면_OrderAmountExceededException() {
         // given: 각 품목 1,073,741,824원(정상 범위) — 합계 2,147,483,648원은 Integer.MAX_VALUE 초과
         int halfOverMax = Integer.MAX_VALUE / 2 + 1;
-        Product productA = Product.builder().id(1L).price(halfOverMax).build();
-        Product productB = Product.builder().id(2L).price(halfOverMax).build();
+        Product productA = productWithColors(1L, halfOverMax, "black");
+        Product productB = productWithColors(2L, halfOverMax, "white");
 
         OrderItemRequest itemA = new OrderItemRequest(1L, new OrderOptionRequest("black", 1));
         OrderItemRequest itemB = new OrderItemRequest(2L, new OrderOptionRequest("white", 1));
