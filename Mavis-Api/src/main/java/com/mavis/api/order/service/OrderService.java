@@ -28,6 +28,7 @@ import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsStatus;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.VirtualAccountDepositCallbackRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,6 +42,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -213,7 +215,9 @@ public class OrderService {
     public void processDepositCallback(VirtualAccountDepositCallbackRequest request) {
         Order order = orderRepository.findByOrderIdAndIsDeletedFalse(request.orderId())
                 .orElseThrow(() -> OrderNotFoundException.EXCEPTION);
-        if (order.getOrderStatus() == OrderStatus.PAYMENT_CONFIRMED) {
+        // 입금대기 상태에서만 처리한다. 그 외 상태는 웹훅이므로 예외 없이 무시 — 400/500을 주면 토스가 재시도를 반복한다
+        if (order.getOrderStatus() != OrderStatus.WAITING_FOR_DEPOSIT) {
+            log.warn("[가상계좌] 입금 콜백 무시 - orderId: {}, orderStatus: {}", order.getOrderId(), order.getOrderStatus());
             return;
         }
 

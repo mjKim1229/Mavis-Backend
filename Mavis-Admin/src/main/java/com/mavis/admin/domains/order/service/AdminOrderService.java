@@ -13,6 +13,7 @@ import com.mavis.domain.domains.order.domain.OrderStatus;
 import com.mavis.domain.domains.order.dto.AdminOrderItemRow;
 import com.mavis.domain.domains.order.dto.AdminOrderRow;
 import com.mavis.domain.domains.order.exception.OrderNotFoundException;
+import com.mavis.domain.domains.order.exception.OrderNotToBeConfirmedException;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.refund.domain.RefundStatus;
 import com.mavis.domain.domains.refund.repository.RefundRepository;
@@ -83,6 +84,9 @@ public class AdminOrderService {
         orders.forEach(order -> {
             if (order.getOrderStatus() == OrderStatus.ORDERED) {
                 return; // 이미 발주됨 — 중복 Delivery 생성 방지 (멱등 처리)
+            }
+            if (order.getOrderStatus() != OrderStatus.PAYMENT_CONFIRMED) {
+                throw OrderNotToBeConfirmedException.EXCEPTION; // 취소/미결제 주문 발주 차단
             }
             order.confirmOrder();
             Delivery delivery = Delivery.builder()

@@ -9,6 +9,7 @@ import com.mavis.domain.domains.delivery.repository.DeliveryRepository;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderAddress;
 import com.mavis.domain.domains.order.domain.OrderStatus;
+import com.mavis.domain.domains.order.exception.OrderNotToBeConfirmedException;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.refund.domain.Refund;
 import com.mavis.domain.domains.refund.domain.RefundStatus;
@@ -170,6 +171,46 @@ class AdminOrderServiceTest extends ControllerTestSupport {
             assertThatThrownBy(() ->
                     adminOrderService.confirmOrder(new AdminOrderConfirmRequest(List.of(order.getId(), 999L)))
             ).isInstanceOf(com.mavis.domain.domains.order.exception.OrderNotFoundException.class);
+        }
+
+        @Test
+        void 취소된_주문은_발주할_수_없고_배송도_생성되지_않는다() {
+            Order canceled = createOrder("GARAM0020", OrderStatus.CANCELED);
+            em.flush();
+            em.clear();
+
+            assertThatThrownBy(() ->
+                    adminOrderService.confirmOrder(new AdminOrderConfirmRequest(List.of(canceled.getId())))
+            ).isInstanceOf(OrderNotToBeConfirmedException.class);
+
+            assertThat(deliveryRepository.count()).isZero();
+        }
+
+        @Test
+        void 미결제_주문은_발주할_수_없다() {
+            Order ready = createOrder("GARAM0021", OrderStatus.READY);
+            em.flush();
+            em.clear();
+
+            assertThatThrownBy(() ->
+                    adminOrderService.confirmOrder(new AdminOrderConfirmRequest(List.of(ready.getId())))
+            ).isInstanceOf(OrderNotToBeConfirmedException.class);
+
+            assertThat(deliveryRepository.count()).isZero();
+        }
+
+        @Test
+        void 정상_주문에_취소_주문이_섞이면_전체가_발주되지_않는다() {
+            Order confirmed = createOrder("GARAM0022", OrderStatus.PAYMENT_CONFIRMED);
+            Order canceled = createOrder("GARAM0023", OrderStatus.CANCELED);
+            em.flush();
+            em.clear();
+
+            // 배치 전체가 실패한다. 앞선 주문의 Delivery 저장은 서비스 트랜잭션 롤백으로 취소되지만,
+            // 테스트 트랜잭션이 전체를 감싸고 있어 여기서는 롤백 결과를 확인할 수 없다.
+            assertThatThrownBy(() ->
+                    adminOrderService.confirmOrder(new AdminOrderConfirmRequest(List.of(confirmed.getId(), canceled.getId())))
+            ).isInstanceOf(OrderNotToBeConfirmedException.class);
         }
     }
 }

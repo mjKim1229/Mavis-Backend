@@ -14,6 +14,7 @@ import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.order.repository.PaymentRepository;
 import com.mavis.domain.domains.refund.implement.RefundAppender;
 import com.mavis.domain.domains.user.domain.User;
+import com.mavis.infrastructure.outer.api.tosspayments.dto.VirtualAccountDepositCallbackRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,9 +25,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
@@ -145,5 +149,47 @@ class OrderServiceTest {
         // when & then
         assertThatThrownBy(() -> orderService.createOrder(request))
                 .isInstanceOf(OrderAmountExceededException.class);
+    }
+
+    @Test
+    void 취소된_주문에_입금_콜백이_오면_상태를_되살리지_않고_무시한다() {
+        // given: 가상계좌 입금 콜백은 토스 웹훅 — 예외를 던지면 재시도가 반복되므로 조용히 무시한다
+        String tossOrderId = "ORDER-CANCELED";
+        Order order = Order.builder()
+                .orderId(tossOrderId)
+                .orderStatus(OrderStatus.CANCELED)
+                .build();
+        VirtualAccountDepositCallbackRequest request = new VirtualAccountDepositCallbackRequest(
+                LocalDateTime.now(), "secret-001", "DONE", "txn-001", tossOrderId);
+
+        given(orderRepository.findByOrderIdAndIsDeletedFalse(tossOrderId)).willReturn(Optional.of(order));
+
+        // when
+        orderService.processDepositCallback(request);
+
+        // then
+        assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.CANCELED);
+        verify(paymentRepository, never()).save(any());
+    }
+
+    @Test
+    void 입금대기가_아닌_주문의_입금_콜백은_무시한다() {
+        // given: 승인 후처리 실패 등으로 PAYMENT_REQUESTED에 멈춘 주문 — 입금 콜백으로 결제완료시키지 않는다
+        String tossOrderId = "ORDER-REQUESTED";
+        Order order = Order.builder()
+                .orderId(tossOrderId)
+                .orderStatus(OrderStatus.PAYMENT_REQUESTED)
+                .build();
+        VirtualAccountDepositCallbackRequest request = new VirtualAccountDepositCallbackRequest(
+                LocalDateTime.now(), "secret-001", "DONE", "txn-001", tossOrderId);
+
+        given(orderRepository.findByOrderIdAndIsDeletedFalse(tossOrderId)).willReturn(Optional.of(order));
+
+        // when
+        orderService.processDepositCallback(request);
+
+        // then
+        assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.PAYMENT_REQUESTED);
+        verify(paymentRepository, never()).save(any());
     }
 }

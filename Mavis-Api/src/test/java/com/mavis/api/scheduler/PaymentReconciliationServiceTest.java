@@ -33,6 +33,7 @@ class PaymentReconciliationServiceTest {
         Order order = Order.builder()
                 .orderId("ORDER-001")
                 .build();
+        order.paymentRequested();
         order.waitingForDeposit();
 
         Payment payment = Payment.builder()
@@ -67,6 +68,8 @@ class PaymentReconciliationServiceTest {
     void 만료된_가상계좌_주문이_여러개면_모두_CANCELED로_변경한다() {
         Order order1 = Order.builder().orderId("ORDER-001").build();
         Order order2 = Order.builder().orderId("ORDER-002").build();
+        order1.paymentRequested();
+        order2.paymentRequested();
         order1.waitingForDeposit();
         order2.waitingForDeposit();
 

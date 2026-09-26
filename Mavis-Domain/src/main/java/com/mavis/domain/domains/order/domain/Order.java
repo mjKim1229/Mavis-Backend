@@ -2,6 +2,7 @@ package com.mavis.domain.domains.order.domain;
 
 import com.mavis.domain.domains.common.jpa.BaseEntity;
 import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
+import com.mavis.domain.domains.order.exception.InvalidOrderStatusTransitionException;
 import com.mavis.domain.domains.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -68,24 +69,31 @@ public class Order extends BaseEntity {
     }
 
     public void paymentRequested() {
-        this.orderStatus = OrderStatus.PAYMENT_REQUESTED;
+        transitionTo(OrderStatus.PAYMENT_REQUESTED);
     }
 
     public void waitingForDeposit() {
-        this.orderStatus = OrderStatus.WAITING_FOR_DEPOSIT;
+        transitionTo(OrderStatus.WAITING_FOR_DEPOSIT);
     }
 
     public void confirmPayment() {
-        this.orderStatus = OrderStatus.PAYMENT_CONFIRMED;
+        transitionTo(OrderStatus.PAYMENT_CONFIRMED);
     }
 
     public void cancel() {
-        this.orderStatus = OrderStatus.CANCELED;
+        transitionTo(OrderStatus.CANCELED);
     }
 
     public void confirmOrder() {
-        this.orderStatus = OrderStatus.ORDERED;
+        transitionTo(OrderStatus.ORDERED);
         this.orderedAt = LocalDateTime.now();
+    }
+
+    private void transitionTo(OrderStatus next) {
+        if (!orderStatus.canTransitionTo(next)) {
+            throw InvalidOrderStatusTransitionException.EXCEPTION;
+        }
+        this.orderStatus = next;
     }
 
     public String resolveDisplayStatus(DeliveryStatus deliveryStatus) {
