@@ -4,6 +4,7 @@ import com.mavis.domain.domains.order.domain.IdempotencyStatus;
 import com.mavis.domain.domains.order.domain.PaymentApiType;
 import com.mavis.domain.domains.order.domain.PaymentIdempotency;
 import com.mavis.domain.domains.order.exception.PaymentAlreadyProcessingException;
+import com.mavis.domain.domains.order.exception.PaymentNeedsReconcileException;
 import com.mavis.domain.domains.order.exception.PreviousPaymentFailedException;
 import com.mavis.domain.domains.order.repository.PaymentIdempotencyRepository;
 import org.junit.jupiter.api.Test;
@@ -90,5 +91,42 @@ class PaymentIdempotencyManagerTest {
         // then
         assertThat(result.getStatus()).isEqualTo(IdempotencyStatus.SUCCESS);
         assertThat(result.getIdempotencyKey()).isEqualTo(idempotencyKey);
+    }
+
+    @Test
+    void 동일한_키로_중복_요청_시_기존_상태가_NEEDS_RECONCILE이면_PaymentNeedsReconcileException을_던진다() {
+        // given: 외부 호출은 성공했고 후처리만 실패한 건 — 재시도하면 중복 결제/취소가 되므로 막아야 한다
+        String idempotencyKey = "test-key-001";
+        PaymentApiType apiType = PaymentApiType.CANCEL;
+
+        PaymentIdempotency needsReconcile = PaymentIdempotency.ofProcessing(
+                idempotencyKey, apiType, LocalDateTime.now().plusDays(15)
+        );
+        needsReconcile.needsReconcile("post-processing failed", "paymentKey-001");
+
+        given(paymentIdempotencyRepository.save(any())).willThrow(new DataIntegrityViolationException("unique constraint"));
+        given(paymentIdempotencyRepository.findByIdempotencyKeyAndApiType(idempotencyKey, apiType))
+                .willReturn(Optional.of(needsReconcile));
+
+        // when & then
+        assertThatThrownBy(() -> paymentIdempotencyManager.startProcessing(idempotencyKey, apiType))
+                .isInstanceOf(PaymentNeedsReconcileException.class);
+    }
+
+    @Test
+    void markNeedsReconcile은_상태와_사유와_paymentKey를_함께_기록한다() {
+        // given
+        PaymentIdempotency processing = PaymentIdempotency.ofProcessing(
+                "test-key-002", PaymentApiType.CANCEL, LocalDateTime.now().plusDays(15)
+        );
+        given(paymentIdempotencyRepository.findById(1L)).willReturn(Optional.of(processing));
+
+        // when
+        paymentIdempotencyManager.markNeedsReconcile(1L, "DB 저장 실패", "paymentKey-002");
+
+        // then
+        assertThat(processing.getStatus()).isEqualTo(IdempotencyStatus.NEEDS_RECONCILE);
+        assertThat(processing.getFailureReason()).isEqualTo("DB 저장 실패");
+        assertThat(processing.getPaymentKey()).isEqualTo("paymentKey-002");
     }
 }

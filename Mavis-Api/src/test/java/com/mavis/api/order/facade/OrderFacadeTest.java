@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
@@ -83,7 +84,8 @@ class OrderFacadeTest {
     }
 
     @Test
-    void 결제승인_후처리_실패시_자동취소_요청하고_예외를_다시_던진다() {
+    void 결제승인_후처리_실패_후_자동취소가_성공하면_FAILURE로_기록한다() {
+        // 돈을 돌려줬으므로 사람이 확인할 일이 없다 — NEEDS_RECONCILE이 아니라 FAILURE
         PaymentsResponse response = confirmResponse();
         RuntimeException postError = new RuntimeException("후처리 실패");
 
@@ -96,7 +98,51 @@ class OrderFacadeTest {
                 orderFacade.confirmPayments("key", null, new ConfirmPaymentRequest("pk", "ORDER-001", 10000))
         ).isSameAs(postError);
 
+        then(paymentsCancelClient).should().cancelPayments(any(), any(), any(), eq("pk"), any());
         then(paymentIdempotencyManager).should().markFailure(eq(99L), any());
+        then(paymentIdempotencyManager).should(never()).markNeedsReconcile(any(), any(), any());
+    }
+
+    @Test
+    void 결제승인_후처리와_자동취소가_모두_실패하면_NEEDS_RECONCILE로_기록한다() {
+        // 결제된 채로 남았으므로 사람의 확인이 필요하다
+        PaymentsResponse response = confirmResponse();
+        RuntimeException postError = new RuntimeException("후처리 실패");
+        RuntimeException cancelError = new RuntimeException("자동 취소 실패");
+
+        given(orderService.validateAndMarkPaymentRequested(any(), any(), anyInt())).willReturn(99L);
+        given(tossPaymentsProperties.getAuthorizationHeader()).willReturn("Basic xxx");
+        given(paymentsConfirmClient.confirmPayments(any(), any(), any(), any())).willReturn(response);
+        willThrow(postError).given(orderService).processPaymentSuccess(any(), any(), any());
+        given(paymentsCancelClient.cancelPayments(any(), any(), any(), eq("pk"), any())).willThrow(cancelError);
+
+        assertThatThrownBy(() ->
+                orderFacade.confirmPayments("key", null, new ConfirmPaymentRequest("pk", "ORDER-001", 10000))
+        ).isSameAs(postError);
+
+        then(paymentIdempotencyManager).should().markNeedsReconcile(eq(99L), any(), eq("pk"));
+        then(paymentIdempotencyManager).should(never()).markFailure(any(), any());
+    }
+
+    @Test
+    void 결제승인_후처리_실패시_실패_기록이_DB장애로_안되어도_자동취소는_시도한다() {
+        // 후처리 실패의 흔한 원인은 DB 장애 — 같은 이유로 기록도 실패할 수 있다. 고객 돈을 돌려주는 게 우선이다
+        PaymentsResponse response = confirmResponse();
+        RuntimeException postError = new RuntimeException("후처리 실패 — DB 장애");
+        RuntimeException dbError = new RuntimeException("DB 장애");
+
+        given(orderService.validateAndMarkPaymentRequested(any(), any(), anyInt())).willReturn(99L);
+        given(tossPaymentsProperties.getAuthorizationHeader()).willReturn("Basic xxx");
+        given(paymentsConfirmClient.confirmPayments(any(), any(), any(), any())).willReturn(response);
+        willThrow(postError).given(orderService).processPaymentSuccess(any(), any(), any());
+        lenient().doThrow(dbError).when(paymentIdempotencyManager).markNeedsReconcile(any(), any(), any());
+        lenient().doThrow(dbError).when(paymentIdempotencyManager).markFailure(any(), any());
+
+        // 기록 실패는 삼키고, 호출자에게는 원래 원인(후처리 실패)을 던진다
+        assertThatThrownBy(() ->
+                orderFacade.confirmPayments("key", null, new ConfirmPaymentRequest("pk", "ORDER-001", 10000))
+        ).isSameAs(postError);
+
         then(paymentsCancelClient).should().cancelPayments(any(), any(), any(), eq("pk"), any());
     }
 
@@ -163,7 +209,7 @@ class OrderFacadeTest {
     }
 
     @Test
-    void 결제취소_후처리_실패시_멱등키_실패처리하고_예외를_다시_던진다() {
+    void 결제취소_후처리_실패시_NEEDS_RECONCILE로_기록하고_예외를_다시_던진다() {
         PaymentIdempotency idempotency = idempotency(PaymentApiType.CANCEL, IdempotencyStatus.PROCESSING);
         PaymentsCancels cancelEntry = cancelEntry("txKey");
         PaymentsResponse response = cancelResponse("txKey", cancelEntry);
@@ -179,7 +225,8 @@ class OrderFacadeTest {
                 orderFacade.cancelPayments("key", null, 1L, new CancelOrderRequest("환불사유"))
         ).isSameAs(postError);
 
-        then(paymentIdempotencyManager).should().markFailure(eq(99L), any());
+        then(paymentIdempotencyManager).should().markNeedsReconcile(eq(99L), any(), eq("payKey"));
+        then(paymentIdempotencyManager).should(never()).markFailure(any(), any());
     }
 
     // ── helpers ───────────────────────────────────────────────────────────────

@@ -36,9 +36,11 @@ public class AdminRefundFacade {
             return;
         }
 
+        RefundValidateInfo info;
+        PaymentsResponse response;
         try {
-            // TX1 (read-only): 상태 검증 + paymentKey 조회
-            RefundValidateInfo info = adminRefundService.validateForApproval(refundId);
+            // TX1 (read-only): 상태 검증 + paymentKey 조회, 이어서 토스 취소 호출
+            info = adminRefundService.validateForApproval(refundId);
 
             RefundReceiveAccount account = info.refundReceiveAccount();
             RefundReceiveAccountRequest refundReceiveAccountRequest = account != null
@@ -47,7 +49,7 @@ public class AdminRefundFacade {
 
             CancelPaymentsRequest cancelRequest = new CancelPaymentsRequest(info.refundReason(), info.refundAmount(), refundReceiveAccountRequest);
             log.info("[TOSS][REFUND] 요청 - {}", cancelRequest);
-            PaymentsResponse response = paymentsCancelClient.cancelPayments(
+            response = paymentsCancelClient.cancelPayments(
                     tossPaymentsProperties.getAuthorizationHeader(),
                     idempotencyKey,
                     testCode,
@@ -55,7 +57,14 @@ public class AdminRefundFacade {
                     cancelRequest
             );
             log.info("[TOSS][REFUND] 완료 - {}", response);
+        } catch (Exception e) {
+            // 여기까지는 환불이 일어나지 않았거나 호출 자체가 실패한 구간 — 재시도 가능
+            log.error("[TOSS][REFUND] 실패 - refundId={}", refundId, e);
+            paymentIdempotencyManager.markFailure(idempotency.getId(), e.getMessage());
+            throw e;
+        }
 
+        try {
             PaymentsCancels cancelEntry = response.currentCancelEntry();
             if (cancelEntry == null) throw CancelEntryNotFoundException.EXCEPTION;
 
@@ -63,8 +72,9 @@ public class AdminRefundFacade {
             adminRefundService.approveAndComplete(info.refundId(), response, cancelEntry);
             paymentIdempotencyManager.markSuccess(idempotency.getId());
         } catch (Exception e) {
-            log.error("[TOSS][REFUND] 실패 - refundId={}", refundId, e);
-            paymentIdempotencyManager.markFailure(idempotency.getId(), e.getMessage());
+            // 환불은 이미 완료됐고 DB만 반영되지 않은 상태 — 재시도가 아니라 사람의 확인이 필요하다
+            log.error("[TOSS][REFUND] 후처리 실패 — 환불은 완료됨, 정합성 확인 필요 - refundId={}", refundId, e);
+            paymentIdempotencyManager.markNeedsReconcile(idempotency.getId(), e.getMessage(), info.paymentKey());
             throw e;
         }
     }
