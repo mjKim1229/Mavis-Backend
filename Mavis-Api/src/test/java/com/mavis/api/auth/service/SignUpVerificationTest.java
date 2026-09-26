@@ -6,8 +6,10 @@ import com.mavis.api.auth.dto.UserSignUpRequest;
 import com.mavis.api.support.ControllerTestSupport;
 import com.mavis.domain.domains.user.domain.Gender;
 import com.mavis.domain.domains.user.domain.SnsType;
+import com.mavis.domain.domains.user.domain.User;
 import com.mavis.domain.domains.user.domain.VerificationCode;
 import com.mavis.domain.domains.user.domain.VerificationType;
+import com.mavis.domain.domains.user.exception.DuplicateUsernameException;
 import com.mavis.domain.domains.user.exception.EmailNotVerifiedException;
 import com.mavis.domain.domains.user.exception.InvalidVerificationCodeException;
 import com.mavis.domain.domains.user.repository.UserRepository;
@@ -118,5 +120,41 @@ class SignUpVerificationTest extends ControllerTestSupport {
 
         assertThatThrownBy(() -> userService.signUp(signUpRequest()))
                 .isInstanceOf(EmailNotVerifiedException.class);
+    }
+
+    @Test
+    void 활성_사용자가_쓰는_아이디로는_가입할_수_없다() {
+        userRepository.save(User.builder()
+                .username("testuser")
+                .email("other@test.com")
+                .snsType(SnsType.MANUAL)
+                .build());
+        Integer code = issueCode();
+        authVerificationService.verifySignUpFound(new UserSignUpCodeVerifyRequest(EMAIL, code));
+        em.flush();
+        em.clear();
+
+        assertThatThrownBy(() -> userService.signUp(signUpRequest()))
+                .isInstanceOf(DuplicateUsernameException.class);
+    }
+
+    @Test
+    void 탈퇴한_사용자의_아이디로는_가입할_수_있다() {
+        User withdrawn = userRepository.save(User.builder()
+                .username("testuser")
+                .email("other@test.com")
+                .snsType(SnsType.MANUAL)
+                .build());
+        withdrawn.withDraw();
+        Integer code = issueCode();
+        authVerificationService.verifySignUpFound(new UserSignUpCodeVerifyRequest(EMAIL, code));
+        em.flush();
+        em.clear();
+
+        userService.signUp(signUpRequest());
+        em.flush();
+        em.clear();
+
+        assertThat(userRepository.existsByUsernameAndIsDeletedFalse("testuser")).isTrue();
     }
 }

@@ -13,6 +13,7 @@ import com.mavis.domain.domains.user.domain.User;
 import com.mavis.domain.domains.user.domain.VerificationCode;
 import com.mavis.domain.domains.user.domain.VerificationType;
 import com.mavis.domain.domains.user.exception.DuplicateEmailException;
+import com.mavis.domain.domains.user.exception.DuplicateUsernameException;
 import com.mavis.domain.domains.user.exception.EmailNotVerifiedException;
 import com.mavis.domain.domains.user.exception.InvalidPasswordException;
 import com.mavis.domain.domains.user.exception.SnsUserCannotChangePasswordException;
@@ -103,6 +104,9 @@ public class UserService {
     public void signUp(UserSignUpRequest request) {
         if (userRepository.existsBySnsTypeAndEmailAndIsDeletedFalse(SnsType.MANUAL, request.email())) {
             throw DuplicateEmailException.EXCEPTION;
+        }
+        if (userRepository.existsByUsernameAndIsDeletedFalse(request.username())) {
+            throw DuplicateUsernameException.EXCEPTION;
         }
 
         // 이메일 인증을 마친 요청인지 서버에서 확인 — 인증 단계를 건너뛴 직접 호출 차단

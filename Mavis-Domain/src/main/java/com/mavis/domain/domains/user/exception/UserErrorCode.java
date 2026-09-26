@@ -13,7 +13,8 @@ public enum UserErrorCode implements BaseErrorCode {
     INVALID_PASSWORD(400, "USER_400_3", "비밀번호가 올바르지 않습니다."),
     EMAIL_NOT_VERIFIED(400, "USER_400_5", "이메일 인증이 필요합니다."),
     SNS_USER_CANNOT_CHANGE_PASSWORD(400, "USER_400_4", "SNS 로그인 사용자는 비밀번호를 변경할 수 없습니다."),
-    DUPLICATE_EMAIL(409, "USER_409_1", "이미 가입된 이메일입니다.");
+    DUPLICATE_EMAIL(409, "USER_409_1", "이미 가입된 이메일입니다."),
+    DUPLICATE_USERNAME(409, "USER_409_2", "이미 사용 중인 아이디입니다.");
 
     private final Integer status;
     private final String code;
