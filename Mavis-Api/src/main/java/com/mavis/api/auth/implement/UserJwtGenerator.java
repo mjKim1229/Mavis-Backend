@@ -12,7 +12,7 @@ public class UserJwtGenerator {
 
     public JwtPair getJwtPair(Long id) {
         String accessToken = jwtTokenUtil.generateAccessToken(id, "USER");
-        String refreshToken = jwtTokenUtil.generateRefreshToken(id);
+        String refreshToken = jwtTokenUtil.generateRefreshToken(id, "USER");
         return new JwtPair(accessToken, refreshToken);
     }
 }

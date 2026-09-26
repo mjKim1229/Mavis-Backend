@@ -129,7 +129,7 @@ public class UserService {
             throw UserNotFoundException.EXCEPTION;
         }
         String accessToken = jwtTokenUtil.generateAccessToken(user.getId(), "USER");
-        String refreshToken = jwtTokenUtil.generateRefreshToken(user.getId());
+        String refreshToken = jwtTokenUtil.generateRefreshToken(user.getId(), "USER");
         return new UserOauthResponse(
                 user.getId(),
                 new JwtPair(accessToken, refreshToken)
@@ -137,9 +137,12 @@ public class UserService {
     }
 
     public UserOauthResponse tokenRefresh(String refreshToken) {
-        Long id = jwtTokenUtil.parseRefreshToken(refreshToken);
+        Long id = jwtTokenUtil.parseRefreshToken(refreshToken, "USER");
+        if (!userRepository.existsByIdAndIsDeletedFalse(id)) {
+            throw UserNotFoundException.EXCEPTION;
+        }
         String accessToken = jwtTokenUtil.generateAccessToken(id, "USER");
-        refreshToken = jwtTokenUtil.generateRefreshToken(id);
+        refreshToken = jwtTokenUtil.generateRefreshToken(id, "USER");
         return new UserOauthResponse(
                 id,
                 new JwtPair(accessToken, refreshToken)

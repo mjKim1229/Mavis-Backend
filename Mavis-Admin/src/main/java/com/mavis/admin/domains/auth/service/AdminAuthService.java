@@ -28,16 +28,16 @@ public class AdminAuthService {
         }
 
         String accessToken = jwtTokenUtil.generateAccessToken(admin.getId(), "ADMIN");
-        String refreshToken = jwtTokenUtil.generateRefreshToken(admin.getId());
+        String refreshToken = jwtTokenUtil.generateRefreshToken(admin.getId(), "ADMIN");
         return new AdminLoginResponse(new JwtPair(accessToken, refreshToken));
     }
 
     public AdminLoginResponse adminTokenRefresh(String refreshToken) {
-        Long adminId = jwtTokenUtil.parseRefreshToken(refreshToken);
+        Long adminId = jwtTokenUtil.parseRefreshToken(refreshToken, "ADMIN");
         adminRepository.findByIdAndIsDeletedFalse(adminId)
                 .orElseThrow(() -> AdminLoginException.EXCEPTION);
         String accessToken = jwtTokenUtil.generateAccessToken(adminId, "ADMIN");
-        String newRefreshToken = jwtTokenUtil.generateRefreshToken(adminId);
+        String newRefreshToken = jwtTokenUtil.generateRefreshToken(adminId, "ADMIN");
         return new AdminLoginResponse(new JwtPair(accessToken, newRefreshToken));
     }
 }

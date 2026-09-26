@@ -59,7 +59,7 @@ public class JwtTokenUtil {
                 .compact();
     }
 
-    public String generateRefreshToken(Long id) {
+    public String generateRefreshToken(Long id, String role) {
         final Key encodedKey = getSecretKey();
         final Date issuedAt = new Date();
         final Date refreshTokenExpiresIn =
@@ -70,6 +70,7 @@ public class JwtTokenUtil {
                 .issuedAt(issuedAt)
                 .subject(id.toString())
                 .claim(TOKEN_TYPE, REFRESH_TOKEN)
+                .claim(TOKEN_ROLE, role)
                 .expiration(refreshTokenExpiresIn)
                 .signWith(encodedKey)
                 .compact();
@@ -99,10 +100,14 @@ public class JwtTokenUtil {
         return payload.get(TOKEN_ROLE, String.class);
     }
 
-    public Long parseRefreshToken(String token) {
+    public Long parseRefreshToken(String token, String expectedRole) {
         try {
             if (isRefreshToken(token)) {
                 Claims claims = getJws(token).getBody();
+                String role = claims.get(TOKEN_ROLE, String.class);
+                if (!expectedRole.equals(role)) {
+                    throw InvalidTokenException.EXCEPTION;
+                }
                 return Long.parseLong(claims.getSubject());
             }
         } catch (ExpiredTokenException e) {
