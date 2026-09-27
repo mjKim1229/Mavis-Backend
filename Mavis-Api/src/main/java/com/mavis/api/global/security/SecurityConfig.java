@@ -36,8 +36,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests((requests) ->
                         requests
                                 .requestMatchers("/v1/api/review/user/**").hasRole("USER")
-                                .requestMatchers("/v1/api/inquiry/user/**").hasRole("USER")
-                                .requestMatchers(HttpMethod.POST, "/v1/api/inquiry/product/**").hasRole("USER")
+                                .requestMatchers(HttpMethod.GET, "/v1/api/inquiry/product/**").permitAll()
+                                .requestMatchers("/v1/api/inquiry/**").hasRole("USER")
                                 .requestMatchers("/v1/api/refund/**").hasRole("USER")
                                 .requestMatchers("/v1/api/order/**").hasRole("USER")
                                 .requestMatchers("/v1/api/cart/**").hasRole("USER")

@@ -310,6 +310,19 @@ class InquiryControllerTest extends ControllerTestSupport {
         }
 
         @Test
+        void 비인증_삭제_요청시_401() throws Exception {
+            Inquiry inquiry = inquiryRepository.save(Inquiry.builder()
+                    .question("삭제할 질문")
+                    .isPrivate(false)
+                    .product(savedProduct)
+                    .user(savedUser)
+                    .build());
+
+            mockMvc.perform(delete("/v1/api/inquiry/{id}", inquiry.getId()))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
         void 다른_사용자_문의_삭제시_403() throws Exception {
             User otherUser = userRepository.save(User.builder()
                     .name("다른유저")
