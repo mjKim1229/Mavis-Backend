@@ -46,19 +46,38 @@ class OrderFacadeTest {
 
     @Test
     void 멱등키가_SUCCESS면_결제승인을_건너뛴다() {
-        given(orderService.validateAndMarkPaymentRequested(any(), any(), anyInt())).willReturn(null);
+        given(paymentIdempotencyManager.startProcessing(any(), eq(PaymentApiType.CONFIRM)))
+                .willReturn(idempotency(PaymentApiType.CONFIRM, IdempotencyStatus.SUCCESS));
 
         orderFacade.confirmPayments("key", null, new ConfirmPaymentRequest("pk", "ORDER-001", 10000));
 
+        then(orderService).should(never()).validateAndMarkPaymentRequested(any(), anyInt());
         then(paymentsConfirmClient).shouldHaveNoInteractions();
         then(orderService).should(never()).processPaymentSuccess(any(), any(), any());
+    }
+
+    @Test
+    void 결제승인_검증_실패시_FAILURE로_기록하고_토스를_호출하지_않는다() {
+        RuntimeException validationError = new RuntimeException("금액 불일치");
+
+        given(paymentIdempotencyManager.startProcessing(any(), eq(PaymentApiType.CONFIRM)))
+                .willReturn(idempotency(PaymentApiType.CONFIRM, IdempotencyStatus.PROCESSING));
+        willThrow(validationError).given(orderService).validateAndMarkPaymentRequested(any(), anyInt());
+
+        assertThatThrownBy(() ->
+                orderFacade.confirmPayments("key", null, new ConfirmPaymentRequest("pk", "ORDER-001", 10000))
+        ).isSameAs(validationError);
+
+        then(paymentIdempotencyManager).should().markFailure(eq(99L), any());
+        then(paymentsConfirmClient).shouldHaveNoInteractions();
     }
 
     @Test
     void 결제승인_성공시_processPaymentSuccess를_호출한다() {
         PaymentsResponse response = confirmResponse();
 
-        given(orderService.validateAndMarkPaymentRequested(any(), any(), anyInt())).willReturn(99L);
+        given(paymentIdempotencyManager.startProcessing(any(), eq(PaymentApiType.CONFIRM)))
+                .willReturn(idempotency(PaymentApiType.CONFIRM, IdempotencyStatus.PROCESSING));
         given(tossPaymentsProperties.getAuthorizationHeader()).willReturn("Basic xxx");
         given(paymentsConfirmClient.confirmPayments(any(), any(), any(), any())).willReturn(response);
 
@@ -71,7 +90,8 @@ class OrderFacadeTest {
     void 토스_결제승인_실패시_멱등키_실패처리하고_예외를_다시_던진다() {
         RuntimeException tossError = new RuntimeException("토스 결제 오류");
 
-        given(orderService.validateAndMarkPaymentRequested(any(), any(), anyInt())).willReturn(99L);
+        given(paymentIdempotencyManager.startProcessing(any(), eq(PaymentApiType.CONFIRM)))
+                .willReturn(idempotency(PaymentApiType.CONFIRM, IdempotencyStatus.PROCESSING));
         given(tossPaymentsProperties.getAuthorizationHeader()).willReturn("Basic xxx");
         given(paymentsConfirmClient.confirmPayments(any(), any(), any(), any())).willThrow(tossError);
 
@@ -85,11 +105,11 @@ class OrderFacadeTest {
 
     @Test
     void 결제승인_후처리_실패_후_자동취소가_성공하면_FAILURE로_기록한다() {
-        // 돈을 돌려줬으므로 사람이 확인할 일이 없다 — NEEDS_RECONCILE이 아니라 FAILURE
         PaymentsResponse response = confirmResponse();
         RuntimeException postError = new RuntimeException("후처리 실패");
 
-        given(orderService.validateAndMarkPaymentRequested(any(), any(), anyInt())).willReturn(99L);
+        given(paymentIdempotencyManager.startProcessing(any(), eq(PaymentApiType.CONFIRM)))
+                .willReturn(idempotency(PaymentApiType.CONFIRM, IdempotencyStatus.PROCESSING));
         given(tossPaymentsProperties.getAuthorizationHeader()).willReturn("Basic xxx");
         given(paymentsConfirmClient.confirmPayments(any(), any(), any(), any())).willReturn(response);
         willThrow(postError).given(orderService).processPaymentSuccess(any(), any(), any());
@@ -105,12 +125,12 @@ class OrderFacadeTest {
 
     @Test
     void 결제승인_후처리와_자동취소가_모두_실패하면_NEEDS_RECONCILE로_기록한다() {
-        // 결제된 채로 남았으므로 사람의 확인이 필요하다
         PaymentsResponse response = confirmResponse();
         RuntimeException postError = new RuntimeException("후처리 실패");
         RuntimeException cancelError = new RuntimeException("자동 취소 실패");
 
-        given(orderService.validateAndMarkPaymentRequested(any(), any(), anyInt())).willReturn(99L);
+        given(paymentIdempotencyManager.startProcessing(any(), eq(PaymentApiType.CONFIRM)))
+                .willReturn(idempotency(PaymentApiType.CONFIRM, IdempotencyStatus.PROCESSING));
         given(tossPaymentsProperties.getAuthorizationHeader()).willReturn("Basic xxx");
         given(paymentsConfirmClient.confirmPayments(any(), any(), any(), any())).willReturn(response);
         willThrow(postError).given(orderService).processPaymentSuccess(any(), any(), any());
@@ -126,19 +146,18 @@ class OrderFacadeTest {
 
     @Test
     void 결제승인_후처리_실패시_실패_기록이_DB장애로_안되어도_자동취소는_시도한다() {
-        // 후처리 실패의 흔한 원인은 DB 장애 — 같은 이유로 기록도 실패할 수 있다. 고객 돈을 돌려주는 게 우선이다
         PaymentsResponse response = confirmResponse();
         RuntimeException postError = new RuntimeException("후처리 실패 — DB 장애");
         RuntimeException dbError = new RuntimeException("DB 장애");
 
-        given(orderService.validateAndMarkPaymentRequested(any(), any(), anyInt())).willReturn(99L);
+        given(paymentIdempotencyManager.startProcessing(any(), eq(PaymentApiType.CONFIRM)))
+                .willReturn(idempotency(PaymentApiType.CONFIRM, IdempotencyStatus.PROCESSING));
         given(tossPaymentsProperties.getAuthorizationHeader()).willReturn("Basic xxx");
         given(paymentsConfirmClient.confirmPayments(any(), any(), any(), any())).willReturn(response);
         willThrow(postError).given(orderService).processPaymentSuccess(any(), any(), any());
         lenient().doThrow(dbError).when(paymentIdempotencyManager).markNeedsReconcile(any(), any(), any());
         lenient().doThrow(dbError).when(paymentIdempotencyManager).markFailure(any(), any());
 
-        // 기록 실패는 삼키고, 호출자에게는 원래 원인(후처리 실패)을 던진다
         assertThatThrownBy(() ->
                 orderFacade.confirmPayments("key", null, new ConfirmPaymentRequest("pk", "ORDER-001", 10000))
         ).isSameAs(postError);
@@ -157,6 +176,22 @@ class OrderFacadeTest {
 
         then(paymentsCancelClient).shouldHaveNoInteractions();
         then(orderService).shouldHaveNoInteractions();
+    }
+
+    @Test
+    void 결제취소_검증_실패시_FAILURE로_기록하고_토스를_호출하지_않는다() {
+        RuntimeException validationError = new RuntimeException("취소 불가 상태");
+
+        given(paymentIdempotencyManager.startProcessing(any(), eq(PaymentApiType.CANCEL)))
+                .willReturn(idempotency(PaymentApiType.CANCEL, IdempotencyStatus.PROCESSING));
+        given(orderService.findConfirmPaymentToCancel(1L)).willThrow(validationError);
+
+        assertThatThrownBy(() ->
+                orderFacade.cancelPayments("key", null, 1L, new CancelOrderRequest("환불사유"))
+        ).isSameAs(validationError);
+
+        then(paymentIdempotencyManager).should().markFailure(eq(99L), any());
+        then(paymentsCancelClient).shouldHaveNoInteractions();
     }
 
     @Test

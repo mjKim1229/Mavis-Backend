@@ -38,9 +38,16 @@ public class OrderFacade {
     private final PaymentIdempotencyManager paymentIdempotencyManager;
 
     public ConfirmPaymentResponse confirmPayments(String idempotencyKey, String testCode, ConfirmPaymentRequest request) {
-        Long idempotencyId = orderService.validateAndMarkPaymentRequested(idempotencyKey, request.tossOrderId(), request.amount());
-        if (idempotencyId == null) {
+        PaymentIdempotency idempotency = paymentIdempotencyManager.startProcessing(idempotencyKey, PaymentApiType.CONFIRM);
+        if (idempotency.getStatus() == IdempotencyStatus.SUCCESS) {
             return null;
+        }
+        Long idempotencyId = idempotency.getId();
+        try {
+            orderService.validateAndMarkPaymentRequested(request.tossOrderId(), request.amount());
+        } catch (Exception e) {
+            paymentIdempotencyManager.markFailure(idempotencyId, e.getMessage());
+            throw e;
         }
 
         String authorizationHeader = tossPaymentsProperties.getAuthorizationHeader();
@@ -111,8 +118,13 @@ public class OrderFacade {
             return;
         }
 
-        // TX1 (read-only): 검증 + paymentKey 조회
-        PaymentCancelInfo info = orderService.findConfirmPaymentToCancel(orderId);
+        PaymentCancelInfo info;
+        try {
+            info = orderService.findConfirmPaymentToCancel(orderId);
+        } catch (Exception e) {
+            paymentIdempotencyManager.markFailure(idempotency.getId(), e.getMessage());
+            throw e;
+        }
 
         String authorizationHeader = tossPaymentsProperties.getAuthorizationHeader();
         RefundReceiveAccount account = info.refundReceiveAccount();

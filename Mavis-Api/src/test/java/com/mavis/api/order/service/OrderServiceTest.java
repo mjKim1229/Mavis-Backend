@@ -55,7 +55,6 @@ class OrderServiceTest {
 
     @Test
     void 주문자와_현재_유저가_다르면_InvalidOrderInfoException을_던진다() {
-        String idempotencyKey = "key-001";
         String orderId = "ORDER-001";
         int requestAmount = 10000;
 
@@ -69,18 +68,15 @@ class OrderServiceTest {
                 .build();
         order.setTotalPrice(requestAmount);
 
-        given(paymentIdempotencyManager.startProcessing(idempotencyKey, PaymentApiType.CONFIRM))
-                .willReturn(processingIdempotency(idempotencyKey));
         given(orderRepository.findByOrderIdAndIsDeletedFalse(orderId)).willReturn(Optional.of(order));
         given(userReader.getCurrentUser()).willReturn(currentUser);
 
-        assertThatThrownBy(() -> orderService.validateAndMarkPaymentRequested(idempotencyKey, orderId, requestAmount))
+        assertThatThrownBy(() -> orderService.validateAndMarkPaymentRequested(orderId, requestAmount))
                 .isInstanceOf(InvalidOrderInfoException.class);
     }
 
     @Test
     void 요청_금액이_주문_금액과_다르면_PriceMismatchException을_던진다() {
-        String idempotencyKey = "key-001";
         String orderId = "ORDER-001";
         int orderTotalPrice = 10000;
         int requestAmount = 99999;
@@ -94,23 +90,11 @@ class OrderServiceTest {
                 .build();
         order.setTotalPrice(orderTotalPrice);
 
-        given(paymentIdempotencyManager.startProcessing(idempotencyKey, PaymentApiType.CONFIRM))
-                .willReturn(processingIdempotency(idempotencyKey));
         given(orderRepository.findByOrderIdAndIsDeletedFalse(orderId)).willReturn(Optional.of(order));
         given(userReader.getCurrentUser()).willReturn(orderOwner);
 
-        assertThatThrownBy(() -> orderService.validateAndMarkPaymentRequested(idempotencyKey, orderId, requestAmount))
+        assertThatThrownBy(() -> orderService.validateAndMarkPaymentRequested(orderId, requestAmount))
                 .isInstanceOf(PriceMismatchException.class);
-    }
-
-    private PaymentIdempotency processingIdempotency(String key) {
-        return PaymentIdempotency.builder()
-                .id(1L)
-                .idempotencyKey(key)
-                .apiType(PaymentApiType.CONFIRM)
-                .status(IdempotencyStatus.PROCESSING)
-                .expiredAt(LocalDateTime.now().plusDays(15))
-                .build();
     }
 
     @Test
