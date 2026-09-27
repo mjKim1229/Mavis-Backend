@@ -9,7 +9,6 @@ import java.util.Optional;
 
 public interface VerificationCodeRepository extends JpaRepository<VerificationCode, Long> {
     Optional<VerificationCode> findByVerificationTypeAndEmail(VerificationType verificationType, String email);
-    Optional<VerificationCode> findByVerificationTypeAndEmailAndCodeAndIsDeletedFalse(VerificationType verificationType, String email, Integer code);
 
-    void deleteByExpiredAtBefore(LocalDateTime nowTime);
+    void deleteByExpiredAtBeforeAndSendWindowStartedAtBefore(LocalDateTime expiredBefore, LocalDateTime sendWindowStartedBefore);
 }

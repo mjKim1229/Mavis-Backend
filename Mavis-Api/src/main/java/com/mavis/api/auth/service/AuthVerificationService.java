@@ -7,9 +7,11 @@ import com.mavis.common.util.RandomAuthCodeUtil;
 import com.mavis.domain.domains.user.domain.PasswordResetToken;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.domain.domains.user.domain.VerificationCode;
+import com.mavis.domain.domains.user.domain.VerificationType;
 import com.mavis.domain.domains.user.exception.DuplicateEmailException;
 import com.mavis.domain.domains.user.exception.InvalidVerificationCodeException;
 import com.mavis.domain.domains.user.exception.UserNotFoundException;
+import com.mavis.domain.domains.user.exception.VerificationAttemptsExceededException;
 import com.mavis.domain.domains.user.exception.VerificationCodeExpiredException;
 import com.mavis.domain.domains.user.repository.PasswordResetTokenRepository;
 import com.mavis.domain.domains.user.repository.UserRepository;
@@ -23,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import static com.mavis.domain.domains.user.domain.SnsType.MANUAL;
@@ -98,70 +101,58 @@ public class AuthVerificationService {
         if (userRepository.existsBySnsTypeAndEmailAndIsDeletedFalse(MANUAL, request.email())) {
             throw DuplicateEmailException.EXCEPTION;
         }
-        Integer authCode = RandomAuthCodeUtil.generateRandomIntegerNumber();
-        LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(VERIFICATION_CODE_VALID_MINUTES);
-        verificationCodeRepository.findByVerificationTypeAndEmail(SIGN_UP, request.email())
-                .ifPresentOrElse(verificationCode -> verificationCode.update(authCode, expiredAt)
-                        , () -> saveSignUpAuthCode(request, authCode, expiredAt)
-                );
+        Integer authCode = issueCode(SIGN_UP, request.email());
         eventPublisher.publishEvent(new VerifyMailEvent(request.email(), "[가람몰] 회원가입 인증번호 안내", authCode.toString()));
     }
 
-    private void saveSignUpAuthCode(UserSignUpCodeCreateRequest request, Integer authCode, LocalDateTime expiredAt) {
-        VerificationCode verificationCode = VerificationCode.builder()
-                .code(authCode)
-                .verificationType(SIGN_UP)
-                .expiredAt(expiredAt)
-                .email(request.email())
-                .build();
-
-        verificationCodeRepository.save(verificationCode);
-    }
-
-    @Transactional
+    @Transactional(noRollbackFor = {InvalidVerificationCodeException.class, VerificationAttemptsExceededException.class})
     public void verifySignUpFound(UserSignUpCodeVerifyRequest request) {
-        VerificationCode verificationCode = verificationCodeRepository.findByVerificationTypeAndEmailAndCodeAndIsDeletedFalse(SIGN_UP, request.email(), request.code())
+        VerificationCode verificationCode = verificationCodeRepository.findByVerificationTypeAndEmail(SIGN_UP, request.email())
                 .orElseThrow(() -> InvalidVerificationCodeException.EXCEPTION);
-        if (verificationCode.getExpiredAt().isBefore(LocalDateTime.now())) {
-            throw VerificationCodeExpiredException.EXCEPTION;
-        }
-        // 인증 완료 표시만 하고 행은 남긴다 — 회원가입 시 인증 여부를 서버가 확인해야 한다
-        LocalDateTime signUpDeadline = LocalDateTime.now().plusMinutes(SIGN_UP_COMPLETION_VALID_MINUTES);
+        LocalDateTime now = LocalDateTime.now();
+        verificationCode.matchCode(request.code(), now);
+
+        LocalDateTime signUpDeadline = now.plusMinutes(SIGN_UP_COMPLETION_VALID_MINUTES);
         verificationCode.verify(signUpDeadline);
     }
 
     @Transactional
     public void saveEmailChangeCode(UserEmailChangeCreateRequest request) {
-        Integer authCode = RandomAuthCodeUtil.generateRandomIntegerNumber();
-        LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(VERIFICATION_CODE_VALID_MINUTES);
-        verificationCodeRepository.findByVerificationTypeAndEmail(UPDATE_EMAIL, request.newEmail())
-                .ifPresentOrElse(verificationCode -> verificationCode.update(authCode, expiredAt)
-                        , () -> saveEmailChangeAuthCode(request, authCode, expiredAt)
-                );
+        if (userRepository.existsBySnsTypeAndEmailAndIsDeletedFalse(MANUAL, request.newEmail())) {
+            throw DuplicateEmailException.EXCEPTION;
+        }
+        Integer authCode = issueCode(UPDATE_EMAIL, request.newEmail());
         eventPublisher.publishEvent(new VerifyMailEvent(request.newEmail(), "[가람몰] 이메일 변경 인증번호 안내", authCode.toString()));
     }
 
-    private void saveEmailChangeAuthCode(UserEmailChangeCreateRequest request, Integer authCode, LocalDateTime expiredAt) {
-        VerificationCode verificationCode = VerificationCode.builder()
-                .code(authCode)
-                .verificationType(UPDATE_EMAIL)
-                .expiredAt(expiredAt)
-                .email(request.newEmail())
-                .build();
-        verificationCodeRepository.save(verificationCode);
-    }
-
-    @Transactional
+    @Transactional(noRollbackFor = {InvalidVerificationCodeException.class, VerificationAttemptsExceededException.class})
     public void verifyEmailChange(UserEmailChangeVerifyRequest request) {
-        VerificationCode verificationCode = verificationCodeRepository.findByVerificationTypeAndEmailAndCodeAndIsDeletedFalse(UPDATE_EMAIL, request.newEmail(), request.code())
+        VerificationCode verificationCode = verificationCodeRepository.findByVerificationTypeAndEmail(UPDATE_EMAIL, request.newEmail())
                 .orElseThrow(() -> InvalidVerificationCodeException.EXCEPTION);
-        if (verificationCode.getExpiredAt().isBefore(LocalDateTime.now())) {
-            throw VerificationCodeExpiredException.EXCEPTION;
+        LocalDateTime now = LocalDateTime.now();
+        verificationCode.matchCode(request.code(), now);
+        if (userRepository.existsBySnsTypeAndEmailAndIsDeletedFalse(MANUAL, request.newEmail())) {
+            throw DuplicateEmailException.EXCEPTION;
         }
 
         User user = userReader.getCurrentUser();
         user.changeEmail(request.newEmail());
 
         verificationCodeRepository.delete(verificationCode);
+    }
+
+    private Integer issueCode(VerificationType verificationType, String email) {
+        Integer authCode = RandomAuthCodeUtil.generateRandomIntegerNumber();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiredAt = now.plusMinutes(VERIFICATION_CODE_VALID_MINUTES);
+        Optional<VerificationCode> existing = verificationCodeRepository.findByVerificationTypeAndEmail(verificationType, email);
+        if (existing.isPresent()) {
+            VerificationCode verificationCode = existing.get();
+            verificationCode.reissue(authCode, expiredAt, now);
+        } else {
+            VerificationCode verificationCode = VerificationCode.issue(verificationType, email, authCode, expiredAt, now);
+            verificationCodeRepository.save(verificationCode);
+        }
+        return authCode;
     }
 }

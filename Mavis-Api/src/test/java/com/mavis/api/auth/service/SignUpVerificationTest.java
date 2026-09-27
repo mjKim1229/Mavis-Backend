@@ -1,6 +1,8 @@
 package com.mavis.api.auth.service;
 
 import com.mavis.api.auth.dto.UserSignUpCodeCreateRequest;
+import com.mavis.api.auth.dto.UserEmailChangeCreateRequest;
+import com.mavis.api.auth.dto.UserEmailChangeVerifyRequest;
 import com.mavis.api.auth.dto.UserSignUpCodeVerifyRequest;
 import com.mavis.api.auth.dto.UserSignUpRequest;
 import com.mavis.api.support.ControllerTestSupport;
@@ -9,17 +11,22 @@ import com.mavis.domain.domains.user.domain.SnsType;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.domain.domains.user.domain.VerificationCode;
 import com.mavis.domain.domains.user.domain.VerificationType;
+import com.mavis.domain.domains.user.exception.DuplicateEmailException;
 import com.mavis.domain.domains.user.exception.DuplicateUsernameException;
 import com.mavis.domain.domains.user.exception.EmailNotVerifiedException;
 import com.mavis.domain.domains.user.exception.InvalidVerificationCodeException;
+import com.mavis.domain.domains.user.exception.VerificationAttemptsExceededException;
 import com.mavis.domain.domains.user.repository.UserRepository;
 import com.mavis.domain.domains.user.repository.VerificationCodeRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -27,6 +34,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class SignUpVerificationTest extends ControllerTestSupport {
 
     private static final String EMAIL = "signup-test@test.com";
+    private static final int ISSUED_CODE = 123456;
+    private static final int WRONG_CODE = 111111;
 
     @Autowired private UserService userService;
     @Autowired private AuthVerificationService authVerificationService;
@@ -156,5 +165,106 @@ class SignUpVerificationTest extends ControllerTestSupport {
         em.clear();
 
         assertThat(userRepository.existsByUsernameAndIsDeletedFalse("testuser")).isTrue();
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    void 가입_인증번호를_틀리면_예외가_나도_틀린_횟수는_DB에_남는다() {
+        String email = "rollback-signup-" + UUID.randomUUID() + "@test.com";
+        saveIssuedCode(VerificationType.SIGN_UP, email);
+        try {
+            assertThatThrownBy(() ->
+                    authVerificationService.verifySignUpFound(new UserSignUpCodeVerifyRequest(email, WRONG_CODE)))
+                    .isInstanceOf(InvalidVerificationCodeException.class);
+
+            assertThat(reloadFailedAttempts(VerificationType.SIGN_UP, email)).isEqualTo(1);
+        } finally {
+            deleteCode(VerificationType.SIGN_UP, email);
+        }
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    void 가입_인증번호를_5번_틀리면_입력횟수_초과이고_횟수가_DB에_남는다() {
+        String email = "rollback-exceeded-" + UUID.randomUUID() + "@test.com";
+        saveIssuedCode(VerificationType.SIGN_UP, email);
+        try {
+            for (int i = 0; i < 4; i++) {
+                assertThatThrownBy(() ->
+                        authVerificationService.verifySignUpFound(new UserSignUpCodeVerifyRequest(email, WRONG_CODE)))
+                        .isInstanceOf(InvalidVerificationCodeException.class);
+            }
+            assertThatThrownBy(() ->
+                    authVerificationService.verifySignUpFound(new UserSignUpCodeVerifyRequest(email, WRONG_CODE)))
+                    .isInstanceOf(VerificationAttemptsExceededException.class);
+
+            assertThat(reloadFailedAttempts(VerificationType.SIGN_UP, email)).isEqualTo(5);
+            assertThatThrownBy(() ->
+                    authVerificationService.verifySignUpFound(new UserSignUpCodeVerifyRequest(email, ISSUED_CODE)))
+                    .isInstanceOf(VerificationAttemptsExceededException.class);
+        } finally {
+            deleteCode(VerificationType.SIGN_UP, email);
+        }
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    void 이메일_변경_인증번호를_틀리면_예외가_나도_틀린_횟수는_DB에_남는다() {
+        String email = "rollback-change-" + UUID.randomUUID() + "@test.com";
+        saveIssuedCode(VerificationType.UPDATE_EMAIL, email);
+        try {
+            assertThatThrownBy(() ->
+                    authVerificationService.verifyEmailChange(new UserEmailChangeVerifyRequest(email, WRONG_CODE)))
+                    .isInstanceOf(InvalidVerificationCodeException.class);
+
+            assertThat(reloadFailedAttempts(VerificationType.UPDATE_EMAIL, email)).isEqualTo(1);
+        } finally {
+            deleteCode(VerificationType.UPDATE_EMAIL, email);
+        }
+    }
+
+    @Test
+    void 다른_회원이_쓰는_이메일로는_변경_인증번호를_보내지_않는다() {
+        userRepository.save(User.builder()
+                .username("owner")
+                .email("taken@test.com")
+                .snsType(SnsType.MANUAL)
+                .build());
+
+        assertThatThrownBy(() ->
+                authVerificationService.saveEmailChangeCode(new UserEmailChangeCreateRequest("taken@test.com")))
+                .isInstanceOf(DuplicateEmailException.class);
+        assertThat(verificationCodeRepository.findByVerificationTypeAndEmail(VerificationType.UPDATE_EMAIL, "taken@test.com")).isEmpty();
+    }
+
+    @Test
+    void 발송_후_다른_회원이_그_이메일로_가입했다면_변경을_거부한다() {
+        saveIssuedCode(VerificationType.UPDATE_EMAIL, "race@test.com");
+        userRepository.save(User.builder()
+                .username("late")
+                .email("race@test.com")
+                .snsType(SnsType.MANUAL)
+                .build());
+
+        assertThatThrownBy(() ->
+                authVerificationService.verifyEmailChange(new UserEmailChangeVerifyRequest("race@test.com", ISSUED_CODE)))
+                .isInstanceOf(DuplicateEmailException.class);
+    }
+
+    private void saveIssuedCode(VerificationType verificationType, String email) {
+        LocalDateTime now = LocalDateTime.now();
+        VerificationCode verificationCode = VerificationCode.issue(verificationType, email, ISSUED_CODE, now.plusMinutes(5), now);
+        verificationCodeRepository.save(verificationCode);
+    }
+
+    private int reloadFailedAttempts(VerificationType verificationType, String email) {
+        VerificationCode reloaded = verificationCodeRepository.findByVerificationTypeAndEmail(verificationType, email)
+                .orElseThrow();
+        return reloaded.getFailedAttempts();
+    }
+
+    private void deleteCode(VerificationType verificationType, String email) {
+        verificationCodeRepository.findByVerificationTypeAndEmail(verificationType, email)
+                .ifPresent(verificationCodeRepository::delete);
     }
 }

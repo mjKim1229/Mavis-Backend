@@ -1,6 +1,7 @@
 package com.mavis.api.scheduler;
 
 import com.mavis.domain.domains.order.repository.PaymentIdempotencyRepository;
+import com.mavis.domain.domains.user.domain.VerificationCode;
 import com.mavis.domain.domains.user.repository.PasswordResetTokenRepository;
 import com.mavis.domain.domains.user.repository.VerificationCodeRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,8 @@ public class VerificationCodeCleanupScheduler {
     @Transactional
     public void cleanup() {
         LocalDateTime now = LocalDateTime.now();
-        verificationCodeRepository.deleteByExpiredAtBefore(now);
+        LocalDateTime sendWindowStartedBefore = now.minusHours(VerificationCode.SEND_WINDOW_HOURS);
+        verificationCodeRepository.deleteByExpiredAtBeforeAndSendWindowStartedAtBefore(now, sendWindowStartedBefore);
         passwordResetTokenRepository.deleteByExpiredAtBefore(now);
         paymentIdempotencyRepository.deleteByExpiredAtBefore(now);
     }
