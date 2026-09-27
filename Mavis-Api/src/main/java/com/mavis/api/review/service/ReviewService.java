@@ -41,6 +41,7 @@ public class ReviewService {
         User user = userReader.getCurrentUser();
         OrderItem orderItem = orderReader.findOrderItemById(request.orderItemId());
         reviewValidator.validateOrderUserMatch(user, orderItem.getOrder());
+        reviewValidator.validateWritable(orderItem);
         Review review = request.toEntity(orderItem, user);
         Review savedReview = reviewRepository.save(review);
         reviewImageUploader.saveReviewImages(images, savedReview);

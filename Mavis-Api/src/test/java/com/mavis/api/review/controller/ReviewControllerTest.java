@@ -2,6 +2,9 @@ package com.mavis.api.review.controller;
 
 import com.mavis.api.review.dto.CreateReviewRequest;
 import com.mavis.api.support.ControllerTestSupport;
+import com.mavis.domain.domains.delivery.domain.Delivery;
+import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
+import com.mavis.domain.domains.delivery.repository.DeliveryRepository;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.repository.OrderItemRepository;
@@ -44,6 +47,7 @@ class ReviewControllerTest extends ControllerTestSupport {
     @Autowired private OrderItemRepository orderItemRepository;
     @Autowired private ReviewImageRepository reviewImageRepository;
     @Autowired private ReviewRepository reviewRepository;
+    @Autowired private DeliveryRepository deliveryRepository;
     @Autowired private EntityManager em;
 
     private User savedUser;
@@ -70,6 +74,10 @@ class ReviewControllerTest extends ControllerTestSupport {
                 .totalPrice(10000)
                 .quantity(1)
                 .build());
+        deliveryRepository.save(Delivery.builder()
+                .order(savedOrder)
+                .deliveryStatus(DeliveryStatus.DELIVERED)
+                .build());
     }
 
     @Nested
@@ -84,6 +92,44 @@ class ReviewControllerTest extends ControllerTestSupport {
                             .file(request)
                             .with(user(savedUser.getId().toString()).roles("USER")))
                     .andExpect(status().isOk());
+        }
+
+        @Test
+        void 배송완료되지_않은_주문상품에_리뷰_작성시_400() throws Exception {
+            Order unpaidOrder = orderRepository.save(Order.builder()
+                    .user(savedUser)
+                    .build());
+            OrderItem unpaidItem = orderItemRepository.save(OrderItem.builder()
+                    .order(unpaidOrder)
+                    .product(savedProduct)
+                    .totalPrice(10000)
+                    .quantity(1)
+                    .build());
+            MockMultipartFile request = jsonPart("request",
+                    new CreateReviewRequest("좋은 상품입니다", unpaidItem.getId()));
+
+            mockMvc.perform(multipart("/v1/api/review/user")
+                            .file(request)
+                            .with(user(savedUser.getId().toString()).roles("USER")))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("REVIEW_400_2"));
+        }
+
+        @Test
+        void 이미_리뷰를_작성한_주문상품에_다시_작성시_409() throws Exception {
+            reviewRepository.save(Review.builder()
+                    .orderItem(savedOrderItem)
+                    .user(savedUser)
+                    .content("첫 리뷰")
+                    .build());
+            MockMultipartFile request = jsonPart("request",
+                    new CreateReviewRequest("두 번째 리뷰", savedOrderItem.getId()));
+
+            mockMvc.perform(multipart("/v1/api/review/user")
+                            .file(request)
+                            .with(user(savedUser.getId().toString()).roles("USER")))
+                    .andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.code").value("REVIEW_409_1"));
         }
 
         @Test
