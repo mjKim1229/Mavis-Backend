@@ -14,7 +14,8 @@
 | `order/` | 주문, 주문상품, 결제, 결제 멱등성, 주소 엔티티 |
 | `cart/` | 장바구니 아이템 엔티티 |
 | `review/` | 리뷰, 리뷰 이미지 엔티티 |
-| `refund/` | 환불 엔티티 및 상태 enum |
+| `claim/` | 취소·반품 요청 (Claim, ClaimItem, ClaimReturn, ClaimImage) |
+| `refund/` | 환불 금액 기록 (Refund) |
 | `delivery/` | 배송 엔티티 및 상태 enum |
 | `inquiry/` | 문의, 답변, 문의 이미지 엔티티 |
 | `favorite/` | 즐겨찾기 엔티티 |
@@ -32,10 +33,10 @@
 
 ### 불변식
 - `Payment`는 insert-only 원장 — 기존 행 UPDATE 금지. 결제 이벤트마다 INSERT, `PaymentType`(`CONFIRM`/`CANCEL`/`DEPOSIT`)으로 구분
-- `Order (1) → Payment (N) → Refund (N)` — Payment는 Toss 원장 데이터, Refund는 환불 비즈니스 로직
-- `OrderItem ↔ Refund` = OneToOne → 동일 OrderItem 중복 환불 DB 레벨 차단
+- `Claim`(요청: 취소·반품) → `Refund`(돈이 나간 기록, 토스 취소 1번당 1행) → `Payment(CANCEL)` 원장
+- `claim_item.order_item_id` UNIQUE → 동일 OrderItem 중복 클레임 DB 레벨 차단
 
-취소/반품 흐름(`RefundType.CANCEL`/`RETURN`), 테이블별 변경, 금액 집계 규칙: `docs/refund-type-flow.md`
+취소/반품 흐름(`ClaimType.CANCEL`/`RETURN`), 테이블별 변경, 금액 집계 규칙: `docs/claim-flow.md`
 
 ## For AI Agents
 

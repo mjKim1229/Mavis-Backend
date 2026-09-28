@@ -149,7 +149,7 @@ public class OrderFacade {
         if (cancelEntry == null) throw CancelEntryNotFoundException.EXCEPTION;
 
         try {
-            // TX2: Order+Items 재조회 + Payment(CANCEL) INSERT + Refund 생성
+            // TX2: Order+Items 재조회 + Payment(CANCEL) INSERT + Claim(CANCEL)·Refund 생성
             orderService.processCancelSuccess(info.orderId(), paymentsResponse, cancelEntry, request.refundReason(), idempotency.getId());
         } catch (Exception e) {
             // 취소는 이미 완료되어 환불됐고 DB만 반영되지 않은 상태 — 재시도가 아니라 사람의 확인이 필요하다

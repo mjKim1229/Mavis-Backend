@@ -15,8 +15,9 @@ import com.mavis.domain.domains.order.dto.AdminOrderRow;
 import com.mavis.domain.domains.order.exception.OrderNotFoundException;
 import com.mavis.domain.domains.order.exception.OrderNotToBeConfirmedException;
 import com.mavis.domain.domains.order.repository.OrderRepository;
-import com.mavis.domain.domains.refund.domain.RefundStatus;
-import com.mavis.domain.domains.refund.repository.RefundRepository;
+import com.mavis.domain.domains.claim.domain.ClaimStatus;
+import com.mavis.domain.domains.claim.domain.ClaimType;
+import com.mavis.domain.domains.claim.repository.ClaimRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +33,7 @@ import java.util.stream.Collectors;
 public class AdminOrderService {
     private final OrderRepository orderRepository;
     private final DeliveryRepository deliveryRepository;
-    private final RefundRepository refundRepository;
+    private final ClaimRepository claimRepository;
 
     @Transactional(readOnly = true)
     public PageResponse<GetAdminOrderResponse> getPaymentConfirmedOrderLists(Pageable pageable) {
@@ -71,7 +72,7 @@ public class AdminOrderService {
         long orderedCount = orderRepository.countOrderedWithReadyDelivery();
         long shippedCount = deliveryRepository.countByDeliveryStatus(DeliveryStatus.SHIPPED);
         long deliveredCount = deliveryRepository.countByDeliveryStatus(DeliveryStatus.DELIVERED);
-        long refundRequestedCount = refundRepository.countByRefundStatus(RefundStatus.REQUESTED);
+        long refundRequestedCount = claimRepository.countByClaimTypeAndClaimStatus(ClaimType.RETURN, ClaimStatus.REQUESTED);
         return AdminOrderCountResponse.of(paymentConfirmedCount, orderedCount, shippedCount, deliveredCount, refundRequestedCount);
     }
 

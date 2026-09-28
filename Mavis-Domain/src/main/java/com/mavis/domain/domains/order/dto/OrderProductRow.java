@@ -1,7 +1,6 @@
 package com.mavis.domain.domains.order.dto;
 
-import com.mavis.domain.domains.refund.domain.RefundStatus;
-import com.mavis.domain.domains.refund.domain.RefundType;
+import com.mavis.domain.domains.claim.domain.ClaimStatus;
 
 public record OrderProductRow(
         Long orderId,
@@ -11,8 +10,8 @@ public record OrderProductRow(
         String color,
         int quantity,
         int totalPrice,
-        RefundStatus refundStatus,
-        RefundType refundType,
+        ClaimStatus refundStatus,
+        Integer refundAmount,
         String productImageUrl
 ) {
 }

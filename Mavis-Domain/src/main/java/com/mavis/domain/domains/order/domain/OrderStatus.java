@@ -8,7 +8,7 @@ import java.util.Set;
 // 일반 결제: READY → PAYMENT_REQUESTED → PAYMENT_CONFIRMED → ORDERED
 // 가상계좌: READY → PAYMENT_REQUESTED → WAITING_FOR_DEPOSIT → PAYMENT_CONFIRMED → ORDERED
 // 취소: PAYMENT_REQUESTED / WAITING_FOR_DEPOSIT / PAYMENT_CONFIRMED → CANCELED (READY 취소는 호출부 없음)
-// 발주(ORDERED) 이후 취소 불가 — 배송 완료 후 반품(RefundType.RETURN) 흐름으로 처리
+// 발주(ORDERED) 이후 취소 불가 — 배송 완료 후 반품(ClaimType.RETURN) 흐름으로 처리
 @RequiredArgsConstructor
 public enum OrderStatus implements EnumMapperType {
     READY("주문 준비"),                    // 주문 생성 초기 상태

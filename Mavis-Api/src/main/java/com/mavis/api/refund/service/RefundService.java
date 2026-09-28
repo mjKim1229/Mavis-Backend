@@ -3,19 +3,20 @@ package com.mavis.api.refund.service;
 import com.mavis.api.auth.implement.UserReader;
 import com.mavis.api.refund.dto.RequestReturnRequest;
 import com.mavis.api.refund.implement.RefundImageUploader;
+import com.mavis.domain.domains.claim.domain.Claim;
+import com.mavis.domain.domains.claim.domain.ClaimReturn;
+import com.mavis.domain.domains.claim.implement.ClaimReader;
+import com.mavis.domain.domains.claim.repository.ClaimRepository;
+import com.mavis.domain.domains.claim.repository.ClaimReturnRepository;
 import com.mavis.domain.domains.delivery.domain.Delivery;
 import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
 import com.mavis.domain.domains.delivery.repository.DeliveryRepository;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.implement.OrderReader;
-import com.mavis.domain.domains.refund.domain.Refund;
-import com.mavis.domain.domains.refund.domain.RefundType;
 import com.mavis.domain.domains.refund.exception.AlreadyRefundRequestedException;
 import com.mavis.domain.domains.refund.exception.CannotRefundException;
 import com.mavis.domain.domains.refund.exception.UnauthorizedRefundException;
-import com.mavis.domain.domains.refund.implement.RefundAppender;
-import com.mavis.domain.domains.refund.implement.RefundReader;
 import com.mavis.domain.domains.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,8 +31,9 @@ public class RefundService {
 
     private final UserReader userReader;
     private final OrderReader orderReader;
-    private final RefundReader refundReader;
-    private final RefundAppender refundAppender;
+    private final ClaimReader claimReader;
+    private final ClaimRepository claimRepository;
+    private final ClaimReturnRepository claimReturnRepository;
     private final RefundImageUploader refundImageUploader;
     private final DeliveryRepository deliveryRepository;
 
@@ -50,27 +52,16 @@ public class RefundService {
             throw CannotRefundException.EXCEPTION;
         }
 
-        if (refundReader.hasActiveRefund(orderItem)) {
+        if (claimReader.hasClaim(orderItem)) {
             throw AlreadyRefundRequestedException.EXCEPTION;
         }
 
-        int refundAmount = orderItem.getTotalPrice();
+        Claim claim = Claim.requestReturn(orderItem, request.refundReason());
+        claimRepository.save(claim);
 
-        Refund refund = Refund.builder()
-                .orderItem(orderItem)
-                .refundReason(request.refundReason())
-                .refundAmount(refundAmount)
-                .carrier(request.carrier())
-                .trackingNumber(request.trackingNumber())
-                .refundType(RefundType.RETURN)
-                .build();
+        ClaimReturn claimReturn = ClaimReturn.of(claim, request.carrier(), request.trackingNumber());
+        claimReturnRepository.save(claimReturn);
 
-        Refund saved = refundAppender.save(refund);
-        refundImageUploader.saveRefundImages(images, saved);
-    }
-
-    @Transactional
-    public void completeRefund(Refund refund, String cancelTransactionKey) {
-        refund.complete(cancelTransactionKey);
+        refundImageUploader.saveRefundImages(images, claim);
     }
 }

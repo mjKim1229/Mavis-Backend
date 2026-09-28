@@ -5,7 +5,7 @@ import com.mavis.admin.domains.refund.dto.GetAdminCanceledRefundResponse;
 import com.mavis.admin.domains.refund.dto.GetAdminRefundResponse;
 import com.mavis.admin.domains.refund.facade.AdminRefundFacade;
 import com.mavis.admin.domains.refund.service.AdminRefundService;
-import com.mavis.domain.domains.refund.domain.RefundStatus;
+import com.mavis.domain.domains.claim.domain.ClaimStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ public class AdminRefundController {
 
     @Operation(summary = "반품(RETURN) 목록 조회")
     @GetMapping
-    public PageResponse<GetAdminRefundResponse> getRefundList(Pageable pageable, @RequestParam(required = false) RefundStatus refundStatus) {
+    public PageResponse<GetAdminRefundResponse> getRefundList(Pageable pageable, @RequestParam(required = false) ClaimStatus refundStatus) {
         return adminRefundService.getRefundList(pageable, refundStatus);
     }
 
@@ -34,17 +34,17 @@ public class AdminRefundController {
     }
 
     @Operation(summary = "환불 승인 (반품 → Toss cancel)")
-    @PostMapping("/{refundId}/approve")
+    @PostMapping("/{claimId}/approve")
     public void approveRefund(
             @RequestHeader("Idempotency-Key") String idempotencyKey,
             @RequestHeader(value = "TossPayments-Test-Code", required = false) String testCode,
-            @PathVariable Long refundId) {
-        adminRefundFacade.approveRefund(idempotencyKey, testCode, refundId);
+            @PathVariable Long claimId) {
+        adminRefundFacade.approveRefund(idempotencyKey, testCode, claimId);
     }
 
     @Operation(summary = "환불 거절")
-    @PostMapping("/{refundId}/reject")
-    public void rejectRefund(@PathVariable Long refundId) {
-        adminRefundService.rejectRefund(refundId);
+    @PostMapping("/{claimId}/reject")
+    public void rejectRefund(@PathVariable Long claimId) {
+        adminRefundService.rejectRefund(claimId);
     }
 }

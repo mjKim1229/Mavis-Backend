@@ -1,23 +1,25 @@
 package com.mavis.admin.domains.refund.dto;
 
+import com.mavis.domain.domains.claim.domain.Claim;
+import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.Payment;
 import com.mavis.domain.domains.order.domain.RefundReceiveAccount;
-import com.mavis.domain.domains.refund.domain.Refund;
 
 public record RefundValidateInfo(
-        Long refundId,
+        Long claimId,
         Long orderId,
         int refundAmount,
         String refundReason,
         String paymentKey,
         RefundReceiveAccount refundReceiveAccount
 ) {
-    public static RefundValidateInfo from(Refund refund, Payment confirmPayment) {
+    public static RefundValidateInfo from(Claim claim, Payment confirmPayment) {
+        Order order = claim.getOrder();
         return new RefundValidateInfo(
-                refund.getId(),
-                refund.getOrderItem().getOrder().getId(),
-                refund.getRefundAmount(),
-                refund.getRefundReason(),
+                claim.getId(),
+                order.getId(),
+                claim.getItemsTotalPrice(),
+                claim.getReason(),
                 confirmPayment.getPaymentKey(),
                 confirmPayment.getRefundReceiveAccount()
         );

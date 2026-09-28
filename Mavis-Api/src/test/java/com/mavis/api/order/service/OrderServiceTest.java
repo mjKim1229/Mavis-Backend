@@ -12,7 +12,8 @@ import com.mavis.domain.domains.order.implement.OrderReader;
 import com.mavis.domain.domains.order.implement.PaymentIdempotencyManager;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.order.repository.PaymentRepository;
-import com.mavis.domain.domains.refund.implement.RefundAppender;
+import com.mavis.domain.domains.claim.repository.ClaimRepository;
+import com.mavis.domain.domains.refund.repository.RefundRepository;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.VirtualAccountDepositCallbackRequest;
 import org.junit.jupiter.api.Test;
@@ -49,7 +50,9 @@ class OrderServiceTest {
     @Mock
     private OrderReader orderReader;
     @Mock
-    private RefundAppender refundAppender;
+    private ClaimRepository claimRepository;
+    @Mock
+    private RefundRepository refundRepository;
     @Mock
     private PaymentIdempotencyManager paymentIdempotencyManager;
 

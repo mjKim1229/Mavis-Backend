@@ -11,9 +11,12 @@ import com.mavis.domain.domains.order.domain.OrderAddress;
 import com.mavis.domain.domains.order.domain.OrderStatus;
 import com.mavis.domain.domains.order.exception.OrderNotToBeConfirmedException;
 import com.mavis.domain.domains.order.repository.OrderRepository;
-import com.mavis.domain.domains.refund.domain.Refund;
-import com.mavis.domain.domains.refund.domain.RefundStatus;
-import com.mavis.domain.domains.refund.repository.RefundRepository;
+import com.mavis.domain.domains.claim.domain.Claim;
+import com.mavis.domain.domains.claim.repository.ClaimRepository;
+import com.mavis.domain.domains.order.domain.OrderItem;
+import com.mavis.domain.domains.order.repository.OrderItemRepository;
+import com.mavis.domain.domains.product.domain.Product;
+import com.mavis.domain.domains.product.repository.ProductRepository;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.domain.domains.user.repository.UserRepository;
 import jakarta.persistence.EntityManager;
@@ -32,7 +35,9 @@ class AdminOrderServiceTest extends ControllerTestSupport {
     @Autowired private AdminOrderService adminOrderService;
     @Autowired private OrderRepository orderRepository;
     @Autowired private DeliveryRepository deliveryRepository;
-    @Autowired private RefundRepository refundRepository;
+    @Autowired private ClaimRepository claimRepository;
+    @Autowired private OrderItemRepository orderItemRepository;
+    @Autowired private ProductRepository productRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private EntityManager em;
 
@@ -75,9 +80,17 @@ class AdminOrderServiceTest extends ControllerTestSupport {
             Order delivered = createOrder("GARAM0006", OrderStatus.ORDERED);
             deliveryRepository.save(Delivery.builder().order(delivered).deliveryStatus(DeliveryStatus.DELIVERED).build());
 
-            refundRepository.save(Refund.builder().refundStatus(RefundStatus.REQUESTED).build());
-            refundRepository.save(Refund.builder().refundStatus(RefundStatus.REQUESTED).build());
-            refundRepository.save(Refund.builder().refundStatus(RefundStatus.REQUESTED).build());
+            Product product = productRepository.save(Product.builder().name("상품").price(10000).build());
+            for (int i = 0; i < 3; i++) {
+                OrderItem orderItem = orderItemRepository.save(OrderItem.builder()
+                        .order(delivered).product(product).color("블랙").quantity(1).totalPrice(10000).build());
+                claimRepository.save(Claim.requestReturn(orderItem, "반품"));
+            }
+            OrderItem rejectedItem = orderItemRepository.save(OrderItem.builder()
+                    .order(delivered).product(product).color("블랙").quantity(1).totalPrice(10000).build());
+            Claim rejected = Claim.requestReturn(rejectedItem, "반품");
+            rejected.reject();
+            claimRepository.save(rejected);
             em.flush();
             em.clear();
 

@@ -1,19 +1,16 @@
 package com.mavis.domain.domains.refund.domain;
 
+import com.mavis.domain.domains.claim.domain.Claim;
 import com.mavis.domain.domains.common.jpa.BaseEntity;
-import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.domain.Payment;
 import jakarta.persistence.*;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 
 @Getter
-@Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
@@ -23,56 +20,39 @@ public class Refund extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_item_id")
-    private OrderItem orderItem;
-
-    @Comment("FK → payment.id (CANCEL 행). RETURN은 어드민 승인 전까지 NULL")
+    @Comment("FK → claim.id")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "payment_id")
+    @JoinColumn(name = "claim_id", nullable = false)
+    private Claim claim;
+
+    @Comment("FK → payment.id (CANCEL 원장 행)")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_id", nullable = false)
     private Payment payment;
 
-    @Column(columnDefinition = "varchar(255)")
-    @Enumerated(EnumType.STRING)
-    @Builder.Default
-    private RefundStatus refundStatus = RefundStatus.REQUESTED;
+    @Comment("이번에 돌려준 총액 = 토스 취소 금액 (product_amount + shipping_fee_refund)")
+    private int totalAmount;
 
-    @Column(columnDefinition = "varchar(255)")
-    @Enumerated(EnumType.STRING)
-    private RefundType refundType;
+    @Comment("총액 중 상품 금액")
+    private int productAmount;
 
-    private String refundReason;
+    @Comment("총액 중 배송비. 0이면 배송비 환불 안 함")
+    private int shippingFeeRefund;
 
-    @Comment("배송비 제외 순수 상품 환불금액 (OrderItem.total_price 기준)")
-    private int refundAmount;
-
-    @Comment("환불 완료 시 Toss 취소 거래 키 (연결된 payment.last_transaction_key와 같은 값)")
+    @Comment("Toss 취소 거래 키 (payment.last_transaction_key와 같은 값)")
+    @Column(nullable = false)
     private String cancelTransactionKey;
 
-    @Comment("RETURN: 고객이 반품 발송한 택배사 (배송 송장은 delivery 테이블)")
-    private String carrier;
-
-    @Comment("RETURN: 고객이 반품 발송한 송장번호")
-    private String trackingNumber;
-
-    private LocalDateTime processedAt;
-
-    @Builder.Default
-    @OneToMany(mappedBy = "refund", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<RefundImage> images = new ArrayList<>();
-
-    public void linkPayment(Payment payment) {
-        this.payment = payment;
+    public static Refund forCancel(Claim claim, Payment cancelPayment, int shippingFeeRefund) {
+        int totalAmount = cancelPayment.getCancelAmount();
+        int productAmount = totalAmount - shippingFeeRefund;
+        return new Refund(null, claim, cancelPayment, totalAmount, productAmount, shippingFeeRefund,
+                cancelPayment.getLastTransactionKey());
     }
 
-    public void reject() {
-        this.refundStatus = RefundStatus.REJECTED;
-        this.processedAt = LocalDateTime.now();
-    }
-
-    public void complete(String cancelTransactionKey) {
-        this.refundStatus = RefundStatus.COMPLETED;
-        this.cancelTransactionKey = cancelTransactionKey;
-        this.processedAt = LocalDateTime.now();
+    public static Refund forReturn(Claim claim, Payment cancelPayment) {
+        int totalAmount = cancelPayment.getCancelAmount();
+        return new Refund(null, claim, cancelPayment, totalAmount, totalAmount, 0,
+                cancelPayment.getLastTransactionKey());
     }
 }

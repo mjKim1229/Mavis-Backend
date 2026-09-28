@@ -4,6 +4,7 @@ import com.mavis.api.refund.dto.RequestReturnRequest;
 import com.mavis.api.refund.service.RefundService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class RefundController {
     @Operation(summary = "반품 신청 (배송 후)")
     @PostMapping(value = "/{orderItemId}/return", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void requestReturn(@PathVariable Long orderItemId,
-                              @RequestPart RequestReturnRequest request,
+                              @RequestPart @Valid RequestReturnRequest request,
                               @RequestPart List<MultipartFile> images) {
         refundService.createReturnRefund(orderItemId, request, images);
     }

@@ -18,10 +18,11 @@ import com.mavis.domain.domains.order.implement.PaymentReader;
 import com.mavis.domain.domains.order.dto.OrderProductRow;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.order.repository.PaymentRepository;
+import com.mavis.domain.domains.claim.domain.Claim;
+import com.mavis.domain.domains.claim.domain.ClaimType;
+import com.mavis.domain.domains.claim.repository.ClaimRepository;
 import com.mavis.domain.domains.refund.domain.Refund;
-import com.mavis.domain.domains.refund.domain.RefundStatus;
-import com.mavis.domain.domains.refund.domain.RefundType;
-import com.mavis.domain.domains.refund.implement.RefundAppender;
+import com.mavis.domain.domains.refund.repository.RefundRepository;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsCancels;
 import com.mavis.infrastructure.outer.api.tosspayments.dto.PaymentsResponse;
@@ -53,7 +54,8 @@ public class OrderService {
     private final OrderItemAppender orderItemAppender;
     private final PaymentRepository paymentRepository;
     private final OrderReader orderReader;
-    private final RefundAppender refundAppender;
+    private final ClaimRepository claimRepository;
+    private final RefundRepository refundRepository;
     private final PaymentIdempotencyManager paymentIdempotencyManager;
     private final PaymentReader paymentReader;
     private final DeliveryRepository deliveryRepository;
@@ -186,18 +188,10 @@ public class OrderService {
                 .build();
         paymentRepository.save(cancelPayment);
 
-        List<Refund> refunds = order.getOrderItems().stream()
-                .map(orderItem -> Refund.builder()
-                        .orderItem(orderItem)
-                        .payment(cancelPayment)
-                        .refundReason(refundReason)
-                        .refundAmount(orderItem.getTotalPrice())
-                        .refundStatus(RefundStatus.COMPLETED)
-                        .refundType(RefundType.CANCEL)
-                        .cancelTransactionKey(cancelEntry.transactionKey())
-                        .build())
-                .toList();
-        refundAppender.saveAll(refunds);
+        Claim claim = Claim.cancel(order, order.getOrderItems(), refundReason);
+        claimRepository.save(claim);
+        Refund refund = Refund.forCancel(claim, cancelPayment, order.getDeliveryFee());
+        refundRepository.save(refund);
 
         order.cancel();
         orderRepository.save(order);
@@ -265,9 +259,12 @@ public class OrderService {
                         OrderProductRow::orderId,
                         Collectors.mapping(OrderProduct::from, Collectors.toList())));
 
+        Map<Long, Refund> cancelRefundMap = refundRepository.findByOrderInAndClaimType(orders, ClaimType.CANCEL).stream()
+                .collect(Collectors.toMap(refund -> refund.getClaim().getOrder().getId(), refund -> refund));
+
         return PageResponse.of(orderPages.map(order -> {
             List<OrderProduct> products = productMap.getOrDefault(order.getId(), List.of());
-            return UserOrderInfo.from(order, products, deliveryMap.get(order.getId()));
+            return UserOrderInfo.from(order, products, deliveryMap.get(order.getId()), cancelRefundMap.get(order.getId()));
         }));
     }
 }

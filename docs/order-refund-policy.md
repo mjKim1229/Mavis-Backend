@@ -19,18 +19,27 @@ CANCEL  → 결제 취소 (전체/부분)
 DEPOSIT → 가상계좌 입금 확인 (입금 완료 웹훅)
 ```
 
-### RefundType
+### ClaimType (`Claim` = 고객·운영자가 요청한 것)
 ```
-CANCEL → 주문 취소 환불    허용 조건: OrderStatus.PAYMENT_CONFIRMED 또는 WAITING_FOR_DEPOSIT
-RETURN → 반품 신청 환불    허용 조건: DeliveryStatus.DELIVERED 이후
+CANCEL → 배송 전 주문 취소   허용 조건: OrderStatus.PAYMENT_CONFIRMED 또는 WAITING_FOR_DEPOSIT
+RETURN → 배송 후 반품        허용 조건: DeliveryStatus.DELIVERED 이후
 ```
 
-### RefundStatus
+### ClaimStatus
 ```
-REQUESTED → 환불 요청 (회원 신청)
-REJECTED  → 환불 거절
-COMPLETED → 환불 완료 (Toss 취소 API 성공)
+REQUESTED → 신청됨 (반품만. 취소는 바로 COMPLETED로 생성)
+REJECTED  → 거절
+COMPLETED → 처리 완료 (Toss 취소 API 성공)
 ```
+
+### FaultParty (배송비 환불 여부 기준)
+```
+BUYER  → 구매자 귀책 (취소, 단순변심 반품)
+SELLER → 판매자 귀책 (불량·오염 반품)
+NULL   → 반품 검수 전
+```
+
+`Refund` = 돈이 실제로 나간 기록. 토스 취소 1번당 1행이고, 돈이 안 나가면(거절) 행이 없다.
 
 ---
 
@@ -40,10 +49,8 @@ COMPLETED → 환불 완료 (Toss 취소 API 성공)
 ```
 OrderStatus: PAYMENT_CONFIRMED → CANCELED
 PaymentType: CONFIRM(기존) + CANCEL(신규 INSERT)
-RefundType:  CANCEL
-RefundStatus: COMPLETED (바로 완료)
-
-OrderItem 수만큼 Refund 생성, 모두 동일 CANCEL Payment 참조
+Claim:       CANCEL, COMPLETED, BUYER — 주문의 상품 전부를 ClaimItem으로
+Refund:      1행, total = 토스 취소금액, shipping_fee_refund = order.deliveryFee
 ```
 - 관련 코드: `OrderService.processCancelSuccess()`
 - `Order.cancel()` 호출 → OrderStatus CANCELED
@@ -73,16 +80,16 @@ PaymentType: CANCEL (RefundReceiveAccount 없이 전달, null)
 - `CONFIRM` + `DEPOSIT` + `CANCEL` 다 있음 → 입금 후 취소
 - (`Order.orderStatus`는 취소 시 무조건 `CANCELED`로 덮여써져서 이전 상태로는 구분 불가)
 
-### 3. 어드민 부분 환불 (OrderItem 단위)
+### 3. 반품 (OrderItem 단위)
 ```
-RefundStatus: REQUESTED → APPROVED → COMPLETED
-PaymentType: CANCEL (부분 금액: refund.refundAmount 기준)
-RefundType:  REFUND (부분 환불)
+신청: Claim RETURN, REQUESTED + ClaimReturn(택배사·송장) + ClaimImage
+승인: Toss 부분 취소 → Payment(CANCEL) INSERT → Refund 1행 → Claim COMPLETED, fault_party 기록
+거절: Claim REJECTED (Refund 없음)
 
-OrderItem ↔ Refund = OneToOne → 동일 OrderItem 중복 환불 불가
+claim_item.order_item_id UNIQUE → 동일 OrderItem에 클레임 1건 (거절 후 재신청도 차단)
 ```
-- 관련 코드: `AdminRefundService.approveAndComplete()`
-- **전체 환불 완료 감지**: 모든 OrderItem의 Refund가 COMPLETED이면 Order → CANCELED
+- 관련 코드: `RefundService.createReturnRefund()`, `AdminRefundService.approveAndComplete()` / `rejectRefund()`
+- 반품이 모두 완료돼도 Order 상태는 바뀌지 않음
 
 ### 4. 가상계좌 입금 확인 (웹훅)
 ```
@@ -102,18 +109,19 @@ PaymentType: DEPOSIT INSERT (method는 CONFIRM Payment에서 복사)
 - `canceledAt`: CANCEL 타입만 존재
 - CANCEL Payment의 `totalAmount`:
   - 전체 취소 = `order.totalPrice`
-  - 부분 취소 = `refund.refundAmount`
+  - 반품 = 반품 상품 금액 (= 연결된 `refund.total_amount`)
 
 ---
 
 ## 엔티티 관계
 ```
-Order (1) ──── Payment (N)       FK: payment.order_id
-                   │
-                   └── Refund (N) FK: refund.payment_id
-                                  CANCEL Payment에만 연결
+Order (1) ── Claim (N)            FK: claim.order_id
+               ├── ClaimItem (N)  FK: claim_item.claim_id, order_item_id UNIQUE
+               ├── ClaimReturn (0..1)  반품만. Claim은 참조하지 않음 → ClaimReturnRepository로 조회
+               ├── ClaimImage (N)
+               └── Refund (0..N)  FK: refund.claim_id, refund.payment_id → Payment(CANCEL)
 
-OrderItem (1) ── Refund (1)      OneToOne, 중복 환불 방지
+Order (1) ── Payment (N)          FK: payment.order_id (토스 원장)
 ```
 
 ---
@@ -127,5 +135,6 @@ OrderItem (1) ── Refund (1)      OneToOne, 중복 환불 방지
 | `Mavis-Domain/.../order/domain/Payment.java` | 결제 원장 엔티티 |
 | `Mavis-Domain/.../order/domain/OrderStatus.java` | 주문 상태 enum |
 | `Mavis-Domain/.../order/domain/PaymentType.java` | 결제 이벤트 타입 enum |
-| `Mavis-Domain/.../refund/domain/RefundType.java` | 환불 유형 enum |
-| `Mavis-Domain/.../refund/domain/RefundStatus.java` | 환불 상태 enum |
+| `Mavis-Domain/.../claim/domain/Claim.java` | 취소·반품 요청 엔티티 (상태 전이 규칙 포함) |
+| `Mavis-Domain/.../refund/domain/Refund.java` | 환불 금액 기록 (상품/배송비 분리) |
+| `docs/claim-flow.md` | 취소·반품 흐름별 테이블 변경 |

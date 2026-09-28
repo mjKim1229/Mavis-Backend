@@ -1,5 +1,6 @@
 package com.mavis.domain.domains.order.repository;
 
+import com.mavis.domain.domains.claim.domain.ClaimType;
 import com.mavis.domain.domains.delivery.domain.DeliveryStatus;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderItem;
@@ -20,6 +21,8 @@ import org.springframework.data.support.PageableExecutionUtils;
 
 import java.util.List;
 
+import static com.mavis.domain.domains.claim.domain.QClaim.claim;
+import static com.mavis.domain.domains.claim.domain.QClaimItem.claimItem;
 import static com.mavis.domain.domains.delivery.domain.QDelivery.delivery;
 import static com.mavis.domain.domains.order.domain.QOrder.order;
 import static com.mavis.domain.domains.order.domain.QOrderItem.orderItem;
@@ -158,12 +161,14 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
                         orderItem.color,
                         orderItem.quantity,
                         orderItem.totalPrice,
-                        refund.refundStatus,
-                        refund.refundType,
+                        claim.claimStatus,
+                        refund.totalAmount,
                         productImage.imageUrl))
                 .from(orderItem)
                 .join(orderItem.product, product)
-                .leftJoin(refund).on(refund.orderItem.eq(orderItem))
+                .leftJoin(claimItem).on(claimItem.orderItem.eq(orderItem))
+                .leftJoin(claimItem.claim, claim).on(claim.claimType.eq(ClaimType.RETURN))
+                .leftJoin(refund).on(refund.claim.eq(claim))
                 .leftJoin(productImage).on(
                         productImage.product.eq(product),
                         productImage.imageType.eq(ProductImageType.MAIN),

@@ -24,9 +24,13 @@ import com.mavis.domain.domains.product.domain.ProductImageType;
 import com.mavis.domain.domains.product.repository.ProductColorRepository;
 import com.mavis.domain.domains.product.repository.ProductImageRepository;
 import com.mavis.domain.domains.product.repository.ProductRepository;
+import com.mavis.domain.domains.claim.domain.Claim;
+import com.mavis.domain.domains.claim.domain.FaultParty;
+import com.mavis.domain.domains.claim.repository.ClaimRepository;
+import com.mavis.domain.domains.order.domain.Payment;
+import com.mavis.domain.domains.order.domain.PaymentType;
+import com.mavis.domain.domains.order.repository.PaymentRepository;
 import com.mavis.domain.domains.refund.domain.Refund;
-import com.mavis.domain.domains.refund.domain.RefundStatus;
-import com.mavis.domain.domains.refund.domain.RefundType;
 import com.mavis.domain.domains.refund.repository.RefundRepository;
 import com.mavis.domain.domains.user.domain.SnsType;
 import com.mavis.domain.domains.user.domain.User;
@@ -146,7 +150,9 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
         @Autowired private OrderItemRepository orderItemRepository;
         @Autowired private DeliveryRepository deliveryRepository;
         @Autowired private ProductImageRepository productImageRepository;
+        @Autowired private ClaimRepository claimRepository;
         @Autowired private RefundRepository refundRepository;
+        @Autowired private PaymentRepository paymentRepository;
         @Autowired private jakarta.persistence.EntityManager em;
 
         private User user;
@@ -232,8 +238,8 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                     .andExpect(jsonPath("$.data.content[0].orderStatusCode").value("CANCELED"))
                     .andExpect(jsonPath("$.data.content[0].orderStatus").value("주문 취소"))
                     .andExpect(jsonPath("$.data.content[0].totalPrice").value(10000))
-                    // 취소 주문 → 주문 레벨 환불금액(배송비 포함 총액) 노출
-                    .andExpect(jsonPath("$.data.content[0].refundAmount").value(10000))
+                    // 환불 기록 없이 취소된 주문(결제 전 취소) → 환불금액 없음
+                    .andExpect(jsonPath("$.data.content[0].refundAmount", nullValue()))
                     .andExpect(jsonPath("$.data.content[0].userName").value("테스트유저"))
                     .andExpect(jsonPath("$.data.content[0].address").value("서울시 강남구"))
                     .andExpect(jsonPath("$.data.content[0].addressInfo").value("101호"))
@@ -307,15 +313,7 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                     .build());
             orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
             OrderItem refundedItem = orderItemRepository.save(OrderItem.of(new OrderOption("white", 1), 20000, order, imageProduct));
-            refundRepository.save(Refund.builder()
-                    .orderItem(refundedItem)
-                    .refundType(RefundType.RETURN)
-                    .refundStatus(RefundStatus.REQUESTED)
-                    .refundAmount(20000)
-                    .refundReason("단순 변심")
-                    .carrier("CJ대한통운")
-                    .trackingNumber("1234567890")
-                    .build());
+            claimRepository.save(Claim.requestReturn(refundedItem, "단순 변심"));
 
             em.flush();
             em.clear();
@@ -390,14 +388,10 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                     .orderStatus(OrderStatus.CANCELED)
                     .build());
             OrderItem orderItem = orderItemRepository.save(OrderItem.of(new OrderOption("black", 2), 10000, order, product));
-            // 주문 취소는 상품별 CANCEL Refund 생성 (RETURN 아님)
-            refundRepository.save(Refund.builder()
-                    .orderItem(orderItem)
-                    .refundType(RefundType.CANCEL)
-                    .refundStatus(RefundStatus.COMPLETED)
-                    .refundAmount(20000)
-                    .refundReason("주문 취소")
-                    .build());
+            // 주문 취소는 주문 단위 클레임 1건 + 환불 1행
+            Claim claim = claimRepository.save(Claim.cancel(order, List.of(orderItem), "주문 취소"));
+            Payment cancelPayment = paymentRepository.save(cancelPayment(order, 24000));
+            refundRepository.save(Refund.forCancel(claim, cancelPayment, 4000));
 
             em.flush();
             em.clear();
@@ -406,12 +400,53 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                             .header("Authorization", userToken(user.getId())))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.totalElements").value(1))
-                    // 주문 레벨: 배송비 포함 총액
+                    // 주문 레벨: 환불 행의 배송비 포함 총액
                     .andExpect(jsonPath("$.data.content[0].totalPrice").value(24000))
                     .andExpect(jsonPath("$.data.content[0].refundAmount").value(24000))
-                    // 상품 레벨: CANCEL 유형은 상품 환불금액 미노출(null)
-                    .andExpect(jsonPath("$.data.content[0].orderProductList[0].refundStatus").value("COMPLETED"))
+                    .andExpect(jsonPath("$.data.content[0].refundShippingFee").value(4000))
+                    // 상품 레벨: 반품만 노출하므로 취소 주문의 상품은 비어 있다
+                    .andExpect(jsonPath("$.data.content[0].orderProductList[0].refundStatus", nullValue()))
                     .andExpect(jsonPath("$.data.content[0].orderProductList[0].refundAmount", nullValue()));
+        }
+
+        @Test
+        void 반품_완료시_상품레벨_환불금액은_실제_환불액이다() throws Exception {
+            OrderAddress address = new OrderAddress("홍길동", "010-1234-5678", "12345", "서울시 강남구", "101호", "문 앞에 놔주세요");
+            Order order = orderRepository.save(Order.builder()
+                    .orderId("GARAM666")
+                    .user(user)
+                    .totalPrice(24000)
+                    .deliveryFee(4000)
+                    .orderAddress(address)
+                    .orderStatus(OrderStatus.ORDERED)
+                    .build());
+            OrderItem orderItem = orderItemRepository.save(OrderItem.of(new OrderOption("black", 2), 10000, order, product));
+            Claim claim = Claim.requestReturn(orderItem, "단순 변심");
+            claim.complete(FaultParty.BUYER);
+            claimRepository.save(claim);
+            Payment cancelPayment = paymentRepository.save(cancelPayment(order, 18000));
+            refundRepository.save(Refund.forReturn(claim, cancelPayment));
+
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/order")
+                            .header("Authorization", userToken(user.getId())))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.content[0].refundAmount", nullValue()))
+                    .andExpect(jsonPath("$.data.content[0].orderProductList[0].refundStatus").value("COMPLETED"))
+                    .andExpect(jsonPath("$.data.content[0].orderProductList[0].refundAmount").value(18000));
+        }
+
+        private Payment cancelPayment(Order order, int cancelAmount) {
+            return Payment.builder()
+                    .order(order)
+                    .paymentType(PaymentType.CANCEL)
+                    .method(PaymentMethod.CARD)
+                    .totalAmount(cancelAmount)
+                    .cancelAmount(cancelAmount)
+                    .lastTransactionKey("tx-" + order.getOrderId())
+                    .build();
         }
     }
 
