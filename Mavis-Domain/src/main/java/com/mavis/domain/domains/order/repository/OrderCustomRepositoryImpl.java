@@ -109,6 +109,7 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
                         orderItem.order.id,
                         product.name,
                         orderItem.color,
+                        orderItem.size,
                         orderItem.quantity
                 ))
                 .from(orderItem)
@@ -159,6 +160,7 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
                         product.id,
                         product.name,
                         orderItem.color,
+                        orderItem.size,
                         orderItem.quantity,
                         orderItem.totalPrice,
                         claim.claimStatus,

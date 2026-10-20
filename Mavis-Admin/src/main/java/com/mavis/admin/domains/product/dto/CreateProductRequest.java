@@ -1,6 +1,7 @@
 package com.mavis.admin.domains.product.dto;
 
 import com.mavis.common.enums.ProductSubCategory;
+import com.mavis.common.enums.Size;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.product.domain.ProductNotice;
 
@@ -11,6 +12,7 @@ public record CreateProductRequest(
         Integer price,
         ProductSubCategory subCategory,
         List<String> colors,
+        List<Size> sizes,
         boolean isClearance,
         ProductNoticeVO notice
 ) {

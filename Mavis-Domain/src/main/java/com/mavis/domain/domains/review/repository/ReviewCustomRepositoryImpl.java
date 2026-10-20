@@ -109,6 +109,7 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                 product.name,
                 orderItem.totalPrice,
                 orderItem.color,
+                orderItem.size,
                 orderItem.quantity,
                 productImage.imageUrl
             ))

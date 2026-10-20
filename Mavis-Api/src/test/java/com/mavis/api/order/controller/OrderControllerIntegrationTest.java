@@ -91,7 +91,7 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
         CreateOrderRequest request = new CreateOrderRequest(
                 14000,
                 new OrderAddressRequest("홍길동", "010-1234-5678", "12345", "서울시 강남구", "101호", "문 앞에 놔주세요"),
-                List.of(new OrderItemRequest(product.getId(), new OrderOptionRequest("black", 1)))
+                List.of(new OrderItemRequest(product.getId(), new OrderOptionRequest("black", null, 1)))
         );
 
         mockMvc.perform(post("/v1/api/order")
@@ -119,7 +119,7 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
         CreateOrderRequest request = new CreateOrderRequest(
                 99999, // 틀린 금액
                 new OrderAddressRequest("홍길동", "010-1234-5678", "12345", "서울시 강남구", "101호", "문 앞에 놔주세요"),
-                List.of(new OrderItemRequest(product.getId(), new OrderOptionRequest("black", 1)))
+                List.of(new OrderItemRequest(product.getId(), new OrderOptionRequest("black", null, 1)))
         );
 
         mockMvc.perform(post("/v1/api/order")

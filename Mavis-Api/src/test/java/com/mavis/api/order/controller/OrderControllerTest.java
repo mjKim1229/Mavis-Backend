@@ -57,7 +57,7 @@ class OrderControllerTest {
     }
 
     private List<OrderItemRequest> validItems() {
-        OrderOptionRequest option = new OrderOptionRequest("black", 1);
+        OrderOptionRequest option = new OrderOptionRequest("black", null, 1);
         return itemsOf(1L, option);
     }
 
@@ -150,7 +150,7 @@ class OrderControllerTest {
     @ParameterizedTest
     @ValueSource(ints = {0, -1, Integer.MIN_VALUE})
     void 수량이_1_미만이면_400(int quantity) throws Exception {
-        OrderOptionRequest option = new OrderOptionRequest("black", quantity);
+        OrderOptionRequest option = new OrderOptionRequest("black", null, quantity);
         CreateOrderRequest request = requestWithItems(itemsOf(1L, option));
 
         assertValidationFailed(postOrder(request));
@@ -158,8 +158,8 @@ class OrderControllerTest {
 
     @Test
     void 여러_상품중_하나만_수량이_음수여도_400() throws Exception {
-        OrderItemRequest normal = new OrderItemRequest(1L, new OrderOptionRequest("black", 3));
-        OrderItemRequest negative = new OrderItemRequest(2L, new OrderOptionRequest("black", -2));
+        OrderItemRequest normal = new OrderItemRequest(1L, new OrderOptionRequest("black", null, 3));
+        OrderItemRequest negative = new OrderItemRequest(2L, new OrderOptionRequest("black", null, -2));
         CreateOrderRequest request = requestWithItems(List.of(normal, negative));
 
         assertValidationFailed(postOrder(request));
@@ -167,7 +167,7 @@ class OrderControllerTest {
 
     @Test
     void 상품ID가_null이면_400() throws Exception {
-        OrderOptionRequest option = new OrderOptionRequest("black", 1);
+        OrderOptionRequest option = new OrderOptionRequest("black", null, 1);
         CreateOrderRequest request = requestWithItems(itemsOf(null, option));
 
         assertValidationFailed(postOrder(request));
@@ -182,7 +182,7 @@ class OrderControllerTest {
 
     @Test
     void 색상이_null이면_400() throws Exception {
-        OrderOptionRequest option = new OrderOptionRequest(null, 1);
+        OrderOptionRequest option = new OrderOptionRequest(null, null, 1);
         CreateOrderRequest request = requestWithItems(itemsOf(1L, option));
 
         assertValidationFailed(postOrder(request));
@@ -192,7 +192,7 @@ class OrderControllerTest {
     void 색상없는_상품은_빈문자열_색상으로_주문_성공() throws Exception {
         CreateOrderResponse response = CreateOrderResponse.from("GARAM-TEST");
         given(orderService.createOrder(any())).willReturn(response);
-        OrderOptionRequest option = new OrderOptionRequest("", 1);
+        OrderOptionRequest option = new OrderOptionRequest("", null, 1);
         CreateOrderRequest request = requestWithItems(itemsOf(1L, option));
 
         postOrder(request).andExpect(status().isOk());

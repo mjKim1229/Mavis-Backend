@@ -1,4 +1,10 @@
 package com.mavis.domain.domains.order.domain;
 
-public record OrderOption(String color, int quantity) {
+import com.mavis.common.enums.Size;
+
+public record OrderOption(String color, Size size, int quantity) {
+
+    public OrderOption(String color, int quantity) {
+        this(color, null, quantity);
+    }
 }

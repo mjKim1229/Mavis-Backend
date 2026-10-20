@@ -55,8 +55,8 @@ class OrderItemAppenderTest {
         Product productA = productWithColors(1L, 10000, "black");
         Product productB = productWithColors(2L, 5000, "white");
 
-        OrderItemRequest itemA = new OrderItemRequest(1L, new OrderOptionRequest("black", 2));
-        OrderItemRequest itemB = new OrderItemRequest(2L, new OrderOptionRequest("white", 3));
+        OrderItemRequest itemA = new OrderItemRequest(1L, new OrderOptionRequest("black", null, 2));
+        OrderItemRequest itemB = new OrderItemRequest(2L, new OrderOptionRequest("white", null, 3));
 
         Order order = Order.builder().build();
 
@@ -80,8 +80,8 @@ class OrderItemAppenderTest {
         Product productA = productWithColors(1L, halfOverMax, "black");
         Product productB = productWithColors(2L, halfOverMax, "white");
 
-        OrderItemRequest itemA = new OrderItemRequest(1L, new OrderOptionRequest("black", 1));
-        OrderItemRequest itemB = new OrderItemRequest(2L, new OrderOptionRequest("white", 1));
+        OrderItemRequest itemA = new OrderItemRequest(1L, new OrderOptionRequest("black", null, 1));
+        OrderItemRequest itemB = new OrderItemRequest(2L, new OrderOptionRequest("white", null, 1));
 
         Order order = Order.builder().build();
 

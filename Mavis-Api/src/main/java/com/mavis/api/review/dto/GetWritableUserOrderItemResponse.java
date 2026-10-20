@@ -1,5 +1,6 @@
 package com.mavis.api.review.dto;
 
+import com.mavis.common.enums.Size;
 import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.product.domain.Product;
 import lombok.Builder;
@@ -10,6 +11,7 @@ public record GetWritableUserOrderItemResponse(
         String name,
         Integer price,
         String color,
+        Size size,
         int quantity,
         String previewImage
 ) {
@@ -19,6 +21,7 @@ public record GetWritableUserOrderItemResponse(
                 .name(product.getName())
                 .price(orderItem.getTotalPrice())
                 .color(orderItem.getColor())
+                .size(orderItem.getSize())
                 .quantity(orderItem.getQuantity())
                 .previewImage(previewImage)
                 .build();

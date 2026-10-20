@@ -69,7 +69,7 @@ public record GetAdminRefundResponse(
                         orderAddress.getFullAddress(),
                         order.getCreatedAt(),
                         orderItem.getId(),
-                        new OrderItemInfo(orderItem.getProduct().getName(), orderItem.getColor(), orderItem.getQuantity())
+                        new OrderItemInfo(orderItem.getProduct().getName(), orderItem.getColor(), orderItem.getSize(), orderItem.getQuantity())
                 ))
                 .refundInfo(new RefundInfo(
                         claim.getId(),

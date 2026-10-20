@@ -1,8 +1,10 @@
 package com.mavis.domain.domains.order.domain;
 
+import com.mavis.common.enums.Size;
 import com.mavis.domain.domains.common.jpa.BaseEntity;
 import com.mavis.domain.domains.order.exception.InvalidOrderColorException;
 import com.mavis.domain.domains.order.exception.InvalidOrderQuantityException;
+import com.mavis.domain.domains.order.exception.InvalidOrderSizeException;
 import com.mavis.domain.domains.product.domain.Product;
 import jakarta.persistence.*;
 import lombok.*;
@@ -34,6 +36,11 @@ public class OrderItem extends BaseEntity {
 
     private String color;
 
+    @Comment("주문한 사이즈. 사이즈 옵션이 없는 상품은 NULL")
+    @Column(columnDefinition = "varchar(255)")
+    @Enumerated(EnumType.STRING)
+    private Size size;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order;
@@ -49,9 +56,13 @@ public class OrderItem extends BaseEntity {
         if (!product.supportsColor(option.color())) {
             throw InvalidOrderColorException.EXCEPTION;
         }
+        if (!product.supportsSize(option.size())) {
+            throw InvalidOrderSizeException.EXCEPTION;
+        }
         int totalPrice = OrderAmounts.multiply(unitPrice, option.quantity());
         return OrderItem.builder()
                 .color(option.color())
+                .size(option.size())
                 .quantity(option.quantity())
                 .order(order)
                 .product(product)

@@ -57,7 +57,7 @@ public record GetAdminCanceledRefundResponse(
                         orderAddress.getFullAddress(),
                         order.getCreatedAt(),
                         orderItem.getId(),
-                        new OrderItemInfo(orderItem.getProduct().getName(), orderItem.getColor(), orderItem.getQuantity())
+                        new OrderItemInfo(orderItem.getProduct().getName(), orderItem.getColor(), orderItem.getSize(), orderItem.getQuantity())
                 ))
                 .cancelInfo(new CancelInfo(
                         claimItem.getId(),

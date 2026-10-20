@@ -7,6 +7,7 @@ import com.mavis.admin.domains.product.dto.UpdateProductClearanceRequest;
 import com.mavis.admin.domains.product.dto.UpdateProductRequest;
 import com.mavis.admin.support.ControllerTestSupport;
 import com.mavis.common.enums.ProductSubCategory;
+import com.mavis.common.enums.Size;
 import com.mavis.domain.domains.admin.domain.Admin;
 import com.mavis.domain.domains.admin.repository.AdminRepository;
 import com.mavis.domain.domains.product.domain.Product;
@@ -14,6 +15,8 @@ import com.mavis.domain.domains.product.domain.ProductColor;
 import com.mavis.domain.domains.product.domain.ProductImage;
 import com.mavis.domain.domains.product.domain.ProductImageType;
 import com.mavis.domain.domains.product.domain.ProductNotice;
+import com.mavis.domain.domains.product.domain.ProductSize;
+import com.mavis.domain.domains.product.repository.ProductSizeRepository;
 import com.mavis.domain.domains.product.repository.ProductColorRepository;
 import com.mavis.domain.domains.product.repository.ProductImageRepository;
 import com.mavis.domain.domains.product.repository.ProductNoticeRepository;
@@ -50,6 +53,7 @@ class AdminProductControllerTest extends ControllerTestSupport {
     @Autowired private ProductRepository productRepository;
     @Autowired private ProductNoticeRepository productNoticeRepository;
     @Autowired private ProductColorRepository productColorRepository;
+    @Autowired private ProductSizeRepository productSizeRepository;
     @Autowired private ProductImageRepository productImageRepository;
     @Autowired private EntityManager em;
 
@@ -255,7 +259,7 @@ class AdminProductControllerTest extends ControllerTestSupport {
 
             CreateProductRequest request = new CreateProductRequest(
                     "신상품", 30000, ProductSubCategory.NYLON,
-                    List.of("블랙", "화이트"), false, noticeVO());
+                    List.of("블랙", "화이트"), null, false, noticeVO());
 
             mockMvc.perform(multipart("/v1/api/product")
                             .file(jsonPart("request", request))
@@ -278,12 +282,55 @@ class AdminProductControllerTest extends ControllerTestSupport {
         }
 
         @Test
+        void 사이즈를_함께_등록하면_사이즈가_저장된다() throws Exception {
+            given(s3FileUploader.uploadImageToS3(any(), any(ImageDirectory.class)))
+                    .willReturn("https://s3.test/uploaded.jpg");
+
+            CreateProductRequest request = new CreateProductRequest(
+                    "신상품", 30000, ProductSubCategory.NYLON,
+                    List.of("블랙"), List.of(Size.S, Size.M, Size.L), false, noticeVO());
+
+            mockMvc.perform(multipart("/v1/api/product")
+                            .file(jsonPart("request", request))
+                            .file(imagePart("mainImages"))
+                            .file(imagePart("productImages"))
+                            .file(imagePart("detailImages"))
+                            .with(user(savedAdmin.getId().toString()).roles("ADMIN")))
+                    .andExpect(status().isOk());
+
+            em.flush();
+            em.clear();
+
+            List<ProductSize> savedSizes = productSizeRepository.findAll();
+            assertThat(savedSizes).extracting(ProductSize::getSize)
+                    .containsExactlyInAnyOrder(Size.S, Size.M, Size.L);
+        }
+
+        @Test
+        void 허용되지_않은_사이즈_값이면_400() throws Exception {
+            String json = """
+                    {"name":"신상품","price":30000,"subCategory":"NYLON","colors":["블랙"],
+                     "sizes":["XXXL"],"isClearance":false,
+                     "notice":{"precaution":"a","shippingInfo":"b","returnRequest":"c","returnProcess":"d"}}
+                    """;
+            MockMultipartFile requestPart = new MockMultipartFile("request", "", MediaType.APPLICATION_JSON_VALUE, json.getBytes());
+
+            mockMvc.perform(multipart("/v1/api/product")
+                            .file(requestPart)
+                            .file(imagePart("mainImages"))
+                            .file(imagePart("productImages"))
+                            .file(imagePart("detailImages"))
+                            .with(user(savedAdmin.getId().toString()).roles("ADMIN")))
+                    .andExpect(status().is4xxClientError());
+        }
+
+        @Test
         void 여러_이미지_등록시_orderNum_0부터_순서대로_부여() throws Exception {
             mockS3ReturnsFilenameUrl();
 
             CreateProductRequest request = new CreateProductRequest(
                     "신상품", 30000, ProductSubCategory.NYLON,
-                    List.of("블랙"), false, noticeVO());
+                    List.of("블랙"), null, false, noticeVO());
 
             mockMvc.perform(multipart("/v1/api/product")
                             .file(jsonPart("request", request))
@@ -317,7 +364,7 @@ class AdminProductControllerTest extends ControllerTestSupport {
         void 메인이미지가_1개가_아니면_400() throws Exception {
             CreateProductRequest request = new CreateProductRequest(
                     "신상품", 30000, ProductSubCategory.NYLON,
-                    List.of("블랙"), false, noticeVO());
+                    List.of("블랙"), null, false, noticeVO());
 
             mockMvc.perform(multipart("/v1/api/product")
                             .file(jsonPart("request", request))
@@ -333,7 +380,7 @@ class AdminProductControllerTest extends ControllerTestSupport {
         void 비인증_요청시_401() throws Exception {
             CreateProductRequest request = new CreateProductRequest(
                     "신상품", 30000, ProductSubCategory.NYLON,
-                    List.of("블랙"), false, noticeVO());
+                    List.of("블랙"), null, false, noticeVO());
 
             mockMvc.perform(multipart("/v1/api/product")
                             .file(jsonPart("request", request))
@@ -356,7 +403,7 @@ class AdminProductControllerTest extends ControllerTestSupport {
 
             UpdateProductRequest request = new UpdateProductRequest(
                     "수정상품", 99000, ProductSubCategory.POLY,
-                    List.of(), List.of(), List.of(), List.of(), noticeVO());
+                    List.of(), null, List.of(), List.of(), List.of(), noticeVO());
 
             mockMvc.perform(multipart("/v1/api/product/{id}", product.getId())
                             .file(jsonPart("request", request))
@@ -374,6 +421,57 @@ class AdminProductControllerTest extends ControllerTestSupport {
         }
 
         @Test
+        void 수정시_사이즈는_추가된_것만_저장하고_빠진_것은_삭제된다() throws Exception {
+            Product product = saveProduct("기존상품", 10000);
+            saveNotice(product);
+            productSizeRepository.save(ProductSize.of(product, Size.S));
+            productSizeRepository.save(ProductSize.of(product, Size.M));
+            em.flush();
+            em.clear();
+
+            UpdateProductRequest request = new UpdateProductRequest(
+                    "기존상품", 10000, ProductSubCategory.COTTON,
+                    List.of(), List.of(Size.M, Size.L), List.of(), List.of(), List.of(), noticeVO());
+
+            mockMvc.perform(multipart("/v1/api/product/{id}", product.getId())
+                            .file(jsonPart("request", request))
+                            .with(req -> { req.setMethod("PUT"); return req; })
+                            .with(user(savedAdmin.getId().toString()).roles("ADMIN")))
+                    .andExpect(status().isOk());
+
+            em.flush();
+            em.clear();
+
+            Product updated = productRepository.findById(product.getId()).orElseThrow();
+            assertThat(updated.getSizeNames()).containsExactlyInAnyOrder(Size.M, Size.L);
+        }
+
+        @Test
+        void 수정_요청에_sizes가_없으면_기존_사이즈를_유지한다() throws Exception {
+            Product product = saveProduct("기존상품", 10000);
+            saveNotice(product);
+            productSizeRepository.save(ProductSize.of(product, Size.S));
+            em.flush();
+            em.clear();
+
+            UpdateProductRequest request = new UpdateProductRequest(
+                    "기존상품", 10000, ProductSubCategory.COTTON,
+                    List.of(), null, List.of(), List.of(), List.of(), noticeVO());
+
+            mockMvc.perform(multipart("/v1/api/product/{id}", product.getId())
+                            .file(jsonPart("request", request))
+                            .with(req -> { req.setMethod("PUT"); return req; })
+                            .with(user(savedAdmin.getId().toString()).roles("ADMIN")))
+                    .andExpect(status().isOk());
+
+            em.flush();
+            em.clear();
+
+            Product updated = productRepository.findById(product.getId()).orElseThrow();
+            assertThat(updated.getSizeNames()).containsExactly(Size.S);
+        }
+
+        @Test
         void 기존_이미지_유지하고_새_이미지는_maxOrder_뒤에_추가() throws Exception {
             Product product = saveProduct("기존상품", 10000);
             saveNotice(product);
@@ -387,6 +485,7 @@ class AdminProductControllerTest extends ControllerTestSupport {
             UpdateProductRequest request = new UpdateProductRequest(
                     "기존상품", 10000, ProductSubCategory.COTTON,
                     List.of(),
+                    null,
                     List.of(),
                     List.of(new ProductImageVO(0, "https://s3.test/keep.jpg")),
                     List.of(),
@@ -426,6 +525,7 @@ class AdminProductControllerTest extends ControllerTestSupport {
             UpdateProductRequest request = new UpdateProductRequest(
                     "기존상품", 10000, ProductSubCategory.COTTON,
                     List.of(),
+                    null,
                     List.of(),
                     List.of(
                             new ProductImageVO(1, "https://s3.test/i1.jpg"),
@@ -470,6 +570,7 @@ class AdminProductControllerTest extends ControllerTestSupport {
             UpdateProductRequest request = new UpdateProductRequest(
                     "기존상품", 10000, ProductSubCategory.COTTON,
                     List.of(),
+                    null,
                     List.of(),
                     List.of(new ProductImageVO(0, "https://s3.test/keep.jpg")),
                     List.of(),
@@ -493,7 +594,7 @@ class AdminProductControllerTest extends ControllerTestSupport {
         void 존재하지_않는_상품_수정시_404() throws Exception {
             UpdateProductRequest request = new UpdateProductRequest(
                     "수정상품", 99000, ProductSubCategory.POLY,
-                    List.of(), List.of(), List.of(), List.of(), noticeVO());
+                    List.of(), null, List.of(), List.of(), List.of(), noticeVO());
 
             mockMvc.perform(multipart("/v1/api/product/{id}", 999999L)
                             .file(jsonPart("request", request))
@@ -506,7 +607,7 @@ class AdminProductControllerTest extends ControllerTestSupport {
         void 비인증_요청시_401() throws Exception {
             UpdateProductRequest request = new UpdateProductRequest(
                     "수정상품", 99000, ProductSubCategory.POLY,
-                    List.of(), List.of(), List.of(), List.of(), noticeVO());
+                    List.of(), null, List.of(), List.of(), List.of(), noticeVO());
 
             mockMvc.perform(multipart("/v1/api/product/{id}", 1L)
                             .file(jsonPart("request", request))

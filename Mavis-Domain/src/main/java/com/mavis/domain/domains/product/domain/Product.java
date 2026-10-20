@@ -1,6 +1,7 @@
 package com.mavis.domain.domains.product.domain;
 
 import com.mavis.common.enums.ProductSubCategory;
+import com.mavis.common.enums.Size;
 import com.mavis.domain.domains.common.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -40,6 +41,11 @@ public class Product extends BaseEntity {
 
     @OneToMany(mappedBy = "product")
     @Builder.Default
+    @SQLRestriction("is_deleted = false")
+    private List<ProductSize> sizes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product")
+    @Builder.Default
     private List<ProductTotalView> totalViews = new ArrayList<>();
 
     @Builder.Default
@@ -62,6 +68,12 @@ public class Product extends BaseEntity {
                 .toList();
     }
 
+    public List<Size> getSizeNames() {
+        return sizes.stream()
+                .map(ProductSize::getSize)
+                .toList();
+    }
+
     /**
      * 판매 중인 색상인지 확인한다. 색상 옵션이 없는 상품은 빈 값만 허용한다.
      */
@@ -75,6 +87,21 @@ public class Product extends BaseEntity {
             return color == null || color.isBlank();
         }
         return activeColors.contains(color);
+    }
+
+    /**
+     * 판매 중인 사이즈인지 확인한다. 사이즈 옵션이 없는 상품은 사이즈 없이만 주문할 수 있다.
+     */
+    public boolean supportsSize(Size size) {
+        List<Size> activeSizes = sizes.stream()
+                .filter(productSize -> !productSize.isDeleted())
+                .map(ProductSize::getSize)
+                .toList();
+        boolean hasNoSizeOption = activeSizes.isEmpty();
+        if (hasNoSizeOption) {
+            return size == null;
+        }
+        return activeSizes.contains(size);
     }
 
     public void update(String name, Integer price, ProductSubCategory subCategory) {

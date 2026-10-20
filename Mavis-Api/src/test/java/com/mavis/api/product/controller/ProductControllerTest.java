@@ -2,11 +2,14 @@ package com.mavis.api.product.controller;
 
 import com.mavis.api.support.ControllerTestSupport;
 import com.mavis.common.enums.ProductSubCategory;
+import com.mavis.common.enums.Size;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.product.domain.ProductColor;
 import com.mavis.domain.domains.product.domain.ProductImage;
 import com.mavis.domain.domains.product.domain.ProductImageType;
 import com.mavis.domain.domains.product.domain.ProductNotice;
+import com.mavis.domain.domains.product.domain.ProductSize;
+import com.mavis.domain.domains.product.repository.ProductSizeRepository;
 import com.mavis.domain.domains.product.repository.ProductColorRepository;
 import com.mavis.domain.domains.product.repository.ProductImageRepository;
 import com.mavis.domain.domains.product.repository.ProductNoticeRepository;
@@ -24,6 +27,7 @@ class ProductControllerTest extends ControllerTestSupport {
 
     @Autowired private ProductRepository productRepository;
     @Autowired private ProductColorRepository productColorRepository;
+    @Autowired private ProductSizeRepository productSizeRepository;
     @Autowired private ProductImageRepository productImageRepository;
     @Autowired private ProductNoticeRepository productNoticeRepository;
     @Autowired private EntityManager em;
@@ -85,6 +89,49 @@ class ProductControllerTest extends ControllerTestSupport {
                     .andExpect(jsonPath("$.data.productImages[0]").value("https://s3.test/p0.jpg"))
                     .andExpect(jsonPath("$.data.productImages[1]").value("https://s3.test/p1.jpg"))
                     .andExpect(jsonPath("$.data.productImages[2]").value("https://s3.test/p2.jpg"));
+        }
+
+        @Test
+        void 삭제된_색상은_상세_응답에서_제외된다() throws Exception {
+            Product product = saveProduct("테스트상품", 50000, ProductSubCategory.INNERWEAR, false);
+            saveColor(product, "블랙");
+            ProductColor deletedColor = productColorRepository.save(ProductColor.of(product, "화이트"));
+            deletedColor.delete();
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/products/{id}", product.getId()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.colors.length()").value(1))
+                    .andExpect(jsonPath("$.data.colors[0].name").value("블랙"));
+        }
+
+        @Test
+        void 상세_응답에_판매_사이즈가_포함되고_삭제된_사이즈는_제외된다() throws Exception {
+            Product product = saveProduct("테스트상품", 50000, ProductSubCategory.INNERWEAR, false);
+            productSizeRepository.save(ProductSize.of(product, Size.S));
+            productSizeRepository.save(ProductSize.of(product, Size.M));
+            ProductSize deletedSize = productSizeRepository.save(ProductSize.of(product, Size.L));
+            deletedSize.delete();
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/products/{id}", product.getId()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.sizes.length()").value(2))
+                    .andExpect(jsonPath("$.data.sizes[0]").value("S"))
+                    .andExpect(jsonPath("$.data.sizes[1]").value("M"));
+        }
+
+        @Test
+        void 사이즈_옵션이_없는_상품은_빈_sizes를_반환한다() throws Exception {
+            Product product = saveProduct("테스트상품", 50000, ProductSubCategory.INNERWEAR, false);
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/products/{id}", product.getId()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.sizes").isEmpty());
         }
 
         @Test

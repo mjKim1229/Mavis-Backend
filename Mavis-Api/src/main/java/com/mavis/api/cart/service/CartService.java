@@ -30,13 +30,14 @@ public class CartService {
     public void createCart(CreateCartRequest request) {
         User user = userReader.getCurrentUser();
         Product product = productReader.readById(request.productId());
-        cartItemRepository.findByUserAndProductAndColorAndIsDeletedFalse(user, product, request.color())
+        cartItemRepository.findByUserAndProductAndColorAndSizeAndIsDeletedFalse(user, product, request.color(), request.size())
                 .ifPresentOrElse(
                         existing -> existing.increaseQuantity(request.quantity()),
                         () -> cartItemRepository.save(CartItem.builder()
                                 .user(user)
                                 .product(product)
                                 .color(request.color())
+                                .size(request.size())
                                 .quantity(request.quantity())
                                 .build())
                 );
@@ -49,7 +50,7 @@ public class CartService {
         if (!cartItem.getUser().getId().equals(currentUser.getId())) {
             throw UnauthorizedCartException.EXCEPTION;
         }
-        cartItem.update(request.quantity(), request.color());
+        cartItem.update(request.quantity(), request.color(), request.size());
     }
 
     @Transactional

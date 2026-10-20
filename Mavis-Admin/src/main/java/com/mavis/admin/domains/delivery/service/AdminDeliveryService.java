@@ -84,7 +84,7 @@ public class AdminDeliveryService {
                 User user = order.getUser();
                 List<OrderItem> orderItems = order.getOrderItems();
                 List<OrderItemExcelInfo> orderItemInfoList = orderItems.stream()
-                    .map(orderItem -> OrderItemExcelInfo.from(orderItem.getProduct().getName(), orderItem.getColor(), orderItem.getQuantity()))
+                    .map(orderItem -> OrderItemExcelInfo.from(orderItem.getProduct().getName(), orderItem.getColor(), orderItem.getSize(), orderItem.getQuantity()))
                     .toList();
 
                 String orderedAt = order.getCreatedAt().format(DateFormatters.DATE_FORMATTER);

@@ -1,5 +1,6 @@
 package com.mavis.api.product.dto;
 
+import com.mavis.common.enums.Size;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.product.vo.ColorVO;
 import lombok.Builder;
@@ -12,6 +13,7 @@ public record GetProductResponse(
         String name,
         Integer price,
         List<ColorVO> colors,
+        List<Size> sizes,
         boolean isClearance,
         List<String> mainImages,
         List<String> productImages,
@@ -23,6 +25,7 @@ public record GetProductResponse(
                 .name(product.getName())
                 .price(product.getPrice())
                 .colors(colors)
+                .sizes(product.getSizeNames())
                 .isClearance(product.isClearance())
                 .mainImages(mainImages)
                 .productImages(productImages)

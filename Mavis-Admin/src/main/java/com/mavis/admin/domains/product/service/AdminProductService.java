@@ -3,6 +3,8 @@ package com.mavis.admin.domains.product.service;
 import com.mavis.admin.domains.product.dto.*;
 import com.mavis.admin.domains.product.implement.ProductColorAppender;
 import com.mavis.admin.domains.product.implement.ProductImageAppender;
+import com.mavis.admin.domains.product.implement.ProductSizeAppender;
+import com.mavis.common.enums.Size;
 import com.mavis.domain.domains.product.domain.*;
 import com.mavis.domain.domains.product.exception.ProductNoticeNotFoundException;
 import com.mavis.domain.domains.product.implement.ProductReader;
@@ -30,6 +32,7 @@ import java.util.stream.Collectors;
 public class AdminProductService {
 
     private final ProductColorAppender productColorAppender;
+    private final ProductSizeAppender productSizeAppender;
     private final ProductRepository productRepository;
     private final ProductNoticeRepository productNoticeRepository;
     private final ProductImageAppender productImageAppender;
@@ -73,6 +76,9 @@ public class AdminProductService {
         productNoticeRepository.save(productNotice);
 
         productColorAppender.saveProductColors(request.colors(), savedProduct);
+        if (request.sizes() != null) {
+            productSizeAppender.saveProductSizes(request.sizes(), savedProduct);
+        }
         productImageAppender.saveImages(mainImages, productImages, detailImages, savedProduct);
         return new CreateProductResponse(product.getId());
     }
@@ -102,6 +108,22 @@ public class AdminProductService {
         recentProductColors.stream()
                 .filter(color -> !requestColors.contains(color.getColor()))
                 .forEach(ProductColor::delete);
+
+        //size — 요청에 sizes 필드가 없으면(구버전 어드민 FE) 기존 사이즈를 그대로 둔다
+        List<Size> requestSizes = request.sizes();
+        if (requestSizes != null) {
+            List<Size> recentSizes = product.getSizeNames();
+            List<Size> toAddSizes = requestSizes.stream()
+                    .distinct()
+                    .filter(size -> !recentSizes.contains(size))
+                    .toList();
+            productSizeAppender.saveProductSizes(toAddSizes, product);
+
+            List<ProductSize> recentProductSizes = product.getSizes();
+            recentProductSizes.stream()
+                    .filter(productSize -> !requestSizes.contains(productSize.getSize()))
+                    .forEach(ProductSize::delete);
+        }
 
         Map<ProductImageType, List<ProductImage>> recentProductImageMap = product.getImages().stream()
                 .filter(image -> !image.isDeleted())

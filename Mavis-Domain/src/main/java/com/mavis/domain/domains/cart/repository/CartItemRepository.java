@@ -1,5 +1,6 @@
 package com.mavis.domain.domains.cart.repository;
 
+import com.mavis.common.enums.Size;
 import com.mavis.domain.domains.cart.domain.CartItem;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.user.domain.User;
@@ -9,5 +10,5 @@ import java.util.Optional;
 
 public interface CartItemRepository extends JpaRepository<CartItem, Long>, CartItemCustomRepository{
     Optional<CartItem> findByIdAndIsDeletedFalse(Long id);
-    Optional<CartItem> findByUserAndProductAndColorAndIsDeletedFalse(User user, Product product, String color);
+    Optional<CartItem> findByUserAndProductAndColorAndSizeAndIsDeletedFalse(User user, Product product, String color, Size size);
 }

@@ -1,5 +1,6 @@
 package com.mavis.api.review.dto;
 
+import com.mavis.common.enums.Size;
 import com.mavis.common.util.DateFormatters;
 import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.review.domain.Review;
@@ -13,6 +14,7 @@ public record ReviewResponse(
         Long reviewId,
         String createdAt,
         String color,
+        Size size,
         int quantity,
         String content,
         List<String> imageUrls,
@@ -27,6 +29,7 @@ public record ReviewResponse(
                 .name(maskName(user.getName()))
                 .quantity(orderItem.getQuantity())
                 .color(orderItem.getColor())
+                .size(orderItem.getSize())
                 .build();
     }
 

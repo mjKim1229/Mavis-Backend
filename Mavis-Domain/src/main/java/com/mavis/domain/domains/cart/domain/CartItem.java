@@ -1,10 +1,12 @@
 package com.mavis.domain.domains.cart.domain;
 
+import com.mavis.common.enums.Size;
 import com.mavis.domain.domains.common.jpa.BaseEntity;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Comment;
 
 @Getter
 @Builder
@@ -28,12 +30,18 @@ public class CartItem extends BaseEntity {
 
     private String color;
 
+    @Comment("선택한 사이즈. 사이즈 옵션이 없는 상품은 NULL")
+    @Column(columnDefinition = "varchar(255)")
+    @Enumerated(EnumType.STRING)
+    private Size size;
+
     @Builder.Default
     private boolean isDeleted = false;
 
-    public void update(int quantity, String color) {
+    public void update(int quantity, String color, Size size) {
         this.quantity = quantity;
         this.color = color;
+        this.size = size;
     }
 
     public void increaseQuantity(int additionalQuantity) {
