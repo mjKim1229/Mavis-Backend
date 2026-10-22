@@ -3,6 +3,7 @@ package com.mavis.admin.domains.refund.service;
 import com.mavis.admin.common.page.PageResponse;
 import com.mavis.admin.domains.refund.dto.GetAdminCanceledRefundResponse;
 import com.mavis.admin.domains.refund.dto.GetAdminRefundResponse;
+import com.mavis.admin.domains.refund.dto.GetApprovePreviewResponse;
 import com.mavis.admin.domains.refund.dto.RefundValidateInfo;
 import com.mavis.domain.domains.claim.domain.Claim;
 import com.mavis.domain.domains.claim.domain.ClaimItem;
@@ -101,7 +102,13 @@ public class AdminRefundService {
         int canceledAmount = paymentReader.sumCanceledAmount(order);
         int maxRefundable = confirmPayment.getTotalAmount() - canceledAmount;
         ReturnRefundPlan plan = claim.planReturnRefund(decision, amount, orderShippingSettled, maxRefundable);
-        return RefundValidateInfo.from(claim, confirmPayment, plan);
+        return RefundValidateInfo.from(claim, confirmPayment, maxRefundable, plan);
+    }
+
+    @Transactional(readOnly = true)
+    public GetApprovePreviewResponse previewApproval(Long claimId, ReturnDecision decision, Integer amount) {
+        RefundValidateInfo info = validateForApproval(claimId, decision, amount);
+        return GetApprovePreviewResponse.from(info);
     }
 
     @Transactional

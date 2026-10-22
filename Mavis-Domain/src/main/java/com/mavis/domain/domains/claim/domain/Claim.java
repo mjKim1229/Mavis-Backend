@@ -141,7 +141,7 @@ public class Claim extends BaseEntity {
         return plan;
     }
 
-    private int orderShippingFee(boolean orderShippingSettled) {
+    public int orderShippingFee(boolean orderShippingSettled) {
         if (orderShippingSettled) {
             return 0;
         }

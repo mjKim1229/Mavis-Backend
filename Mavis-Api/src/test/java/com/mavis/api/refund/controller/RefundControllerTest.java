@@ -43,7 +43,9 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class RefundControllerTest extends ControllerTestSupport {
@@ -387,5 +389,219 @@ class RefundControllerTest extends ControllerTestSupport {
                 .file(requestPart("변심", 999L))
                 .file(imagePart()))
             .andExpect(status().isUnauthorized());
+    }
+
+    private Order savedDeliveredOrderWithFee(String orderId) {
+        Order order = orderRepository.save(Order.builder()
+            .orderId(orderId).user(user).totalPrice(34000).deliveryFee(4000)
+            .orderAddress(address).orderStatus(OrderStatus.ORDERED).build());
+        deliveryRepository.save(Delivery.builder()
+            .order(order).deliveryStatus(DeliveryStatus.DELIVERED).build());
+        return order;
+    }
+
+    @Test
+    void 미리보기_변심_첫_반품은_주문_배송비와_반품_배송비를_차감한다() throws Exception {
+        Order order = savedDeliveredOrderWithFee("GARAM101");
+        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 30000, order, product));
+
+        em.flush();
+        em.clear();
+
+        mockMvc.perform(get("/v1/api/refund/return/preview")
+                .param("orderItemIds", item.getId().toString())
+                .param("reasonType", "CHANGE_OF_MIND")
+                .header("Authorization", userToken(user.getId())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.itemsTotalPrice").value(30000))
+            .andExpect(jsonPath("$.data.orderShippingFeeDeducted").value(4000))
+            .andExpect(jsonPath("$.data.returnShippingFeeDeducted").value(4000))
+            .andExpect(jsonPath("$.data.expectedRefundAmount").value(22000))
+            .andExpect(jsonPath("$.data.refundable").value(true))
+            .andExpect(jsonPath("$.data.sellerFaultRefundAmount").doesNotExist());
+
+        assertThat(claimRepository.count()).isZero();
+    }
+
+    @Test
+    void 미리보기_여러_상품을_묶으면_배송비는_한_번만_차감한다() throws Exception {
+        Order order = savedDeliveredOrderWithFee("GARAM102");
+        OrderItem item1 = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
+        OrderItem item2 = orderItemRepository.save(OrderItem.of(new OrderOption("white", 1), 20000, order, product));
+
+        em.flush();
+        em.clear();
+
+        mockMvc.perform(get("/v1/api/refund/return/preview")
+                .param("orderItemIds", item1.getId().toString(), item2.getId().toString())
+                .param("reasonType", "CHANGE_OF_MIND")
+                .header("Authorization", userToken(user.getId())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.itemsTotalPrice").value(30000))
+            .andExpect(jsonPath("$.data.expectedRefundAmount").value(22000));
+    }
+
+    @Test
+    void 미리보기_판매자_귀책이면_인정될_경우의_금액도_함께_내려준다() throws Exception {
+        Order order = savedDeliveredOrderWithFee("GARAM103");
+        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 30000, order, product));
+
+        em.flush();
+        em.clear();
+
+        mockMvc.perform(get("/v1/api/refund/return/preview")
+                .param("orderItemIds", item.getId().toString())
+                .param("reasonType", "SELLER_FAULT")
+                .header("Authorization", userToken(user.getId())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.expectedRefundAmount").value(22000))
+            .andExpect(jsonPath("$.data.sellerFaultRefundAmount").value(34000));
+    }
+
+    @Test
+    void 미리보기_같은_주문에_완료된_반품이_있으면_반품_배송비만_차감한다() throws Exception {
+        Order order = savedDeliveredOrderWithFee("GARAM104");
+        OrderItem done = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
+        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("white", 1), 30000, order, product));
+        Claim completed = Claim.requestReturn(order, ClaimReasonType.CHANGE_OF_MIND, List.of(new ReturnItemReason(done, "변심")));
+        completed.complete(FaultParty.BUYER);
+        claimRepository.save(completed);
+
+        em.flush();
+        em.clear();
+
+        mockMvc.perform(get("/v1/api/refund/return/preview")
+                .param("orderItemIds", item.getId().toString())
+                .param("reasonType", "CHANGE_OF_MIND")
+                .header("Authorization", userToken(user.getId())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.orderShippingFeeDeducted").value(0))
+            .andExpect(jsonPath("$.data.returnShippingFeeDeducted").value(4000))
+            .andExpect(jsonPath("$.data.expectedRefundAmount").value(26000));
+    }
+
+    @Test
+    void 미리보기_차감하면_환불할_금액이_없는_상품은_refundable_false() throws Exception {
+        Order order = savedDeliveredOrderWithFee("GARAM105");
+        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 5000, order, product));
+
+        em.flush();
+        em.clear();
+
+        mockMvc.perform(get("/v1/api/refund/return/preview")
+                .param("orderItemIds", item.getId().toString())
+                .param("reasonType", "CHANGE_OF_MIND")
+                .header("Authorization", userToken(user.getId())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.expectedRefundAmount").value(0))
+            .andExpect(jsonPath("$.data.refundable").value(false));
+    }
+
+    @Test
+    void 미리보기_다른_유저_주문이면_403() throws Exception {
+        User otherUser = userRepository.save(User.builder()
+            .snsType(SnsType.KAKAO).name("다른유저").build());
+        Order order = savedDeliveredOrderWithFee("GARAM106");
+        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 30000, order, product));
+
+        em.flush();
+        em.clear();
+
+        mockMvc.perform(get("/v1/api/refund/return/preview")
+                .param("orderItemIds", item.getId().toString())
+                .param("reasonType", "CHANGE_OF_MIND")
+                .header("Authorization", userToken(otherUser.getId())))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void 미리보기_서로_다른_주문의_상품이면_400() throws Exception {
+        Order order1 = savedDeliveredOrderWithFee("GARAM107");
+        Order order2 = savedDeliveredOrderWithFee("GARAM108");
+        OrderItem item1 = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 30000, order1, product));
+        OrderItem item2 = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 30000, order2, product));
+
+        em.flush();
+        em.clear();
+
+        mockMvc.perform(get("/v1/api/refund/return/preview")
+                .param("orderItemIds", item1.getId().toString(), item2.getId().toString())
+                .param("reasonType", "CHANGE_OF_MIND")
+                .header("Authorization", userToken(user.getId())))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void 미리보기_이미_신청한_상품이면_409() throws Exception {
+        Order order = savedDeliveredOrderWithFee("GARAM109");
+        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 30000, order, product));
+        claimRepository.save(Claim.requestReturn(order, ClaimReasonType.CHANGE_OF_MIND, List.of(new ReturnItemReason(item, "변심"))));
+
+        em.flush();
+        em.clear();
+
+        mockMvc.perform(get("/v1/api/refund/return/preview")
+                .param("orderItemIds", item.getId().toString())
+                .param("reasonType", "CHANGE_OF_MIND")
+                .header("Authorization", userToken(user.getId())))
+            .andExpect(status().isConflict());
+    }
+
+    @Test
+    void 미리보기_사유_유형이_없으면_400() throws Exception {
+        mockMvc.perform(get("/v1/api/refund/return/preview")
+                .param("orderItemIds", "1")
+                .header("Authorization", userToken(user.getId())))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void 미리보기_상품이_없으면_400() throws Exception {
+        mockMvc.perform(get("/v1/api/refund/return/preview")
+                .param("reasonType", "CHANGE_OF_MIND")
+                .header("Authorization", userToken(user.getId())))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void 미리보기_상품이_51개를_넘으면_400() throws Exception {
+        String[] ids = java.util.stream.LongStream.rangeClosed(1, 51)
+            .mapToObj(String::valueOf)
+            .toArray(String[]::new);
+
+        mockMvc.perform(get("/v1/api/refund/return/preview")
+                .param("orderItemIds", ids)
+                .param("reasonType", "CHANGE_OF_MIND")
+                .header("Authorization", userToken(user.getId())))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void 미리보기_비인증이면_401() throws Exception {
+        mockMvc.perform(get("/v1/api/refund/return/preview")
+                .param("orderItemIds", "1")
+                .param("reasonType", "CHANGE_OF_MIND"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void 미리보기_판매자_귀책도_주문_배송비가_이미_정산됐으면_상품_금액만_내려준다() throws Exception {
+        Order order = savedDeliveredOrderWithFee("GARAM110");
+        OrderItem done = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
+        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("white", 1), 30000, order, product));
+        Claim completed = Claim.requestReturn(order, ClaimReasonType.CHANGE_OF_MIND, List.of(new ReturnItemReason(done, "변심")));
+        completed.complete(FaultParty.BUYER);
+        claimRepository.save(completed);
+
+        em.flush();
+        em.clear();
+
+        mockMvc.perform(get("/v1/api/refund/return/preview")
+                .param("orderItemIds", item.getId().toString())
+                .param("reasonType", "SELLER_FAULT")
+                .header("Authorization", userToken(user.getId())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.expectedRefundAmount").value(26000))
+            .andExpect(jsonPath("$.data.sellerFaultRefundAmount").value(30000));
     }
 }

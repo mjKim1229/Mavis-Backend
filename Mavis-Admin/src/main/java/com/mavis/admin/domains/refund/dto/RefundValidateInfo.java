@@ -9,16 +9,20 @@ import com.mavis.domain.domains.order.domain.RefundReceiveAccount;
 public record RefundValidateInfo(
         Long claimId,
         Long orderId,
+        int itemsTotalPrice,
+        int maxRefundable,
         ReturnRefundPlan plan,
         String refundReason,
         String paymentKey,
         RefundReceiveAccount refundReceiveAccount
 ) {
-    public static RefundValidateInfo from(Claim claim, Payment confirmPayment, ReturnRefundPlan plan) {
+    public static RefundValidateInfo from(Claim claim, Payment confirmPayment, int maxRefundable, ReturnRefundPlan plan) {
         Order order = claim.getOrder();
         return new RefundValidateInfo(
                 claim.getId(),
                 order.getId(),
+                claim.getItemsTotalPrice(),
+                maxRefundable,
                 plan,
                 claim.getReason(),
                 confirmPayment.getPaymentKey(),

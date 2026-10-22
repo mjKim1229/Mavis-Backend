@@ -4,6 +4,8 @@ import com.mavis.admin.common.page.PageResponse;
 import com.mavis.admin.domains.refund.dto.ApproveRefundRequest;
 import com.mavis.admin.domains.refund.dto.GetAdminCanceledRefundResponse;
 import com.mavis.admin.domains.refund.dto.GetAdminRefundResponse;
+import com.mavis.admin.domains.refund.dto.GetApprovePreviewRequest;
+import com.mavis.admin.domains.refund.dto.GetApprovePreviewResponse;
 import com.mavis.admin.domains.refund.facade.AdminRefundFacade;
 import com.mavis.admin.domains.refund.service.AdminRefundService;
 import com.mavis.domain.domains.claim.domain.ClaimStatus;
@@ -33,6 +35,12 @@ public class AdminRefundController {
     @GetMapping("/canceled")
     public PageResponse<GetAdminCanceledRefundResponse> getCanceledRefundList(Pageable pageable) {
         return adminRefundService.getCanceledRefundList(pageable);
+    }
+
+    @Operation(summary = "환불 승인 예상 금액 조회 (승인과 같은 계산, 토스 호출·DB 변경 없음)")
+    @GetMapping("/{claimId}/approve/preview")
+    public GetApprovePreviewResponse previewApproval(@PathVariable Long claimId, GetApprovePreviewRequest request) {
+        return adminRefundService.previewApproval(claimId, request.decision(), request.amount());
     }
 
     @Operation(summary = "환불 승인 (반품 → Toss cancel). 판매자 귀책 건은 decision(FULL_REFUND/PARTIAL_REFUND/NOT_SELLER_FAULT) 필수, PARTIAL_REFUND는 amount 필수")

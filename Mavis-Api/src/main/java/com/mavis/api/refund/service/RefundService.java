@@ -1,6 +1,8 @@
 package com.mavis.api.refund.service;
 
 import com.mavis.api.auth.implement.UserReader;
+import com.mavis.api.refund.dto.GetReturnPreviewRequest;
+import com.mavis.api.refund.dto.GetReturnPreviewResponse;
 import com.mavis.api.refund.dto.RequestReturnRequest;
 import com.mavis.api.refund.implement.RefundImageUploader;
 import com.mavis.domain.domains.claim.domain.Claim;
@@ -40,20 +42,49 @@ public class RefundService {
 
     @Transactional
     public void createReturnRefund(RequestReturnRequest request, List<MultipartFile> images) {
+        List<OrderItem> orderItems = loadReturnableItems(request.orderItemIds());
+        OrderItem firstItem = orderItems.get(0);
+        Order order = firstItem.getOrder();
+
+        Map<Long, String> reasonByItemId = request.reasonByOrderItemId();
+        List<ReturnItemReason> returnItems = orderItems.stream()
+            .map(orderItem -> new ReturnItemReason(orderItem, reasonByItemId.get(orderItem.getId())))
+            .toList();
+
+        Claim claim = Claim.requestReturn(order, request.reasonType(), returnItems);
+        claimRepository.save(claim);
+
+        refundImageUploader.saveRefundImages(images, claim);
+    }
+
+    @Transactional(readOnly = true)
+    public GetReturnPreviewResponse previewReturn(GetReturnPreviewRequest request) {
+        List<OrderItem> orderItems = loadReturnableItems(request.orderItemIds());
+        OrderItem firstItem = orderItems.get(0);
+        Order order = firstItem.getOrder();
+        boolean orderShippingSettled = claimReader.hasCompletedReturn(order);
+
+        List<ReturnItemReason> returnItems = orderItems.stream()
+            .map(orderItem -> new ReturnItemReason(orderItem, null))
+            .toList();
+        Claim draft = Claim.requestReturn(order, request.reasonType(), returnItems);
+        return GetReturnPreviewResponse.of(draft, orderShippingSettled);
+    }
+
+    private List<OrderItem> loadReturnableItems(List<Long> orderItemIds) {
         User currentUser = userReader.getCurrentUser();
-        List<Long> orderItemIds = request.orderItemIds();
         Set<Long> distinctIds = new HashSet<>(orderItemIds);
         if (distinctIds.size() != orderItemIds.size()) {
             throw CannotRefundException.EXCEPTION;
         }
         List<OrderItem> orderItems = orderReader.findOrderItemsByIds(orderItemIds);
+
         OrderItem firstItem = orderItems.get(0);
         Order order = firstItem.getOrder();
-
         Long orderId = order.getId();
         boolean sameOrder = orderItems.stream()
-            .map(OrderItem::getOrder)
-            .allMatch(itemOrder -> itemOrder.getId().equals(orderId));
+                .map(OrderItem::getOrder)
+                .allMatch(itemOrder -> itemOrder.getId().equals(orderId));
         if (!sameOrder) {
             throw CannotRefundException.EXCEPTION;
         }
@@ -70,15 +101,6 @@ public class RefundService {
         if (claimReader.hasAnyClaim(orderItems)) {
             throw AlreadyRefundRequestedException.EXCEPTION;
         }
-
-        Map<Long, String> reasonByItemId = request.reasonByOrderItemId();
-        List<ReturnItemReason> returnItems = orderItems.stream()
-            .map(orderItem -> new ReturnItemReason(orderItem, reasonByItemId.get(orderItem.getId())))
-            .toList();
-
-        Claim claim = Claim.requestReturn(order, request.reasonType(), returnItems);
-        claimRepository.save(claim);
-
-        refundImageUploader.saveRefundImages(images, claim);
+        return orderItems;
     }
 }

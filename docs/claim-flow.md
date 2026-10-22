@@ -118,3 +118,16 @@
 
 - 어드민 반품 목록 `refundInfo.refundId`, 취소 목록 `cancelInfo.refundId`는 필드명을 유지했다. 값은 각각 `claim.id`, `claim_item.id`(취소 목록은 상품 단위 행이라 행마다 고유한 값)
 - 사용자 주문 목록 `orderProductList[].refundStatus` 는 반품 클레임 상태만 담는다 (취소 주문의 상품은 null)
+
+## 환불 금액 조회 API (미리보기)
+
+DB 변경·토스 호출 없이 실제 신청/승인과 같은 계산(`Claim`)을 돌려 결과만 내려준다.
+
+| API | 설명 | 응답 |
+|-----|------|------|
+| `GET /v1/api/refund/return/preview?orderItemIds=..&reasonType=..` (유저) | 신청과 같은 검증(본인 주문·같은 주문·배송완료·기존 클레임 없음, 상품 최대 50개) 후 예상 금액 | `itemsTotalPrice`, `orderShippingFeeDeducted`, `returnShippingFeeDeducted`, `expectedRefundAmount`(배송비 차감 시), `refundable`, `sellerFaultRefundAmount`(`SELLER_FAULT`일 때만 — 귀책 인정 시 금액) |
+| `GET /v1/api/refund/{claimId}/approve/preview?decision=..&amount=..` (어드민) | 승인(`validateForApproval`)과 같은 계산·검증 | `itemsTotalPrice`, `totalAmount`, `shippingFeeRefund`, `orderShippingFeeDeducted`, `returnShippingFeeDeducted`, `maxRefundable`, `faultParty` |
+
+- 유저 미리보기는 금액을 입력받지 않는다. 서버가 계산한 값만 내려준다.
+- 신청 시 예상 금액은 저장하지 않는다. 같은 주문의 다른 반품이 먼저 승인되면 주문 배송비 차감이 달라질 수 있어 승인 시점에 다시 계산한다.
+- 판매자 귀책 건은 `decision`이 필수라서 `maxRefundable`만 보고 싶으면 `decision=NOT_SELLER_FAULT`로 호출한다.

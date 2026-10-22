@@ -473,6 +473,107 @@ class AdminRefundControllerTest extends ControllerTestSupport {
                             .with(user(savedAdmin.getId().toString()).roles("ADMIN")))
                     .andExpect(status().isBadRequest());
         }
+
+        @Test
+        void 승인_미리보기는_승인과_같은_금액을_계산하고_DB를_바꾸지_않는다() throws Exception {
+            Order order = createOrder("GARAM20240606PREV", 54000);
+            OrderItem orderItem = createOrderItem(order, "블랙", 1);
+            Claim claim = createSellerFaultClaim(orderItem);
+            createConfirmPayment(order, 54000);
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/refund/{claimId}/approve/preview", claim.getId())
+                            .param("decision", "FULL_REFUND")
+                            .with(user(savedAdmin.getId().toString()).roles("ADMIN")))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.itemsTotalPrice").value(50000))
+                    .andExpect(jsonPath("$.data.totalAmount").value(54000))
+                    .andExpect(jsonPath("$.data.shippingFeeRefund").value(4000))
+                    .andExpect(jsonPath("$.data.orderShippingFeeDeducted").value(0))
+                    .andExpect(jsonPath("$.data.returnShippingFeeDeducted").value(0))
+                    .andExpect(jsonPath("$.data.maxRefundable").value(54000))
+                    .andExpect(jsonPath("$.data.faultParty").value("SELLER"));
+
+            Claim unchanged = claimRepository.findById(claim.getId()).orElseThrow();
+            assertThat(unchanged.getClaimStatus()).isEqualTo(ClaimStatus.REQUESTED);
+            assertThat(refundRepository.count()).isZero();
+        }
+
+        @Test
+        void 승인_미리보기_변심은_decision_없이도_차감_금액을_보여준다() throws Exception {
+            Order order = createOrder("GARAM20240606MIND", 54000);
+            OrderItem orderItem = createOrderItem(order, "블랙", 1);
+            Claim claim = createReturnClaim(orderItem, ClaimStatus.REQUESTED, "단순 변심");
+            createConfirmPayment(order, 54000);
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/refund/{claimId}/approve/preview", claim.getId())
+                            .with(user(savedAdmin.getId().toString()).roles("ADMIN")))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.totalAmount").value(42000))
+                    .andExpect(jsonPath("$.data.orderShippingFeeDeducted").value(4000))
+                    .andExpect(jsonPath("$.data.returnShippingFeeDeducted").value(4000))
+                    .andExpect(jsonPath("$.data.faultParty").value("BUYER"));
+        }
+
+        @Test
+        void 승인_미리보기_일부_환불이_잔액을_넘으면_400() throws Exception {
+            Order order = createOrder("GARAM20240606OVER", 54000);
+            OrderItem orderItem = createOrderItem(order, "블랙", 1);
+            Claim claim = createSellerFaultClaim(orderItem);
+            createConfirmPayment(order, 54000);
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/refund/{claimId}/approve/preview", claim.getId())
+                            .param("decision", "PARTIAL_REFUND")
+                            .param("amount", "54001")
+                            .with(user(savedAdmin.getId().toString()).roles("ADMIN")))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        void 승인_미리보기_판매자_귀책에_decision이_없으면_400() throws Exception {
+            Order order = createOrder("GARAM20240606NODC", 54000);
+            OrderItem orderItem = createOrderItem(order, "블랙", 1);
+            Claim claim = createSellerFaultClaim(orderItem);
+            createConfirmPayment(order, 54000);
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/refund/{claimId}/approve/preview", claim.getId())
+                            .with(user(savedAdmin.getId().toString()).roles("ADMIN")))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        void 승인_미리보기_이미_처리된_건은_400() throws Exception {
+            Order order = createOrder("GARAM20240606DONE", 54000);
+            OrderItem orderItem = createOrderItem(order, "블랙", 1);
+            Claim claim = createReturnClaim(orderItem, ClaimStatus.REJECTED, "단순 변심");
+            createConfirmPayment(order, 54000);
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(get("/v1/api/refund/{claimId}/approve/preview", claim.getId())
+                            .with(user(savedAdmin.getId().toString()).roles("ADMIN")))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        void 승인_미리보기_없는_클레임은_404() throws Exception {
+            mockMvc.perform(get("/v1/api/refund/{claimId}/approve/preview", 999999L)
+                            .with(user(savedAdmin.getId().toString()).roles("ADMIN")))
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void 승인_미리보기_비인증이면_401() throws Exception {
+            mockMvc.perform(get("/v1/api/refund/{claimId}/approve/preview", 1L))
+                    .andExpect(status().isUnauthorized());
+        }
     }
 
     @Nested
