@@ -5,6 +5,7 @@ import com.mavis.domain.domains.claim.domain.ReturnRefundPlan;
 
 public record GetApprovePreviewResponse(
         int itemsTotalPrice,
+        int refundBaseAmount,
         int totalAmount,
         int shippingFeeRefund,
         int orderShippingFeeDeducted,
@@ -14,8 +15,10 @@ public record GetApprovePreviewResponse(
 ) {
     public static GetApprovePreviewResponse from(RefundValidateInfo info) {
         ReturnRefundPlan plan = info.plan();
+        int refundBaseAmount = plan.totalAmount() + plan.orderShippingFeeDeducted() + plan.returnShippingFeeDeducted();
         return new GetApprovePreviewResponse(
                 info.itemsTotalPrice(),
+                refundBaseAmount,
                 plan.totalAmount(),
                 plan.shippingFeeRefund(),
                 plan.orderShippingFeeDeducted(),

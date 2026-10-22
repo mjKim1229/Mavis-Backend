@@ -71,8 +71,9 @@
 | `NOT_SELLER_FAULT` 귀책 아님 | 변심과 동일 (배송비 차감) | 0 | `BUYER` |
 
 **배송비 규칙** (`Claim.planReturnRefund`)
-- 변심 환불액 = 상품 금액 합 − 주문 배송비 − 반품 배송비(`Claim.RETURN_SHIPPING_FEE` = 4,000원)
-- 주문 배송비는 **주문당 1회만** 정산한다. 같은 주문에 이미 `COMPLETED`된 반품 클레임이 있으면 이후 클레임은 주문 배송비를 차감하지도, 전액 환불에 포함하지도 않는다(첫 반품이 판매자 귀책이라 돌려줬어도 동일). 거절된 클레임은 정산으로 보지 않는다.
+- 환불 기준 금액 = 상품 금액 합 + 아직 정산 안 된 주문 배송비 (고객이 결제한 금액). 예: 상품 30,000 + 주문 배송비 4,000 = 34,000
+- 변심 환불액 = 환불 기준 금액 − 주문 배송비 − 반품 배송비(`Claim.RETURN_SHIPPING_FEE` = 4,000원). 예: 34,000 − 4,000 − 4,000 = 26,000. 같은 주문의 이후 반품은 기준 금액에 주문 배송비가 없어 30,000 − 4,000 = 26,000으로 같다
+- 주문 배송비는 **주문당 1회만** 정산한다. 같은 주문에 이미 `COMPLETED`된 반품 클레임이 있으면 이후 클레임은 주문 배송비를 기준 금액에 더하지도, 차감하지도 않는다(첫 반품이 판매자 귀책이라 돌려줬어도 동일). 거절된 클레임은 정산으로 보지 않는다.
 - 반품 배송비는 클레임(수거 1회)마다 차감한다.
 - 일부 환불 상한 = 토스 결제금액(`payment CONFIRM.total_amount`) − 그 주문의 `CANCEL` 환불 합. 환불액은 1원 이상 상한 이하여야 하며 벗어나면 `REFUND_400_2`. 결정이 사유와 안 맞으면 `REFUND_400_3`.
 - `Claim.RETURN_SHIPPING_FEE`가 나중에 바뀌어도 과거 환불의 차감 내역은 `refund`의 스냅샷 컬럼으로 남는다.
@@ -125,9 +126,9 @@ DB 변경·토스 호출 없이 실제 신청/승인과 같은 계산(`Claim`)�
 
 | API | 설명 | 응답 |
 |-----|------|------|
-| `GET /v1/api/refund/return/preview?orderItemIds=..` (유저) | 신청과 같은 검증(본인 주문·같은 주문·배송완료·기존 클레임 없음, 상품 최대 50개) 후 예상 금액. 사유 유형은 받지 않고 두 금액을 항상 내려준다 | `itemsTotalPrice`, `orderShippingFeeDeducted`, `returnShippingFeeDeducted`, `deductedRefundAmount`(배송비 차감 시 — 변심 또는 귀책 미인정), `sellerFaultRefundAmount`(귀책 인정 시), `refundable` |
-| `GET /v1/api/refund/{claimId}/approve/preview?decision=..&amount=..` (어드민) | 승인(`validateForApproval`)과 같은 계산·검증 | `itemsTotalPrice`, `totalAmount`, `shippingFeeRefund`, `orderShippingFeeDeducted`, `returnShippingFeeDeducted`, `maxRefundable`, `faultParty` |
+| `GET /v1/api/refund/return/preview?orderItemIds=..` (유저) | 신청과 같은 검증(본인 주문·같은 주문·배송완료·기존 클레임 없음, 상품 최대 50개) 후 예상 금액. 사유 유형은 받지 않고 두 금액을 항상 내려준다 | `itemsTotalPrice`, `refundBaseAmount`(상품 금액 + 아직 정산 안 된 주문 배송비), `orderShippingFeeDeducted`, `returnShippingFeeDeducted`, `deductedRefundAmount`(배송비 차감 시 — 변심 또는 귀책 미인정), `sellerFaultRefundAmount`(귀책 인정 시), `refundable` |
+| `GET /v1/api/refund/{claimId}/approve/preview?decision=..&amount=..` (어드민) | 승인(`validateForApproval`)과 같은 계산·검증 | `itemsTotalPrice`, `refundBaseAmount`, `totalAmount`, `shippingFeeRefund`, `orderShippingFeeDeducted`, `returnShippingFeeDeducted`, `maxRefundable`, `faultParty` |
 
 - 유저 미리보기는 금액을 입력받지 않는다. 서버가 계산한 값만 내려준다.
-- 신청 시 예상 금액은 저장하지 않는다. 같은 주문의 다른 반품이 먼저 승인되면 주문 배송비 차감이 달라질 수 있어 승인 시점에 다시 계산한다.
+- 신청 시 예상 금액은 저장하지 않는다. 같은 주문의 다른 반품이 먼저 승인되면 주문 배송비 정산 여부가 바뀌어(판매자 귀책 전액 환불의 주문 배송비 포함 여부, 변심의 환불 내역 표시) 승인 시점에 다시 계산한다. 변심 환불액 자체는 첫 반품이든 이후 반품이든 같다.
 - 판매자 귀책 건은 `decision`이 필수라서 `maxRefundable`만 보고 싶으면 `decision=NOT_SELLER_FAULT`로 호출한다.

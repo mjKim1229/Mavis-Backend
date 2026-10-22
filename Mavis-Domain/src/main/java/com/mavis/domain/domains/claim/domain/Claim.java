@@ -116,8 +116,9 @@ public class Claim extends BaseEntity {
     }
 
     public int deductedRefundAmount(boolean orderShippingSettled) {
+        int refundBase = fullRefundAmount(orderShippingSettled);
         int orderShippingFee = orderShippingFee(orderShippingSettled);
-        return getItemsTotalPrice() - orderShippingFee - RETURN_SHIPPING_FEE;
+        return refundBase - orderShippingFee - RETURN_SHIPPING_FEE;
     }
 
     public int fullRefundAmount(boolean orderShippingSettled) {

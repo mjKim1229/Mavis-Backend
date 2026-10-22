@@ -151,7 +151,7 @@ class AdminRefundControllerTest extends ControllerTestSupport {
                     .andExpect(jsonPath("$.data.content[0].orderInfo.orderItemInfo.quantity").value(2))
                     .andExpect(jsonPath("$.data.content[0].refundInfo.refundId").value(claim.getId()))
                     // 승인 전이라 환불 예정액 = 상품 금액 - 주문 배송비 4000 - 반품 배송비 4000
-                    .andExpect(jsonPath("$.data.content[0].refundInfo.refundAmount").value(42000))
+                    .andExpect(jsonPath("$.data.content[0].refundInfo.refundAmount").value(46000))
                     .andExpect(jsonPath("$.data.content[0].refundInfo.fullRefundAmount").value(54000))
                     .andExpect(jsonPath("$.data.content[0].refundInfo.reasonType").value("CHANGE_OF_MIND"))
                     .andExpect(jsonPath("$.data.content[0].orderInfo.orderItems.length()").value(1))
@@ -328,7 +328,7 @@ class AdminRefundControllerTest extends ControllerTestSupport {
     class 환불_승인_금액_계산 {
 
         @Test
-        void 변심_첫_반품은_배송비_8000원을_차감한다() {
+        void 변심_첫_반품은_주문_배송비와_반품_배송비를_뺀다() {
             Order order = createOrder("GARAM20240505FRST", 54000);
             OrderItem orderItem = createOrderItem(order, "블랙", 1);
             Claim claim = createReturnClaim(orderItem, ClaimStatus.REQUESTED, "단순 변심");
@@ -338,7 +338,7 @@ class AdminRefundControllerTest extends ControllerTestSupport {
 
             RefundValidateInfo info = adminRefundService.validateForApproval(claim.getId(), null, null);
 
-            assertThat(info.refundAmount()).isEqualTo(42000);
+            assertThat(info.refundAmount()).isEqualTo(46000);
             assertThat(info.plan().shippingFeeRefund()).isZero();
             assertThat(info.plan().orderShippingFeeDeducted()).isEqualTo(4000);
             assertThat(info.plan().returnShippingFeeDeducted()).isEqualTo(4000);
@@ -378,7 +378,7 @@ class AdminRefundControllerTest extends ControllerTestSupport {
 
             RefundValidateInfo info = adminRefundService.validateForApproval(second.getId(), null, null);
 
-            assertThat(info.refundAmount()).isEqualTo(42000);
+            assertThat(info.refundAmount()).isEqualTo(46000);
         }
 
         @Test
@@ -482,6 +482,7 @@ class AdminRefundControllerTest extends ControllerTestSupport {
                             .with(user(savedAdmin.getId().toString()).roles("ADMIN")))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.itemsTotalPrice").value(50000))
+                    .andExpect(jsonPath("$.data.refundBaseAmount").value(54000))
                     .andExpect(jsonPath("$.data.totalAmount").value(54000))
                     .andExpect(jsonPath("$.data.shippingFeeRefund").value(4000))
                     .andExpect(jsonPath("$.data.orderShippingFeeDeducted").value(0))
@@ -506,7 +507,8 @@ class AdminRefundControllerTest extends ControllerTestSupport {
             mockMvc.perform(get("/v1/api/refund/{claimId}/approve/preview", claim.getId())
                             .with(user(savedAdmin.getId().toString()).roles("ADMIN")))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.totalAmount").value(42000))
+                                        .andExpect(jsonPath("$.data.refundBaseAmount").value(54000))
+.andExpect(jsonPath("$.data.totalAmount").value(46000))
                     .andExpect(jsonPath("$.data.orderShippingFeeDeducted").value(4000))
                     .andExpect(jsonPath("$.data.returnShippingFeeDeducted").value(4000))
                     .andExpect(jsonPath("$.data.faultParty").value("BUYER"));

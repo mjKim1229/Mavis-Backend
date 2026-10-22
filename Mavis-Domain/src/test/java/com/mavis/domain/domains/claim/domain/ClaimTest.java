@@ -116,7 +116,7 @@ class ClaimTest {
 
             ReturnRefundPlan plan = claim.planReturnRefund(null, null, false, 34000);
 
-            assertThat(plan.totalAmount()).isEqualTo(22000);
+            assertThat(plan.totalAmount()).isEqualTo(26000);
             assertThat(plan.shippingFeeRefund()).isZero();
             assertThat(plan.orderShippingFeeDeducted()).isEqualTo(4000);
             assertThat(plan.returnShippingFeeDeducted()).isEqualTo(4000);
@@ -135,12 +135,28 @@ class ClaimTest {
         }
 
         @Test
+        void 상품이_다른_두_번의_변심_반품은_주문_배송비를_첫_반품에서만_뺀다() {
+            Claim first = returnClaim(ClaimReasonType.CHANGE_OF_MIND, 20000);
+            Claim second = returnClaim(ClaimReasonType.CHANGE_OF_MIND, 10000);
+
+            ReturnRefundPlan firstPlan = first.planReturnRefund(null, null, false, 34000);
+            ReturnRefundPlan secondPlan = second.planReturnRefund(null, null, true, 18000);
+
+            assertThat(firstPlan.totalAmount()).isEqualTo(16000);
+            assertThat(firstPlan.orderShippingFeeDeducted()).isEqualTo(4000);
+            assertThat(firstPlan.returnShippingFeeDeducted()).isEqualTo(4000);
+            assertThat(secondPlan.totalAmount()).isEqualTo(6000);
+            assertThat(secondPlan.orderShippingFeeDeducted()).isZero();
+            assertThat(secondPlan.returnShippingFeeDeducted()).isEqualTo(4000);
+        }
+
+        @Test
         void 여러_상품_묶음_반품도_배송비는_한_번씩만_차감한다() {
             Claim claim = returnClaim(ClaimReasonType.CHANGE_OF_MIND, 10000, 20000);
 
             ReturnRefundPlan plan = claim.planReturnRefund(null, null, false, 34000);
 
-            assertThat(plan.totalAmount()).isEqualTo(22000);
+            assertThat(plan.totalAmount()).isEqualTo(26000);
         }
 
         @Test
@@ -149,7 +165,7 @@ class ClaimTest {
 
             ReturnRefundPlan plan = claim.planReturnRefund(ReturnDecision.NOT_SELLER_FAULT, null, false, 34000);
 
-            assertThat(plan.totalAmount()).isEqualTo(22000);
+            assertThat(plan.totalAmount()).isEqualTo(26000);
         }
 
         @Test
@@ -225,7 +241,7 @@ class ClaimTest {
 
             ReturnRefundPlan plan = claim.planReturnRefund(ReturnDecision.NOT_SELLER_FAULT, null, false, 34000);
 
-            assertThat(plan.totalAmount()).isEqualTo(22000);
+            assertThat(plan.totalAmount()).isEqualTo(26000);
             assertThat(plan.faultParty()).isEqualTo(FaultParty.BUYER);
         }
 
@@ -239,9 +255,9 @@ class ClaimTest {
 
         @Test
         void 차감하면_1원_미만이_되는_변심_반품은_환불_금액_오류다() {
-            Claim claim = returnClaim(ClaimReasonType.CHANGE_OF_MIND, 8000);
+            Claim claim = returnClaim(ClaimReasonType.CHANGE_OF_MIND, 4000);
 
-            assertThatThrownBy(() -> claim.planReturnRefund(null, null, false, 12000))
+            assertThatThrownBy(() -> claim.planReturnRefund(null, null, false, 8000))
                     .isInstanceOf(InvalidRefundAmountException.class);
         }
 

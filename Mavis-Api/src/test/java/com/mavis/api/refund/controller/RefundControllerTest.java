@@ -410,7 +410,8 @@ class RefundControllerTest extends ControllerTestSupport {
             .andExpect(jsonPath("$.data.itemsTotalPrice").value(30000))
             .andExpect(jsonPath("$.data.orderShippingFeeDeducted").value(4000))
             .andExpect(jsonPath("$.data.returnShippingFeeDeducted").value(4000))
-            .andExpect(jsonPath("$.data.deductedRefundAmount").value(22000))
+            .andExpect(jsonPath("$.data.refundBaseAmount").value(34000))
+            .andExpect(jsonPath("$.data.deductedRefundAmount").value(26000))
             .andExpect(jsonPath("$.data.refundable").value(true))
             .andExpect(jsonPath("$.data.sellerFaultRefundAmount").value(34000));
 
@@ -431,7 +432,7 @@ class RefundControllerTest extends ControllerTestSupport {
                 .header("Authorization", userToken(user.getId())))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.itemsTotalPrice").value(30000))
-            .andExpect(jsonPath("$.data.deductedRefundAmount").value(22000));
+            .andExpect(jsonPath("$.data.deductedRefundAmount").value(26000));
     }
 
 
@@ -459,7 +460,7 @@ class RefundControllerTest extends ControllerTestSupport {
     @Test
     void 미리보기_차감하면_환불할_금액이_없는_상품은_refundable_false() throws Exception {
         Order order = savedDeliveredOrderWithFee("GARAM105");
-        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 5000, order, product));
+        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 4000, order, product));
 
         em.flush();
         em.clear();
@@ -469,7 +470,7 @@ class RefundControllerTest extends ControllerTestSupport {
                 .header("Authorization", userToken(user.getId())))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.deductedRefundAmount").value(0))
-            .andExpect(jsonPath("$.data.sellerFaultRefundAmount").value(9000))
+            .andExpect(jsonPath("$.data.sellerFaultRefundAmount").value(8000))
             .andExpect(jsonPath("$.data.refundable").value(false));
     }
 

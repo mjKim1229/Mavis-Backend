@@ -45,12 +45,12 @@ class RefundTest {
     void 변심_반품_환불은_차감한_배송비를_스냅샷으로_기록한다() {
         OrderItem item = OrderItem.builder().order(order).totalPrice(30000).build();
         Claim claim = Claim.requestReturn(item.getOrder(), ClaimReasonType.CHANGE_OF_MIND, List.of(new ReturnItemReason(item, "변심")));
-        ReturnRefundPlan plan = new ReturnRefundPlan(22000, 0, 4000, 4000, FaultParty.BUYER);
+        ReturnRefundPlan plan = new ReturnRefundPlan(26000, 0, 4000, 4000, FaultParty.BUYER);
 
-        Refund refund = Refund.forReturn(claim, cancelPayment(22000), plan);
+        Refund refund = Refund.forReturn(claim, cancelPayment(26000), plan);
 
-        assertThat(refund.getTotalAmount()).isEqualTo(22000);
-        assertThat(refund.getProductAmount()).isEqualTo(22000);
+        assertThat(refund.getTotalAmount()).isEqualTo(26000);
+        assertThat(refund.getProductAmount()).isEqualTo(26000);
         assertThat(refund.getShippingFeeRefund()).isZero();
         assertThat(refund.getOrderShippingFeeDeducted()).isEqualTo(4000);
         assertThat(refund.getReturnShippingFeeDeducted()).isEqualTo(4000);
