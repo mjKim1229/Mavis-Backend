@@ -1,12 +1,18 @@
 package com.mavis.admin.domains.refund.controller;
 
+import com.mavis.admin.domains.refund.dto.RefundValidateInfo;
+import com.mavis.admin.domains.refund.service.AdminRefundService;
 import com.mavis.admin.support.ControllerTestSupport;
 import com.mavis.domain.domains.admin.domain.Admin;
 import com.mavis.domain.domains.admin.repository.AdminRepository;
 import com.mavis.domain.domains.claim.domain.Claim;
+import com.mavis.domain.domains.claim.domain.ClaimReasonType;
+import com.mavis.domain.domains.claim.domain.ReturnItemReason;
 import com.mavis.domain.domains.claim.domain.ClaimReturn;
 import com.mavis.domain.domains.claim.domain.ClaimStatus;
 import com.mavis.domain.domains.claim.domain.FaultParty;
+import com.mavis.domain.domains.claim.domain.ReturnDecision;
+import com.mavis.domain.domains.claim.domain.ReturnRefundPlan;
 import com.mavis.domain.domains.claim.repository.ClaimRepository;
 import com.mavis.domain.domains.claim.repository.ClaimReturnRepository;
 import com.mavis.domain.domains.order.domain.Order;
@@ -22,6 +28,7 @@ import com.mavis.domain.domains.order.repository.PaymentRepository;
 import com.mavis.domain.domains.product.domain.Product;
 import com.mavis.domain.domains.product.repository.ProductRepository;
 import com.mavis.domain.domains.refund.domain.Refund;
+import com.mavis.domain.domains.refund.exception.InvalidRefundAmountException;
 import com.mavis.domain.domains.refund.repository.RefundRepository;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.domain.domains.user.repository.UserRepository;
@@ -31,10 +38,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -51,6 +60,7 @@ class AdminRefundControllerTest extends ControllerTestSupport {
     @Autowired private ClaimRepository claimRepository;
     @Autowired private ClaimReturnRepository claimReturnRepository;
     @Autowired private RefundRepository refundRepository;
+    @Autowired private AdminRefundService adminRefundService;
     @Autowired private EntityManager em;
 
     private Admin savedAdmin;
@@ -95,7 +105,7 @@ class AdminRefundControllerTest extends ControllerTestSupport {
     }
 
     private Claim createReturnClaim(OrderItem orderItem, ClaimStatus status, String reason, String... imageUrls) {
-        Claim claim = Claim.requestReturn(orderItem, reason);
+        Claim claim = Claim.requestReturn(orderItem.getOrder(), ClaimReasonType.CHANGE_OF_MIND, List.of(new ReturnItemReason(orderItem, reason)));
         for (String imageUrl : imageUrls) {
             claim.addImage(imageUrl);
         }
@@ -144,8 +154,12 @@ class AdminRefundControllerTest extends ControllerTestSupport {
                     .andExpect(jsonPath("$.data.content[0].orderInfo.orderItemInfo.color").value("블랙"))
                     .andExpect(jsonPath("$.data.content[0].orderInfo.orderItemInfo.quantity").value(2))
                     .andExpect(jsonPath("$.data.content[0].refundInfo.refundId").value(claim.getId()))
-                    // 승인 전이라 환불 예정액 = 상품 금액
-                    .andExpect(jsonPath("$.data.content[0].refundInfo.refundAmount").value(50000))
+                    // 승인 전이라 환불 예정액 = 상품 금액 - 주문 배송비 4000 - 반품 배송비 4000
+                    .andExpect(jsonPath("$.data.content[0].refundInfo.refundAmount").value(42000))
+                    .andExpect(jsonPath("$.data.content[0].refundInfo.fullRefundAmount").value(54000))
+                    .andExpect(jsonPath("$.data.content[0].refundInfo.reasonType").value("CHANGE_OF_MIND"))
+                    .andExpect(jsonPath("$.data.content[0].orderInfo.orderItems.length()").value(1))
+                    .andExpect(jsonPath("$.data.content[0].orderInfo.orderItems[0].orderItemId").value(orderItem.getId()))
                     .andExpect(jsonPath("$.data.content[0].refundInfo.refundReason").value("단순 변심"))
                     .andExpect(jsonPath("$.data.content[0].refundInfo.refundStatus").value("REQUESTED"))
                     .andExpect(jsonPath("$.data.content[0].refundInfo.carrier").value("CJ대한통운"))
@@ -159,7 +173,7 @@ class AdminRefundControllerTest extends ControllerTestSupport {
             OrderItem orderItem = createOrderItem(order, "블랙", 1);
             Claim claim = createReturnClaim(orderItem, ClaimStatus.COMPLETED, "단순 변심");
             Payment cancelPayment = createCancelPayment(order, 45000);
-            refundRepository.save(Refund.forReturn(claim, cancelPayment));
+            refundRepository.save(Refund.forReturn(claim, cancelPayment, new ReturnRefundPlan(45000, 0, 0, 0, FaultParty.BUYER)));
             em.flush();
             em.clear();
 
@@ -298,6 +312,166 @@ class AdminRefundControllerTest extends ControllerTestSupport {
             // FE가 행 key로 쓰므로 행마다 달라야 한다
             List<Integer> rowIds = JsonPath.read(body, "$.data.content[*].cancelInfo.refundId");
             assertThat(rowIds).doesNotHaveDuplicates();
+        }
+    }
+
+    private Claim createSellerFaultClaim(OrderItem orderItem) {
+        Claim claim = Claim.requestReturn(orderItem.getOrder(), ClaimReasonType.SELLER_FAULT, List.of(new ReturnItemReason(orderItem, "불량")));
+        return claimRepository.save(claim);
+    }
+
+    private Payment createConfirmPayment(Order order, int amount) {
+        return paymentRepository.save(Payment.builder()
+                .order(order)
+                .paymentType(PaymentType.CONFIRM)
+                .method(PaymentMethod.CARD)
+                .paymentKey("pk-" + order.getOrderId())
+                .totalAmount(amount)
+                .build());
+    }
+
+    @Nested
+    class 환불_승인_금액_계산 {
+
+        @Test
+        void 변심_첫_반품은_배송비_8000원을_차감한다() {
+            Order order = createOrder("GARAM20240505FRST", 54000);
+            OrderItem orderItem = createOrderItem(order, "블랙", 1);
+            Claim claim = createReturnClaim(orderItem, ClaimStatus.REQUESTED, "단순 변심");
+            createConfirmPayment(order, 54000);
+            em.flush();
+            em.clear();
+
+            RefundValidateInfo info = adminRefundService.validateForApproval(claim.getId(), null, null);
+
+            assertThat(info.refundAmount()).isEqualTo(42000);
+            assertThat(info.plan().shippingFeeRefund()).isZero();
+            assertThat(info.plan().orderShippingFeeDeducted()).isEqualTo(4000);
+            assertThat(info.plan().returnShippingFeeDeducted()).isEqualTo(4000);
+            assertThat(info.plan().faultParty()).isEqualTo(FaultParty.BUYER);
+        }
+
+        @Test
+        void 같은_주문에서_먼저_완료된_반품이_있으면_반품_배송비만_차감한다() {
+            Order order = createOrder("GARAM20240505NEXT", 104000);
+            OrderItem item1 = createOrderItem(order, "블랙", 1);
+            OrderItem item2 = createOrderItem(order, "화이트", 1);
+            Claim first = createReturnClaim(item1, ClaimStatus.COMPLETED, "단순 변심");
+            createConfirmPayment(order, 104000);
+            Payment cancelPayment = createCancelPayment(order, 42000);
+            refundRepository.save(Refund.forReturn(first, cancelPayment, new ReturnRefundPlan(42000, 0, 4000, 4000, FaultParty.BUYER)));
+            Claim second = createReturnClaim(item2, ClaimStatus.REQUESTED, "단순 변심");
+            em.flush();
+            em.clear();
+
+            RefundValidateInfo info = adminRefundService.validateForApproval(second.getId(), null, null);
+
+            assertThat(info.refundAmount()).isEqualTo(46000);
+            assertThat(info.plan().orderShippingFeeDeducted()).isZero();
+            assertThat(info.plan().returnShippingFeeDeducted()).isEqualTo(4000);
+        }
+
+        @Test
+        void 거절된_반품은_배송비_정산으로_보지_않는다() {
+            Order order = createOrder("GARAM20240505RJCT", 104000);
+            OrderItem item1 = createOrderItem(order, "블랙", 1);
+            OrderItem item2 = createOrderItem(order, "화이트", 1);
+            createReturnClaim(item1, ClaimStatus.REJECTED, "단순 변심");
+            Claim second = createReturnClaim(item2, ClaimStatus.REQUESTED, "단순 변심");
+            createConfirmPayment(order, 104000);
+            em.flush();
+            em.clear();
+
+            RefundValidateInfo info = adminRefundService.validateForApproval(second.getId(), null, null);
+
+            assertThat(info.refundAmount()).isEqualTo(42000);
+        }
+
+        @Test
+        void 판매자_귀책_전액_환불은_상품금액과_주문_배송비를_포함한다() {
+            Order order = createOrder("GARAM20240505FULL", 54000);
+            OrderItem orderItem = createOrderItem(order, "블랙", 1);
+            Claim claim = createSellerFaultClaim(orderItem);
+            createConfirmPayment(order, 54000);
+            em.flush();
+            em.clear();
+
+            RefundValidateInfo info = adminRefundService.validateForApproval(claim.getId(), ReturnDecision.FULL_REFUND, null);
+
+            assertThat(info.refundAmount()).isEqualTo(54000);
+            assertThat(info.plan().shippingFeeRefund()).isEqualTo(4000);
+            assertThat(info.plan().orderShippingFeeDeducted()).isZero();
+            assertThat(info.plan().returnShippingFeeDeducted()).isZero();
+            assertThat(info.plan().faultParty()).isEqualTo(FaultParty.SELLER);
+        }
+
+        @Test
+        void 일부_환불_금액이_환불_가능_잔액을_넘으면_거부한다() {
+            Order order = createOrder("GARAM20240505OVER", 104000);
+            OrderItem item1 = createOrderItem(order, "블랙", 1);
+            OrderItem item2 = createOrderItem(order, "화이트", 1);
+            Claim first = createReturnClaim(item1, ClaimStatus.COMPLETED, "단순 변심");
+            createConfirmPayment(order, 104000);
+            Payment cancelPayment = createCancelPayment(order, 42000);
+            refundRepository.save(Refund.forReturn(first, cancelPayment, new ReturnRefundPlan(42000, 0, 4000, 4000, FaultParty.BUYER)));
+            Claim second = createSellerFaultClaim(item2);
+            em.flush();
+            em.clear();
+
+            RefundValidateInfo atLimit = adminRefundService.validateForApproval(second.getId(), ReturnDecision.PARTIAL_REFUND, 62000);
+
+            assertThat(atLimit.refundAmount()).isEqualTo(62000);
+            assertThatThrownBy(() -> adminRefundService.validateForApproval(second.getId(), ReturnDecision.PARTIAL_REFUND, 62001))
+                    .isInstanceOf(InvalidRefundAmountException.class);
+        }
+
+        @Test
+        void 승인_API는_변심에_전액_환불_결정을_보내면_400() throws Exception {
+            Order order = createOrder("GARAM20240505BADD", 54000);
+            OrderItem orderItem = createOrderItem(order, "블랙", 1);
+            Claim claim = createReturnClaim(orderItem, ClaimStatus.REQUESTED, "단순 변심");
+            createConfirmPayment(order, 54000);
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(post("/v1/api/refund/{claimId}/approve", claim.getId())
+                            .header("Idempotency-Key", "key-bad-decision")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"decision\":\"FULL_REFUND\"}")
+                            .with(user(savedAdmin.getId().toString()).roles("ADMIN")))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        void 승인_API는_판매자_귀책에_결정이_없으면_400() throws Exception {
+            Order order = createOrder("GARAM20240505NODC", 54000);
+            OrderItem orderItem = createOrderItem(order, "블랙", 1);
+            Claim claim = createSellerFaultClaim(orderItem);
+            createConfirmPayment(order, 54000);
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(post("/v1/api/refund/{claimId}/approve", claim.getId())
+                            .header("Idempotency-Key", "key-no-decision")
+                            .with(user(savedAdmin.getId().toString()).roles("ADMIN")))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        void 승인_API는_일부_환불_금액이_0원이면_400() throws Exception {
+            Order order = createOrder("GARAM20240505ZERO", 54000);
+            OrderItem orderItem = createOrderItem(order, "블랙", 1);
+            Claim claim = createSellerFaultClaim(orderItem);
+            createConfirmPayment(order, 54000);
+            em.flush();
+            em.clear();
+
+            mockMvc.perform(post("/v1/api/refund/{claimId}/approve", claim.getId())
+                            .header("Idempotency-Key", "key-zero-amount")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"decision\":\"PARTIAL_REFUND\",\"amount\":0}")
+                            .with(user(savedAdmin.getId().toString()).roles("ADMIN")))
+                    .andExpect(status().isBadRequest());
         }
     }
 

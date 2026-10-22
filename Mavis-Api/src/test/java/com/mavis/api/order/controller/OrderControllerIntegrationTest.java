@@ -25,6 +25,9 @@ import com.mavis.domain.domains.product.repository.ProductColorRepository;
 import com.mavis.domain.domains.product.repository.ProductImageRepository;
 import com.mavis.domain.domains.product.repository.ProductRepository;
 import com.mavis.domain.domains.claim.domain.Claim;
+import com.mavis.domain.domains.claim.domain.ClaimReasonType;
+import com.mavis.domain.domains.claim.domain.ReturnItemReason;
+import com.mavis.domain.domains.claim.domain.ReturnRefundPlan;
 import com.mavis.domain.domains.claim.domain.FaultParty;
 import com.mavis.domain.domains.claim.repository.ClaimRepository;
 import com.mavis.domain.domains.order.domain.Payment;
@@ -313,7 +316,7 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                     .build());
             orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
             OrderItem refundedItem = orderItemRepository.save(OrderItem.of(new OrderOption("white", 1), 20000, order, imageProduct));
-            claimRepository.save(Claim.requestReturn(refundedItem, "단순 변심"));
+            claimRepository.save(Claim.requestReturn(refundedItem.getOrder(), ClaimReasonType.CHANGE_OF_MIND, List.of(new ReturnItemReason(refundedItem, "단순 변심"))));
 
             em.flush();
             em.clear();
@@ -421,11 +424,11 @@ class OrderControllerIntegrationTest extends ControllerTestSupport {
                     .orderStatus(OrderStatus.ORDERED)
                     .build());
             OrderItem orderItem = orderItemRepository.save(OrderItem.of(new OrderOption("black", 2), 10000, order, product));
-            Claim claim = Claim.requestReturn(orderItem, "단순 변심");
+            Claim claim = Claim.requestReturn(orderItem.getOrder(), ClaimReasonType.CHANGE_OF_MIND, List.of(new ReturnItemReason(orderItem, "단순 변심")));
             claim.complete(FaultParty.BUYER);
             claimRepository.save(claim);
             Payment cancelPayment = paymentRepository.save(cancelPayment(order, 18000));
-            refundRepository.save(Refund.forReturn(claim, cancelPayment));
+            refundRepository.save(Refund.forReturn(claim, cancelPayment, new ReturnRefundPlan(18000, 0, 0, 0, FaultParty.BUYER)));
 
             em.flush();
             em.clear();

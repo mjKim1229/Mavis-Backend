@@ -1,6 +1,7 @@
 package com.mavis.api.refund.controller;
 
 import com.mavis.api.refund.dto.RequestReturnRequest;
+import com.mavis.api.refund.dto.RequestReturnRequest.ReturnItemRequest;
 import com.mavis.api.support.ControllerTestSupport;
 import com.mavis.common.enums.ProductSubCategory;
 import com.mavis.domain.domains.delivery.domain.Delivery;
@@ -14,7 +15,9 @@ import com.mavis.domain.domains.product.domain.ProductColor;
 import com.mavis.domain.domains.product.repository.ProductColorRepository;
 import com.mavis.domain.domains.product.repository.ProductRepository;
 import com.mavis.domain.domains.claim.domain.Claim;
-import com.mavis.domain.domains.claim.domain.ClaimReturn;
+import com.mavis.domain.domains.claim.domain.ClaimItem;
+import com.mavis.domain.domains.claim.domain.ClaimReasonType;
+import com.mavis.domain.domains.claim.domain.ReturnItemReason;
 import com.mavis.domain.domains.claim.domain.ClaimStatus;
 import com.mavis.domain.domains.claim.domain.ClaimType;
 import com.mavis.domain.domains.claim.domain.FaultParty;
@@ -32,7 +35,10 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -101,9 +107,13 @@ class RefundControllerTest extends ControllerTestSupport {
         return order;
     }
 
-    private MockMultipartFile requestPart(String reason) throws Exception {
+    private MockMultipartFile requestPart(String reason, Long... orderItemIds) throws Exception {
+        return requestPart(ClaimReasonType.CHANGE_OF_MIND, reason, orderItemIds);
+    }
+
+    private MockMultipartFile requestPart(ClaimReasonType reasonType, String reason, Long... orderItemIds) throws Exception {
         return new MockMultipartFile("request", "", MediaType.APPLICATION_JSON_VALUE,
-            objectMapper.writeValueAsBytes(new RequestReturnRequest(reason, "CJ대한통운", "12345678")));
+            objectMapper.writeValueAsBytes(new RequestReturnRequest(reasonType, Arrays.stream(orderItemIds).map(id -> new ReturnItemRequest(id, reason)).toList())));
     }
 
     private MockMultipartFile imagePart() {
@@ -119,8 +129,8 @@ class RefundControllerTest extends ControllerTestSupport {
         em.flush();
         em.clear();
 
-        mockMvc.perform(multipart("/v1/api/refund/{orderItemId}/return", item.getId())
-                .file(requestPart("변심"))
+        mockMvc.perform(multipart("/v1/api/refund/return")
+                .file(requestPart("변심", item.getId()))
                 .file(imagePart())
                 .header("Authorization", userToken(user.getId())))
             .andExpect(status().isOk());
@@ -134,33 +144,152 @@ class RefundControllerTest extends ControllerTestSupport {
         assertThat(claim.getClaimType()).isEqualTo(ClaimType.RETURN);
         assertThat(claim.getClaimStatus()).isEqualTo(ClaimStatus.REQUESTED);
         assertThat(claim.getFaultParty()).isNull();
+        assertThat(claim.getReasonType()).isEqualTo(ClaimReasonType.CHANGE_OF_MIND);
         assertThat(claim.getReason()).isEqualTo("변심");
         assertThat(claim.getItems()).extracting(claimItem -> claimItem.getOrderItem().getId()).containsExactly(item.getId());
         assertThat(claim.getImages()).extracting("imageUrl").containsExactly("https://cdn.test/return.jpg");
 
-        List<ClaimReturn> claimReturns = claimReturnRepository.findByClaimIn(claims);
-        assertThat(claimReturns).hasSize(1);
-        assertThat(claimReturns.get(0).getCarrier()).isEqualTo("CJ대한통운");
-        assertThat(claimReturns.get(0).getTrackingNumber()).isEqualTo("12345678");
+        assertThat(claimReturnRepository.count()).isZero();
     }
 
     @Test
-    void 택배사_없이_반품_신청시_400() throws Exception {
-        Order order = savedDeliveredOrder("GARAM007");
-        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
-        MockMultipartFile noCarrier = new MockMultipartFile("request", "", MediaType.APPLICATION_JSON_VALUE,
-            objectMapper.writeValueAsBytes(new RequestReturnRequest("변심", " ", "12345678")));
+    void 한_주문의_여러_상품을_묶어_반품_신청하면_클레임_하나에_담긴다() throws Exception {
+        Order order = savedDeliveredOrder("GARAM008");
+        OrderItem item1 = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
+        OrderItem item2 = orderItemRepository.save(OrderItem.of(new OrderOption("white", 1), 10000, order, product));
+        given(s3FileUploader.uploadImageToS3(any(), any())).willReturn("https://cdn.test/return.jpg");
 
         em.flush();
         em.clear();
 
-        mockMvc.perform(multipart("/v1/api/refund/{orderItemId}/return", item.getId())
-                .file(noCarrier)
+        mockMvc.perform(multipart("/v1/api/refund/return")
+                .file(requestPart(ClaimReasonType.SELLER_FAULT, "불량", item1.getId(), item2.getId()))
+                .file(imagePart())
+                .header("Authorization", userToken(user.getId())))
+            .andExpect(status().isOk());
+
+        em.flush();
+        em.clear();
+
+        List<Claim> claims = claimRepository.findAll();
+        assertThat(claims).hasSize(1);
+        Claim claim = claims.get(0);
+        assertThat(claim.getReasonType()).isEqualTo(ClaimReasonType.SELLER_FAULT);
+        assertThat(claim.getItems()).extracting(claimItem -> claimItem.getOrderItem().getId())
+            .containsExactlyInAnyOrder(item1.getId(), item2.getId());
+    }
+
+    @Test
+    void 묶음_반품은_상품별_사유를_각각_저장한다() throws Exception {
+        Order order = savedDeliveredOrder("GARAM012");
+        OrderItem item1 = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
+        OrderItem item2 = orderItemRepository.save(OrderItem.of(new OrderOption("white", 1), 10000, order, product));
+        given(s3FileUploader.uploadImageToS3(any(), any())).willReturn("https://cdn.test/return.jpg");
+        RequestReturnRequest body = new RequestReturnRequest(ClaimReasonType.SELLER_FAULT, List.of(
+            new ReturnItemRequest(item1.getId(), "사이즈 불량"),
+            new ReturnItemRequest(item2.getId(), "색상 오배송")));
+        MockMultipartFile request = new MockMultipartFile("request", "", MediaType.APPLICATION_JSON_VALUE,
+            objectMapper.writeValueAsBytes(body));
+
+        em.flush();
+        em.clear();
+
+        mockMvc.perform(multipart("/v1/api/refund/return")
+                .file(request)
+                .file(imagePart())
+                .header("Authorization", userToken(user.getId())))
+            .andExpect(status().isOk());
+
+        em.flush();
+        em.clear();
+
+        Claim claim = claimRepository.findAll().get(0);
+        Map<Long, String> reasonByItemId = claim.getItems().stream()
+            .collect(Collectors.toMap(claimItem -> claimItem.getOrderItem().getId(), ClaimItem::getReason));
+        assertThat(reasonByItemId).containsEntry(item1.getId(), "사이즈 불량").containsEntry(item2.getId(), "색상 오배송");
+        assertThat(claim.getReasonType()).isEqualTo(ClaimReasonType.SELLER_FAULT);
+    }
+
+    @Test
+    void 같은_상품을_중복해서_신청하면_400() throws Exception {
+        Order order = savedDeliveredOrder("GARAM013");
+        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
+
+        em.flush();
+        em.clear();
+
+        mockMvc.perform(multipart("/v1/api/refund/return")
+                .file(requestPart("변심", item.getId(), item.getId()))
                 .file(imagePart())
                 .header("Authorization", userToken(user.getId())))
             .andExpect(status().isBadRequest());
 
         assertThat(claimRepository.count()).isZero();
+    }
+
+    @Test
+    void 서로_다른_주문의_상품을_묶어_신청하면_400() throws Exception {
+        Order order1 = savedDeliveredOrder("GARAM009");
+        Order order2 = savedDeliveredOrder("GARAM010");
+        OrderItem item1 = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order1, product));
+        OrderItem item2 = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order2, product));
+
+        em.flush();
+        em.clear();
+
+        mockMvc.perform(multipart("/v1/api/refund/return")
+                .file(requestPart("변심", item1.getId(), item2.getId()))
+                .file(imagePart())
+                .header("Authorization", userToken(user.getId())))
+            .andExpect(status().isBadRequest());
+
+        assertThat(claimRepository.count()).isZero();
+    }
+
+    @Test
+    void 묶음_중_하나라도_이미_신청한_상품이면_409() throws Exception {
+        Order order = savedDeliveredOrder("GARAM011");
+        OrderItem item1 = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
+        OrderItem item2 = orderItemRepository.save(OrderItem.of(new OrderOption("white", 1), 10000, order, product));
+        claimRepository.save(Claim.requestReturn(order, ClaimReasonType.CHANGE_OF_MIND, List.of(new ReturnItemReason(item1, "변심"))));
+
+        em.flush();
+        em.clear();
+
+        mockMvc.perform(multipart("/v1/api/refund/return")
+                .file(requestPart("변심", item1.getId(), item2.getId()))
+                .file(imagePart())
+                .header("Authorization", userToken(user.getId())))
+            .andExpect(status().isConflict());
+    }
+
+    @Test
+    void 반품_사유_유형_없이_신청시_400() throws Exception {
+        Order order = savedDeliveredOrder("GARAM007");
+        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
+
+        em.flush();
+        em.clear();
+
+        mockMvc.perform(multipart("/v1/api/refund/return")
+                .file(requestPart(null, "변심", item.getId()))
+                .file(imagePart())
+                .header("Authorization", userToken(user.getId())))
+            .andExpect(status().isBadRequest());
+
+        assertThat(claimRepository.count()).isZero();
+    }
+
+    @Test
+    void 반품할_상품_없이_신청시_400() throws Exception {
+        em.flush();
+        em.clear();
+
+        mockMvc.perform(multipart("/v1/api/refund/return")
+                .file(requestPart("변심"))
+                .file(imagePart())
+                .header("Authorization", userToken(user.getId())))
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -175,8 +304,8 @@ class RefundControllerTest extends ControllerTestSupport {
         em.flush();
         em.clear();
 
-        mockMvc.perform(multipart("/v1/api/refund/{orderItemId}/return", item.getId())
-                .file(requestPart("변심"))
+        mockMvc.perform(multipart("/v1/api/refund/return")
+                .file(requestPart("변심", item.getId()))
                 .file(imagePart())
                 .header("Authorization", userToken(user.getId())))
             .andExpect(status().isBadRequest());
@@ -186,13 +315,13 @@ class RefundControllerTest extends ControllerTestSupport {
     void 이미_환불_신청된_주문_재신청시_409() throws Exception {
         Order order = savedDeliveredOrder("GARAM003");
         OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
-        claimRepository.save(Claim.requestReturn(item, "변심"));
+        claimRepository.save(Claim.requestReturn(item.getOrder(), ClaimReasonType.CHANGE_OF_MIND, List.of(new ReturnItemReason(item, "변심"))));
 
         em.flush();
         em.clear();
 
-        mockMvc.perform(multipart("/v1/api/refund/{orderItemId}/return", item.getId())
-                .file(requestPart("변심"))
+        mockMvc.perform(multipart("/v1/api/refund/return")
+                .file(requestPart("변심", item.getId()))
                 .file(imagePart())
                 .header("Authorization", userToken(user.getId())))
             .andExpect(status().isConflict());
@@ -202,15 +331,15 @@ class RefundControllerTest extends ControllerTestSupport {
     void 환불_완료된_주문_재신청시_409() throws Exception {
         Order order = savedDeliveredOrder("GARAM005");
         OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
-        Claim completed = Claim.requestReturn(item, "변심");
+        Claim completed = Claim.requestReturn(item.getOrder(), ClaimReasonType.CHANGE_OF_MIND, List.of(new ReturnItemReason(item, "변심")));
         completed.complete(FaultParty.BUYER);
         claimRepository.save(completed);
 
         em.flush();
         em.clear();
 
-        mockMvc.perform(multipart("/v1/api/refund/{orderItemId}/return", item.getId())
-                .file(requestPart("변심"))
+        mockMvc.perform(multipart("/v1/api/refund/return")
+                .file(requestPart("변심", item.getId()))
                 .file(imagePart())
                 .header("Authorization", userToken(user.getId())))
             .andExpect(status().isConflict());
@@ -220,15 +349,15 @@ class RefundControllerTest extends ControllerTestSupport {
     void 환불_거절된_주문_재신청시_409() throws Exception {
         Order order = savedDeliveredOrder("GARAM006");
         OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
-        Claim rejected = Claim.requestReturn(item, "변심");
+        Claim rejected = Claim.requestReturn(item.getOrder(), ClaimReasonType.CHANGE_OF_MIND, List.of(new ReturnItemReason(item, "변심")));
         rejected.reject();
         claimRepository.save(rejected);
 
         em.flush();
         em.clear();
 
-        mockMvc.perform(multipart("/v1/api/refund/{orderItemId}/return", item.getId())
-                .file(requestPart("변심"))
+        mockMvc.perform(multipart("/v1/api/refund/return")
+                .file(requestPart("변심", item.getId()))
                 .file(imagePart())
                 .header("Authorization", userToken(user.getId())))
             .andExpect(status().isConflict());
@@ -245,8 +374,8 @@ class RefundControllerTest extends ControllerTestSupport {
         em.flush();
         em.clear();
 
-        mockMvc.perform(multipart("/v1/api/refund/{orderItemId}/return", item.getId())
-                .file(requestPart("변심"))
+        mockMvc.perform(multipart("/v1/api/refund/return")
+                .file(requestPart("변심", item.getId()))
                 .file(imagePart())
                 .header("Authorization", userToken(otherUser.getId())))
             .andExpect(status().isForbidden());
@@ -254,8 +383,8 @@ class RefundControllerTest extends ControllerTestSupport {
 
     @Test
     void 비인증_반품_신청시_401() throws Exception {
-        mockMvc.perform(multipart("/v1/api/refund/999/return")
-                .file(requestPart("변심"))
+        mockMvc.perform(multipart("/v1/api/refund/return")
+                .file(requestPart("변심", 999L))
                 .file(imagePart()))
             .andExpect(status().isUnauthorized());
     }

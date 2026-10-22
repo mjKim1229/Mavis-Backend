@@ -35,31 +35,54 @@
 
 ## ClaimType.RETURN — 반품 (배송 후)
 
+택배사가 수거하므로 고객이 택배사·송장을 입력하지 않는다. 신청은 한 주문의 여러 상품을 묶어서 할 수 있다.
+
 ### 1단계 — 사용자 반품 신청
-**진입점:** `RefundService.createReturnRefund` (`POST /v1/api/refund/{orderItemId}/return`)
+**진입점:** `RefundService.createReturnRefund` (`POST /v1/api/refund/return`, multipart: `request` + `images`)
 
 - Toss API: **없음**
-- 검증: 소유자 확인 → 배송 `DELIVERED` 확인 → 같은 상품에 클레임 이력이 있으면 차단(상태 무관) → 택배사·송장 필수(`@NotBlank`)
+- 요청: `orderItemIds`(같은 주문의 상품 목록), `reasonType`(`CHANGE_OF_MIND` 단순 변심 / `SELLER_FAULT` 판매자 귀책), `refundReason`(자유 텍스트)
+- 검증: 소유자 확인 → 모든 상품이 같은 주문 → 배송 `DELIVERED` 확인 → 상품 중 하나라도 클레임 이력이 있으면 차단(상태 무관)
 
 | 테이블 | 건수 | 주요 값 |
 |--------|------|---------|
-| `claim` | 1건 INSERT | `RETURN`, `REQUESTED`, `fault_party` = null |
-| `claim_item` | 1건 INSERT | 반품 상품 (신청은 상품 단위) |
-| `claim_return` | 1건 INSERT | 고객이 보낸 택배사·송장 |
+| `claim` | 1건 INSERT | `RETURN`, `REQUESTED`, `reason_type`, `fault_party` = null |
+| `claim_item` | 선택한 상품 수만큼 INSERT | |
 | `claim_image` | N건 INSERT | 반품 사진 |
 
-### 2단계 — 어드민 승인
-**진입점:** `AdminRefundFacade.approveRefund` → `AdminRefundService.approveAndComplete` (`POST /v1/api/refund/{claimId}/approve`)
+`claim_return`(택배사·송장)은 더 이상 쓰지 않는다. 기존 데이터는 그대로 두며 어드민 목록에서 값이 있으면 내려준다.
 
-- Toss API: `PaymentsCancelClient.cancelPayments(paymentKey, cancelRequest)` — **부분 취소**
-  - `cancelRequest.cancelAmount` = 클레임 상품 금액 합
-  - 가상계좌 환불 시 `refundReceiveAccount` 포함
+### 2단계 — 어드민 승인
+**진입점:** `AdminRefundFacade.approveRefund` → `AdminRefundService.validateForApproval` / `approveAndComplete` (`POST /v1/api/refund/{claimId}/approve`, body 선택)
+
+승인 즉시 토스 부분 취소가 나간다(수거 완료 확인 단계 없음 — 상품 받은 뒤 승인하는 운영 전제).
+
+**요청 body** (`decision`, `amount`)
+
+| 클레임 `reasonType` | body | 처리 |
+|------|------|------|
+| `CHANGE_OF_MIND` | 없음 (`NOT_SELLER_FAULT`만 허용) | 배송비 차감 환불 |
+| `SELLER_FAULT` | `decision` 필수 | 아래 표 |
+
+| `decision` | 환불 총액 | `refund.shipping_fee_refund` | `claim.fault_party` |
+|------|------|------|------|
+| `FULL_REFUND` 전액 | 상품 금액 + 주문 배송비 | 주문 배송비 | `SELLER` |
+| `PARTIAL_REFUND` 일부 | `amount` (어드민 직접 입력, 1원 이상) | 0 | `SELLER` |
+| `NOT_SELLER_FAULT` 귀책 아님 | 변심과 동일 (배송비 차감) | 0 | `BUYER` |
+
+**배송비 규칙** (`Claim.planReturnRefund`)
+- 변심 환불액 = 상품 금액 합 − 주문 배송비 − 반품 배송비(`Claim.RETURN_SHIPPING_FEE` = 4,000원)
+- 주문 배송비는 **주문당 1회만** 정산한다. 같은 주문에 이미 `COMPLETED`된 반품 클레임이 있으면 이후 클레임은 주문 배송비를 차감하지도, 전액 환불에 포함하지도 않는다(첫 반품이 판매자 귀책이라 돌려줬어도 동일). 거절된 클레임은 정산으로 보지 않는다.
+- 반품 배송비는 클레임(수거 1회)마다 차감한다.
+- 일부 환불 상한 = 토스 결제금액(`payment CONFIRM.total_amount`) − 그 주문의 `CANCEL` 환불 합. 환불액은 1원 이상 상한 이하여야 하며 벗어나면 `REFUND_400_2`. 결정이 사유와 안 맞으면 `REFUND_400_3`.
+- `Claim.RETURN_SHIPPING_FEE`가 나중에 바뀌어도 과거 환불의 차감 내역은 `refund`의 스냅샷 컬럼으로 남는다.
+- 일부 환불은 상품/배송비 분리를 알 수 없어 `shipping_fee_refund` = 0, 전부 `product_amount`로 기록한다.
 
 | 테이블 | 건수 | 주요 값 |
 |--------|------|---------|
-| `payment` (CANCEL) | 1건 INSERT | `total_amount` = `cancel_amount` = 부분 취소금액 |
-| `refund` | 1건 INSERT | `total_amount` = 토스 취소금액, `shipping_fee_refund` = 0 |
-| `claim` | UPDATE | `COMPLETED`, `fault_party = BUYER`, `completed_at` |
+| `payment` (CANCEL) | 1건 INSERT | `total_amount` = `cancel_amount` = 환불 총액 |
+| `refund` | 1건 INSERT | `total_amount` = 토스 취소금액, `shipping_fee_refund` = 위 표, `order_shipping_fee_deducted` / `return_shipping_fee_deducted` = 이번 환불에서 차감한 배송비(변심·귀책 아님만 값, 그 외 0. 당시 금액 스냅샷) |
+| `claim` | UPDATE | `COMPLETED`, `fault_party` = 위 표, `completed_at` |
 
 ### 2단계 — 어드민 거절
 **진입점:** `AdminRefundService.rejectRefund` (`POST /v1/api/refund/{claimId}/reject`)
@@ -69,6 +92,12 @@
 | 테이블 | 건수 | 주요 값 |
 |--------|------|---------|
 | `claim` | UPDATE | `REJECTED`, `completed_at` (`refund` 행 없음) |
+
+### 어드민 반품 목록 금액 필드
+- `refundInfo.refundAmount`: 처리 전에는 배송비 차감 시 환불 예정액(0 미만이면 0), 처리 후에는 실제 환불액
+- `refundInfo.fullRefundAmount`: 전액 환불 시 금액 (상품 금액 + 아직 정산 안 된 주문 배송비)
+- `refundInfo.reasonType`: 고객이 선택한 사유 유형
+- `orderInfo.orderItems`: 묶음 신청한 상품 전체. 기존 `orderItemId`/`orderItemInfo`는 첫 상품 값으로 유지
 
 ---
 

@@ -8,6 +8,10 @@ import com.mavis.domain.domains.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 @Component
 @RequiredArgsConstructor
 public class OrderReader {
@@ -18,6 +22,15 @@ public class OrderReader {
     public OrderItem findOrderItemById(Long id) {
         return orderItemRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> OrderNotFoundException.EXCEPTION);
+    }
+
+    public List<OrderItem> findOrderItemsByIds(List<Long> ids) {
+        List<OrderItem> orderItems = orderItemRepository.findByIdInAndIsDeletedFalse(ids);
+        Set<Long> distinctIds = new HashSet<>(ids);
+        if (orderItems.size() != distinctIds.size()) {
+            throw OrderNotFoundException.EXCEPTION;
+        }
+        return orderItems;
     }
 
     public Order findOrderById(Long id) {

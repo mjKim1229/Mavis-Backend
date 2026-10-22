@@ -29,7 +29,10 @@ public class ClaimItem extends BaseEntity {
     @JoinColumn(name = "order_item_id", nullable = false, unique = true)
     private OrderItem orderItem;
 
-    static ClaimItem of(Claim claim, OrderItem orderItem) {
-        return new ClaimItem(null, claim, orderItem);
+    @Comment("반품 신청 시 고객이 상품별로 입력한 사유. 취소 클레임·기존 데이터는 NULL")
+    private String reason;
+
+    static ClaimItem of(Claim claim, OrderItem orderItem, String reason) {
+        return new ClaimItem(null, claim, orderItem, reason);
     }
 }

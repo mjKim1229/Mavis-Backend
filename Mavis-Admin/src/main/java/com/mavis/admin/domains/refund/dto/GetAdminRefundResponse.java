@@ -4,6 +4,7 @@ import com.mavis.admin.domains.order.dto.OrderItemInfo;
 import com.mavis.domain.domains.claim.domain.Claim;
 import com.mavis.domain.domains.claim.domain.ClaimImage;
 import com.mavis.domain.domains.claim.domain.ClaimItem;
+import com.mavis.domain.domains.claim.domain.ClaimReasonType;
 import com.mavis.domain.domains.claim.domain.ClaimReturn;
 import com.mavis.domain.domains.claim.domain.ClaimStatus;
 import com.mavis.domain.domains.order.domain.Order;
@@ -31,13 +32,22 @@ public record GetAdminRefundResponse(
             String address,
             LocalDateTime orderCreatedAt,
             Long orderItemId,
-            OrderItemInfo orderItemInfo
+            OrderItemInfo orderItemInfo,
+            List<ReturnItem> orderItems
+    ) {}
+
+    public record ReturnItem(
+            Long orderItemId,
+            OrderItemInfo orderItemInfo,
+            String reason
     ) {}
 
     // refundId: FE 호환을 위해 필드명 유지, 값은 claim.id (승인/거절 경로 변수)
     public record RefundInfo(
             Long refundId,
             int refundAmount,
+            int fullRefundAmount,
+            ClaimReasonType reasonType,
             String refundReason,
             ClaimStatus refundStatus,
             String carrier,
@@ -46,15 +56,18 @@ public record GetAdminRefundResponse(
             LocalDateTime requestedAt
     ) {}
 
-    // 반품 신청은 상품 단위라 반품 클레임의 상품은 항상 1개
-    public static GetAdminRefundResponse from(Claim claim, ClaimReturn claimReturn, Refund refund) {
+    public static GetAdminRefundResponse from(Claim claim, ClaimReturn claimReturn, Refund refund, boolean orderShippingSettled) {
         List<ClaimItem> items = claim.getItems();
-        ClaimItem claimItem = items.get(0);
-        OrderItem orderItem = claimItem.getOrderItem();
         Order order = claim.getOrder();
         User user = order.getUser();
         OrderAddress orderAddress = order.getOrderAddress();
-        int refundAmount = refund != null ? refund.getTotalAmount() : claim.getItemsTotalPrice();
+        int deductedAmount = Math.max(0, claim.deductedRefundAmount(orderShippingSettled));
+        int refundAmount = refund != null ? refund.getTotalAmount() : deductedAmount;
+        int fullRefundAmount = claim.fullRefundAmount(orderShippingSettled);
+        List<ReturnItem> returnItems = items.stream()
+                .map(GetAdminRefundResponse::toReturnItem)
+                .toList();
+        ReturnItem firstItem = returnItems.get(0);
         String carrier = claimReturn != null ? claimReturn.getCarrier() : null;
         String trackingNumber = claimReturn != null ? claimReturn.getTrackingNumber() : null;
         List<String> imageUrls = claim.getImages().stream()
@@ -68,12 +81,15 @@ public record GetAdminRefundResponse(
                         orderAddress.getReceiverPhone(),
                         orderAddress.getFullAddress(),
                         order.getCreatedAt(),
-                        orderItem.getId(),
-                        new OrderItemInfo(orderItem.getProduct().getName(), orderItem.getColor(), orderItem.getSize(), orderItem.getQuantity())
+                        firstItem.orderItemId(),
+                        firstItem.orderItemInfo(),
+                        returnItems
                 ))
                 .refundInfo(new RefundInfo(
                         claim.getId(),
                         refundAmount,
+                        fullRefundAmount,
+                        claim.getReasonType(),
                         claim.getReason(),
                         claim.getClaimStatus(),
                         carrier,
@@ -82,5 +98,11 @@ public record GetAdminRefundResponse(
                         claim.getCreatedAt()
                 ))
                 .build();
+    }
+
+    private static ReturnItem toReturnItem(ClaimItem claimItem) {
+        OrderItem orderItem = claimItem.getOrderItem();
+        OrderItemInfo info = new OrderItemInfo(orderItem.getProduct().getName(), orderItem.getColor(), orderItem.getSize(), orderItem.getQuantity());
+        return new ReturnItem(orderItem.getId(), info, claimItem.getReason());
     }
 }

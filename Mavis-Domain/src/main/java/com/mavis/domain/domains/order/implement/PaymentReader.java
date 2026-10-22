@@ -14,6 +14,10 @@ public class PaymentReader {
 
     private final PaymentRepository paymentRepository;
 
+    public int sumCanceledAmount(Order order) {
+        return paymentRepository.sumCancelAmountByOrderAndPaymentType(order, PaymentType.CANCEL);
+    }
+
     public Payment findConfirmByOrder(Order order) {
         return paymentRepository.findByOrderAndPaymentType(order, PaymentType.CONFIRM)
                 .orElseThrow(() -> PaymentNotFoundException.EXCEPTION);

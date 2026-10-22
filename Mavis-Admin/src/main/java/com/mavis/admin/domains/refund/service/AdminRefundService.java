@@ -9,7 +9,8 @@ import com.mavis.domain.domains.claim.domain.ClaimItem;
 import com.mavis.domain.domains.claim.domain.ClaimReturn;
 import com.mavis.domain.domains.claim.domain.ClaimStatus;
 import com.mavis.domain.domains.claim.domain.ClaimType;
-import com.mavis.domain.domains.claim.domain.FaultParty;
+import com.mavis.domain.domains.claim.domain.ReturnDecision;
+import com.mavis.domain.domains.claim.domain.ReturnRefundPlan;
 import com.mavis.domain.domains.claim.implement.ClaimReader;
 import com.mavis.domain.domains.claim.repository.ClaimRepository;
 import com.mavis.domain.domains.claim.repository.ClaimReturnRepository;
@@ -33,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -56,9 +58,17 @@ public class AdminRefundService {
                 .collect(Collectors.toMap(claimReturn -> claimReturn.getClaim().getId(), claimReturn -> claimReturn));
         Map<Long, Refund> refundMap = refundRepository.findByClaimInWithPayment(claims).stream()
                 .collect(Collectors.toMap(refund -> refund.getClaim().getId(), refund -> refund));
+        List<Order> orders = claims.stream()
+                .map(Claim::getOrder)
+                .distinct()
+                .toList();
+        Set<Long> settledOrderIds = claimReader.findOrderIdsWithCompletedReturn(orders);
 
-        return PageResponse.of(claimPages.map(claim -> GetAdminRefundResponse.from(
-                claim, claimReturnMap.get(claim.getId()), refundMap.get(claim.getId()))));
+        return PageResponse.of(claimPages.map(claim -> {
+            boolean orderShippingSettled = settledOrderIds.contains(claim.getOrder().getId());
+            return GetAdminRefundResponse.from(
+                    claim, claimReturnMap.get(claim.getId()), refundMap.get(claim.getId()), orderShippingSettled);
+        }));
     }
 
     @Transactional(readOnly = true)
@@ -80,19 +90,23 @@ public class AdminRefundService {
     }
 
     @Transactional(readOnly = true)
-    public RefundValidateInfo validateForApproval(Long claimId) {
+    public RefundValidateInfo validateForApproval(Long claimId, ReturnDecision decision, Integer amount) {
         Claim claim = claimReader.findByIdWithOrder(claimId);
         if (claim.getClaimType() != ClaimType.RETURN || claim.getClaimStatus() != ClaimStatus.REQUESTED) {
             throw CannotRefundException.EXCEPTION;
         }
         Order order = claim.getOrder();
         Payment confirmPayment = paymentReader.findConfirmByOrder(order);
-        return RefundValidateInfo.from(claim, confirmPayment);
+        boolean orderShippingSettled = claimReader.hasCompletedReturn(order);
+        int canceledAmount = paymentReader.sumCanceledAmount(order);
+        int maxRefundable = confirmPayment.getTotalAmount() - canceledAmount;
+        ReturnRefundPlan plan = claim.planReturnRefund(decision, amount, orderShippingSettled, maxRefundable);
+        return RefundValidateInfo.from(claim, confirmPayment, plan);
     }
 
     @Transactional
-    public void approveAndComplete(Long claimId, PaymentsResponse response, PaymentsCancels cancelEntry) {
-        Claim claim = claimReader.findByIdWithOrder(claimId);
+    public void approveAndComplete(RefundValidateInfo info, PaymentsResponse response, PaymentsCancels cancelEntry) {
+        Claim claim = claimReader.findByIdWithOrder(info.claimId());
         Order order = claim.getOrder();
 
         Payment cancelPayment = Payment.builder()
@@ -116,9 +130,9 @@ public class AdminRefundService {
                 .build();
 
         Payment saved = paymentRepository.save(cancelPayment);
-        Refund refund = Refund.forReturn(claim, saved);
+        Refund refund = Refund.forReturn(claim, saved, info.plan());
         refundRepository.save(refund);
-        claim.complete(FaultParty.BUYER);
+        claim.complete(info.plan().faultParty());
     }
 
     @Transactional

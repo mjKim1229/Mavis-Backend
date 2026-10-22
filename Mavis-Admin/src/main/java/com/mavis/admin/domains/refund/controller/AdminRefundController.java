@@ -1,11 +1,13 @@
 package com.mavis.admin.domains.refund.controller;
 
 import com.mavis.admin.common.page.PageResponse;
+import com.mavis.admin.domains.refund.dto.ApproveRefundRequest;
 import com.mavis.admin.domains.refund.dto.GetAdminCanceledRefundResponse;
 import com.mavis.admin.domains.refund.dto.GetAdminRefundResponse;
 import com.mavis.admin.domains.refund.facade.AdminRefundFacade;
 import com.mavis.admin.domains.refund.service.AdminRefundService;
 import com.mavis.domain.domains.claim.domain.ClaimStatus;
+import com.mavis.domain.domains.claim.domain.ReturnDecision;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -33,13 +35,16 @@ public class AdminRefundController {
         return adminRefundService.getCanceledRefundList(pageable);
     }
 
-    @Operation(summary = "환불 승인 (반품 → Toss cancel)")
+    @Operation(summary = "환불 승인 (반품 → Toss cancel). 판매자 귀책 건은 decision(FULL_REFUND/PARTIAL_REFUND/NOT_SELLER_FAULT) 필수, PARTIAL_REFUND는 amount 필수")
     @PostMapping("/{claimId}/approve")
     public void approveRefund(
             @RequestHeader("Idempotency-Key") String idempotencyKey,
             @RequestHeader(value = "TossPayments-Test-Code", required = false) String testCode,
-            @PathVariable Long claimId) {
-        adminRefundFacade.approveRefund(idempotencyKey, testCode, claimId);
+            @PathVariable Long claimId,
+            @RequestBody(required = false) ApproveRefundRequest request) {
+        ReturnDecision decision = request != null ? request.decision() : null;
+        Integer amount = request != null ? request.amount() : null;
+        adminRefundFacade.approveRefund(idempotencyKey, testCode, claimId, decision, amount);
     }
 
     @Operation(summary = "환불 거절")

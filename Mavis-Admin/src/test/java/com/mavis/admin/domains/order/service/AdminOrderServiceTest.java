@@ -12,6 +12,8 @@ import com.mavis.domain.domains.order.domain.OrderStatus;
 import com.mavis.domain.domains.order.exception.OrderNotToBeConfirmedException;
 import com.mavis.domain.domains.order.repository.OrderRepository;
 import com.mavis.domain.domains.claim.domain.Claim;
+import com.mavis.domain.domains.claim.domain.ClaimReasonType;
+import com.mavis.domain.domains.claim.domain.ReturnItemReason;
 import com.mavis.domain.domains.claim.repository.ClaimRepository;
 import com.mavis.domain.domains.order.domain.OrderItem;
 import com.mavis.domain.domains.order.repository.OrderItemRepository;
@@ -84,11 +86,11 @@ class AdminOrderServiceTest extends ControllerTestSupport {
             for (int i = 0; i < 3; i++) {
                 OrderItem orderItem = orderItemRepository.save(OrderItem.builder()
                         .order(delivered).product(product).color("블랙").quantity(1).totalPrice(10000).build());
-                claimRepository.save(Claim.requestReturn(orderItem, "반품"));
+                claimRepository.save(Claim.requestReturn(orderItem.getOrder(), ClaimReasonType.CHANGE_OF_MIND, List.of(new ReturnItemReason(orderItem, "반품"))));
             }
             OrderItem rejectedItem = orderItemRepository.save(OrderItem.builder()
                     .order(delivered).product(product).color("블랙").quantity(1).totalPrice(10000).build());
-            Claim rejected = Claim.requestReturn(rejectedItem, "반품");
+            Claim rejected = Claim.requestReturn(rejectedItem.getOrder(), ClaimReasonType.CHANGE_OF_MIND, List.of(new ReturnItemReason(rejectedItem, "반품")));
             rejected.reject();
             claimRepository.save(rejected);
             em.flush();

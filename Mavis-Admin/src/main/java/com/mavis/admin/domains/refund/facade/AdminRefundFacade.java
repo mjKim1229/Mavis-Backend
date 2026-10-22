@@ -3,6 +3,7 @@ package com.mavis.admin.domains.refund.facade;
 import com.mavis.admin.domains.refund.dto.RefundValidateInfo;
 import com.mavis.admin.domains.refund.service.AdminRefundService;
 import com.mavis.common.properties.TossPaymentsProperties;
+import com.mavis.domain.domains.claim.domain.ReturnDecision;
 import com.mavis.infrastructure.outer.api.tosspayments.client.PaymentsCancelClient;
 import com.mavis.domain.domains.order.domain.IdempotencyStatus;
 import com.mavis.domain.domains.order.domain.PaymentApiType;
@@ -30,7 +31,7 @@ public class AdminRefundFacade {
     private final AdminRefundService adminRefundService;
     private final PaymentIdempotencyManager paymentIdempotencyManager;
 
-    public void approveRefund(String idempotencyKey, String testCode, Long claimId) {
+    public void approveRefund(String idempotencyKey, String testCode, Long claimId, ReturnDecision decision, Integer amount) {
         PaymentIdempotency idempotency = paymentIdempotencyManager.startProcessing(idempotencyKey, PaymentApiType.REFUND);
         if (idempotency.getStatus() == IdempotencyStatus.SUCCESS) {
             return;
@@ -40,7 +41,7 @@ public class AdminRefundFacade {
         PaymentsResponse response;
         try {
             // TX1 (read-only): 상태 검증 + paymentKey 조회, 이어서 토스 취소 호출
-            info = adminRefundService.validateForApproval(claimId);
+            info = adminRefundService.validateForApproval(claimId, decision, amount);
 
             RefundReceiveAccount account = info.refundReceiveAccount();
             RefundReceiveAccountRequest refundReceiveAccountRequest = account != null
@@ -69,7 +70,7 @@ public class AdminRefundFacade {
             if (cancelEntry == null) throw CancelEntryNotFoundException.EXCEPTION;
 
             // TX2: approve + Payment(CANCEL) INSERT + complete
-            adminRefundService.approveAndComplete(info.claimId(), response, cancelEntry);
+            adminRefundService.approveAndComplete(info, response, cancelEntry);
             paymentIdempotencyManager.markSuccess(idempotency.getId());
         } catch (Exception e) {
             // 환불은 이미 완료됐고 DB만 반영되지 않은 상태 — 재시도가 아니라 사람의 확인이 필요하다

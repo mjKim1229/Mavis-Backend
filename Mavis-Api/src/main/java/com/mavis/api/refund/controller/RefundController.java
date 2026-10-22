@@ -20,11 +20,10 @@ public class RefundController {
 
     private final RefundService refundService;
 
-    @Operation(summary = "반품 신청 (배송 후)")
-    @PostMapping(value = "/{orderItemId}/return", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public void requestReturn(@PathVariable Long orderItemId,
-                              @RequestPart @Valid RequestReturnRequest request,
+    @Operation(summary = "반품 신청 (배송 후, 한 주문의 여러 상품 묶음 신청)")
+    @PostMapping(value = "/return", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public void requestReturn(@RequestPart @Valid RequestReturnRequest request,
                               @RequestPart List<MultipartFile> images) {
-        refundService.createReturnRefund(orderItemId, request, images);
+        refundService.createReturnRefund(request, images);
     }
 }
