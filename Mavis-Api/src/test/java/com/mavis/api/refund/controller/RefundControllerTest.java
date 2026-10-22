@@ -410,15 +410,14 @@ class RefundControllerTest extends ControllerTestSupport {
 
         mockMvc.perform(get("/v1/api/refund/return/preview")
                 .param("orderItemIds", item.getId().toString())
-                .param("reasonType", "CHANGE_OF_MIND")
                 .header("Authorization", userToken(user.getId())))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.itemsTotalPrice").value(30000))
             .andExpect(jsonPath("$.data.orderShippingFeeDeducted").value(4000))
             .andExpect(jsonPath("$.data.returnShippingFeeDeducted").value(4000))
-            .andExpect(jsonPath("$.data.expectedRefundAmount").value(22000))
+            .andExpect(jsonPath("$.data.deductedRefundAmount").value(22000))
             .andExpect(jsonPath("$.data.refundable").value(true))
-            .andExpect(jsonPath("$.data.sellerFaultRefundAmount").doesNotExist());
+            .andExpect(jsonPath("$.data.sellerFaultRefundAmount").value(34000));
 
         assertThat(claimRepository.count()).isZero();
     }
@@ -434,29 +433,12 @@ class RefundControllerTest extends ControllerTestSupport {
 
         mockMvc.perform(get("/v1/api/refund/return/preview")
                 .param("orderItemIds", item1.getId().toString(), item2.getId().toString())
-                .param("reasonType", "CHANGE_OF_MIND")
                 .header("Authorization", userToken(user.getId())))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.itemsTotalPrice").value(30000))
-            .andExpect(jsonPath("$.data.expectedRefundAmount").value(22000));
+            .andExpect(jsonPath("$.data.deductedRefundAmount").value(22000));
     }
 
-    @Test
-    void 미리보기_판매자_귀책이면_인정될_경우의_금액도_함께_내려준다() throws Exception {
-        Order order = savedDeliveredOrderWithFee("GARAM103");
-        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 30000, order, product));
-
-        em.flush();
-        em.clear();
-
-        mockMvc.perform(get("/v1/api/refund/return/preview")
-                .param("orderItemIds", item.getId().toString())
-                .param("reasonType", "SELLER_FAULT")
-                .header("Authorization", userToken(user.getId())))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data.expectedRefundAmount").value(22000))
-            .andExpect(jsonPath("$.data.sellerFaultRefundAmount").value(34000));
-    }
 
     @Test
     void 미리보기_같은_주문에_완료된_반품이_있으면_반품_배송비만_차감한다() throws Exception {
@@ -472,12 +454,11 @@ class RefundControllerTest extends ControllerTestSupport {
 
         mockMvc.perform(get("/v1/api/refund/return/preview")
                 .param("orderItemIds", item.getId().toString())
-                .param("reasonType", "CHANGE_OF_MIND")
                 .header("Authorization", userToken(user.getId())))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.orderShippingFeeDeducted").value(0))
             .andExpect(jsonPath("$.data.returnShippingFeeDeducted").value(4000))
-            .andExpect(jsonPath("$.data.expectedRefundAmount").value(26000));
+            .andExpect(jsonPath("$.data.deductedRefundAmount").value(26000));
     }
 
     @Test
@@ -490,10 +471,10 @@ class RefundControllerTest extends ControllerTestSupport {
 
         mockMvc.perform(get("/v1/api/refund/return/preview")
                 .param("orderItemIds", item.getId().toString())
-                .param("reasonType", "CHANGE_OF_MIND")
                 .header("Authorization", userToken(user.getId())))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data.expectedRefundAmount").value(0))
+            .andExpect(jsonPath("$.data.deductedRefundAmount").value(0))
+            .andExpect(jsonPath("$.data.sellerFaultRefundAmount").value(9000))
             .andExpect(jsonPath("$.data.refundable").value(false));
     }
 
@@ -509,7 +490,6 @@ class RefundControllerTest extends ControllerTestSupport {
 
         mockMvc.perform(get("/v1/api/refund/return/preview")
                 .param("orderItemIds", item.getId().toString())
-                .param("reasonType", "CHANGE_OF_MIND")
                 .header("Authorization", userToken(otherUser.getId())))
             .andExpect(status().isForbidden());
     }
@@ -526,7 +506,6 @@ class RefundControllerTest extends ControllerTestSupport {
 
         mockMvc.perform(get("/v1/api/refund/return/preview")
                 .param("orderItemIds", item1.getId().toString(), item2.getId().toString())
-                .param("reasonType", "CHANGE_OF_MIND")
                 .header("Authorization", userToken(user.getId())))
             .andExpect(status().isBadRequest());
     }
@@ -542,23 +521,14 @@ class RefundControllerTest extends ControllerTestSupport {
 
         mockMvc.perform(get("/v1/api/refund/return/preview")
                 .param("orderItemIds", item.getId().toString())
-                .param("reasonType", "CHANGE_OF_MIND")
                 .header("Authorization", userToken(user.getId())))
             .andExpect(status().isConflict());
     }
 
-    @Test
-    void 미리보기_사유_유형이_없으면_400() throws Exception {
-        mockMvc.perform(get("/v1/api/refund/return/preview")
-                .param("orderItemIds", "1")
-                .header("Authorization", userToken(user.getId())))
-            .andExpect(status().isBadRequest());
-    }
 
     @Test
     void 미리보기_상품이_없으면_400() throws Exception {
         mockMvc.perform(get("/v1/api/refund/return/preview")
-                .param("reasonType", "CHANGE_OF_MIND")
                 .header("Authorization", userToken(user.getId())))
             .andExpect(status().isBadRequest());
     }
@@ -571,7 +541,6 @@ class RefundControllerTest extends ControllerTestSupport {
 
         mockMvc.perform(get("/v1/api/refund/return/preview")
                 .param("orderItemIds", ids)
-                .param("reasonType", "CHANGE_OF_MIND")
                 .header("Authorization", userToken(user.getId())))
             .andExpect(status().isBadRequest());
     }
@@ -579,29 +548,40 @@ class RefundControllerTest extends ControllerTestSupport {
     @Test
     void 미리보기_비인증이면_401() throws Exception {
         mockMvc.perform(get("/v1/api/refund/return/preview")
-                .param("orderItemIds", "1")
-                .param("reasonType", "CHANGE_OF_MIND"))
+                .param("orderItemIds", "1"))
             .andExpect(status().isUnauthorized());
     }
 
+
     @Test
-    void 미리보기_판매자_귀책도_주문_배송비가_이미_정산됐으면_상품_금액만_내려준다() throws Exception {
-        Order order = savedDeliveredOrderWithFee("GARAM110");
-        OrderItem done = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
-        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("white", 1), 30000, order, product));
-        Claim completed = Claim.requestReturn(order, ClaimReasonType.CHANGE_OF_MIND, List.of(new ReturnItemReason(done, "변심")));
-        completed.complete(FaultParty.BUYER);
-        claimRepository.save(completed);
+    void items에_null_원소가_있으면_400() throws Exception {
+        MockMultipartFile request = new MockMultipartFile("request", "", MediaType.APPLICATION_JSON_VALUE,
+            "{\"reasonType\":\"CHANGE_OF_MIND\",\"items\":[null]}".getBytes());
+
+        mockMvc.perform(multipart("/v1/api/refund/return")
+                .file(request)
+                .file(imagePart())
+                .header("Authorization", userToken(user.getId())))
+            .andExpect(status().isBadRequest());
+
+        assertThat(claimRepository.count()).isZero();
+    }
+
+    @Test
+    void 사유_메모가_255자를_넘으면_400() throws Exception {
+        Order order = savedDeliveredOrder("GARAM014");
+        OrderItem item = orderItemRepository.save(OrderItem.of(new OrderOption("black", 1), 10000, order, product));
+        String longReason = "가".repeat(256);
 
         em.flush();
         em.clear();
 
-        mockMvc.perform(get("/v1/api/refund/return/preview")
-                .param("orderItemIds", item.getId().toString())
-                .param("reasonType", "SELLER_FAULT")
+        mockMvc.perform(multipart("/v1/api/refund/return")
+                .file(requestPart(longReason, item.getId()))
+                .file(imagePart())
                 .header("Authorization", userToken(user.getId())))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data.expectedRefundAmount").value(26000))
-            .andExpect(jsonPath("$.data.sellerFaultRefundAmount").value(30000));
+            .andExpect(status().isBadRequest());
+
+        assertThat(claimRepository.count()).isZero();
     }
 }

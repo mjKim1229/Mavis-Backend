@@ -6,6 +6,7 @@ import com.mavis.api.refund.dto.GetReturnPreviewResponse;
 import com.mavis.api.refund.dto.RequestReturnRequest;
 import com.mavis.api.refund.implement.RefundImageUploader;
 import com.mavis.domain.domains.claim.domain.Claim;
+import com.mavis.domain.domains.claim.domain.ClaimReasonType;
 import com.mavis.domain.domains.claim.domain.ReturnItemReason;
 import com.mavis.domain.domains.claim.implement.ClaimReader;
 import com.mavis.domain.domains.claim.repository.ClaimRepository;
@@ -67,11 +68,14 @@ public class RefundService {
         List<ReturnItemReason> returnItems = orderItems.stream()
             .map(orderItem -> new ReturnItemReason(orderItem, null))
             .toList();
-        Claim draft = Claim.requestReturn(order, request.reasonType(), returnItems);
+        Claim draft = Claim.requestReturn(order, ClaimReasonType.CHANGE_OF_MIND, returnItems);
         return GetReturnPreviewResponse.of(draft, orderShippingSettled);
     }
 
     private List<OrderItem> loadReturnableItems(List<Long> orderItemIds) {
+        if (orderItemIds == null || orderItemIds.isEmpty()) {
+            throw CannotRefundException.EXCEPTION;
+        }
         User currentUser = userReader.getCurrentUser();
         Set<Long> distinctIds = new HashSet<>(orderItemIds);
         if (distinctIds.size() != orderItemIds.size()) {

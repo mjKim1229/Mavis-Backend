@@ -125,7 +125,7 @@ DB 변경·토스 호출 없이 실제 신청/승인과 같은 계산(`Claim`)�
 
 | API | 설명 | 응답 |
 |-----|------|------|
-| `GET /v1/api/refund/return/preview?orderItemIds=..&reasonType=..` (유저) | 신청과 같은 검증(본인 주문·같은 주문·배송완료·기존 클레임 없음, 상품 최대 50개) 후 예상 금액 | `itemsTotalPrice`, `orderShippingFeeDeducted`, `returnShippingFeeDeducted`, `expectedRefundAmount`(배송비 차감 시), `refundable`, `sellerFaultRefundAmount`(`SELLER_FAULT`일 때만 — 귀책 인정 시 금액) |
+| `GET /v1/api/refund/return/preview?orderItemIds=..` (유저) | 신청과 같은 검증(본인 주문·같은 주문·배송완료·기존 클레임 없음, 상품 최대 50개) 후 예상 금액. 사유 유형은 받지 않고 두 금액을 항상 내려준다 | `itemsTotalPrice`, `orderShippingFeeDeducted`, `returnShippingFeeDeducted`, `deductedRefundAmount`(배송비 차감 시 — 변심 또는 귀책 미인정), `sellerFaultRefundAmount`(귀책 인정 시), `refundable` |
 | `GET /v1/api/refund/{claimId}/approve/preview?decision=..&amount=..` (어드민) | 승인(`validateForApproval`)과 같은 계산·검증 | `itemsTotalPrice`, `totalAmount`, `shippingFeeRefund`, `orderShippingFeeDeducted`, `returnShippingFeeDeducted`, `maxRefundable`, `faultParty` |
 
 - 유저 미리보기는 금액을 입력받지 않는다. 서버가 계산한 값만 내려준다.

@@ -1,27 +1,22 @@
 package com.mavis.api.refund.dto;
 
 import com.mavis.domain.domains.claim.domain.Claim;
-import com.mavis.domain.domains.claim.domain.ClaimReasonType;
 
 public record GetReturnPreviewResponse(
         int itemsTotalPrice,
         int orderShippingFeeDeducted,
         int returnShippingFeeDeducted,
-        int expectedRefundAmount,
-        boolean refundable,
-        Integer sellerFaultRefundAmount
+        int deductedRefundAmount,
+        int sellerFaultRefundAmount,
+        boolean refundable
 ) {
     public static GetReturnPreviewResponse of(Claim draft, boolean orderShippingSettled) {
         int itemsTotalPrice = draft.getItemsTotalPrice();
         int orderShippingFee = draft.orderShippingFee(orderShippingSettled);
         int deductedAmount = draft.deductedRefundAmount(orderShippingSettled);
-        int expectedRefundAmount = Math.max(0, deductedAmount);
-        boolean refundable = deductedAmount >= 1;
-        Integer sellerFaultRefundAmount = draft.getReasonType() == ClaimReasonType.SELLER_FAULT
-                ? draft.fullRefundAmount(orderShippingSettled)
-                : null;
+        int sellerFaultRefundAmount = draft.fullRefundAmount(orderShippingSettled);
         return new GetReturnPreviewResponse(
                 itemsTotalPrice, orderShippingFee, Claim.RETURN_SHIPPING_FEE,
-                expectedRefundAmount, refundable, sellerFaultRefundAmount);
+                Math.max(0, deductedAmount), sellerFaultRefundAmount, deductedAmount >= 1);
     }
 }
