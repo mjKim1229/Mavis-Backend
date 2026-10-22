@@ -14,7 +14,7 @@
 | `order/` | 주문, 주문상품, 결제, 결제 멱등성, 주소 엔티티 |
 | `cart/` | 장바구니 아이템 엔티티 |
 | `review/` | 리뷰, 리뷰 이미지 엔티티 |
-| `claim/` | 취소·반품 요청 (Claim, ClaimItem, ClaimReturn, ClaimImage) |
+| `claim/` | 취소·반품 요청 (Claim, ClaimItem, ClaimImage) |
 | `refund/` | 환불 금액 기록 (Refund) |
 | `delivery/` | 배송 엔티티 및 상태 enum |
 | `inquiry/` | 문의, 답변, 문의 이미지 엔티티 |

@@ -22,7 +22,6 @@ import com.mavis.domain.domains.claim.domain.ClaimStatus;
 import com.mavis.domain.domains.claim.domain.ClaimType;
 import com.mavis.domain.domains.claim.domain.FaultParty;
 import com.mavis.domain.domains.claim.repository.ClaimRepository;
-import com.mavis.domain.domains.claim.repository.ClaimReturnRepository;
 import com.mavis.domain.domains.user.domain.SnsType;
 import com.mavis.domain.domains.user.domain.User;
 import com.mavis.domain.domains.user.repository.UserRepository;
@@ -67,8 +66,6 @@ class RefundControllerTest extends ControllerTestSupport {
     private DeliveryRepository deliveryRepository;
     @Autowired
     private ClaimRepository claimRepository;
-    @Autowired
-    private ClaimReturnRepository claimReturnRepository;
     @Autowired
     private EntityManager em;
 
@@ -150,8 +147,6 @@ class RefundControllerTest extends ControllerTestSupport {
         assertThat(claim.getReason()).isEqualTo("변심");
         assertThat(claim.getItems()).extracting(claimItem -> claimItem.getOrderItem().getId()).containsExactly(item.getId());
         assertThat(claim.getImages()).extracting("imageUrl").containsExactly("https://cdn.test/return.jpg");
-
-        assertThat(claimReturnRepository.count()).isZero();
     }
 
     @Test

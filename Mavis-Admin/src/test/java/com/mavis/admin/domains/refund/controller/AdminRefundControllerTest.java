@@ -8,13 +8,11 @@ import com.mavis.domain.domains.admin.repository.AdminRepository;
 import com.mavis.domain.domains.claim.domain.Claim;
 import com.mavis.domain.domains.claim.domain.ClaimReasonType;
 import com.mavis.domain.domains.claim.domain.ReturnItemReason;
-import com.mavis.domain.domains.claim.domain.ClaimReturn;
 import com.mavis.domain.domains.claim.domain.ClaimStatus;
 import com.mavis.domain.domains.claim.domain.FaultParty;
 import com.mavis.domain.domains.claim.domain.ReturnDecision;
 import com.mavis.domain.domains.claim.domain.ReturnRefundPlan;
 import com.mavis.domain.domains.claim.repository.ClaimRepository;
-import com.mavis.domain.domains.claim.repository.ClaimReturnRepository;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderAddress;
 import com.mavis.domain.domains.order.domain.OrderItem;
@@ -58,7 +56,6 @@ class AdminRefundControllerTest extends ControllerTestSupport {
     @Autowired private OrderItemRepository orderItemRepository;
     @Autowired private PaymentRepository paymentRepository;
     @Autowired private ClaimRepository claimRepository;
-    @Autowired private ClaimReturnRepository claimReturnRepository;
     @Autowired private RefundRepository refundRepository;
     @Autowired private AdminRefundService adminRefundService;
     @Autowired private EntityManager em;
@@ -116,7 +113,6 @@ class AdminRefundControllerTest extends ControllerTestSupport {
             claim.complete(FaultParty.BUYER);
         }
         claimRepository.save(claim);
-        claimReturnRepository.save(ClaimReturn.of(claim, "CJ대한통운", "1234567890"));
         return claim;
     }
 
@@ -162,8 +158,6 @@ class AdminRefundControllerTest extends ControllerTestSupport {
                     .andExpect(jsonPath("$.data.content[0].orderInfo.orderItems[0].orderItemId").value(orderItem.getId()))
                     .andExpect(jsonPath("$.data.content[0].refundInfo.refundReason").value("단순 변심"))
                     .andExpect(jsonPath("$.data.content[0].refundInfo.refundStatus").value("REQUESTED"))
-                    .andExpect(jsonPath("$.data.content[0].refundInfo.carrier").value("CJ대한통운"))
-                    .andExpect(jsonPath("$.data.content[0].refundInfo.trackingNumber").value("1234567890"))
                     .andExpect(jsonPath("$.data.content[0].refundInfo.requestedAt").isNotEmpty());
         }
 

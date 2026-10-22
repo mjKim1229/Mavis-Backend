@@ -5,7 +5,6 @@ import com.mavis.domain.domains.claim.domain.Claim;
 import com.mavis.domain.domains.claim.domain.ClaimImage;
 import com.mavis.domain.domains.claim.domain.ClaimItem;
 import com.mavis.domain.domains.claim.domain.ClaimReasonType;
-import com.mavis.domain.domains.claim.domain.ClaimReturn;
 import com.mavis.domain.domains.claim.domain.ClaimStatus;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.OrderAddress;
@@ -50,13 +49,11 @@ public record GetAdminRefundResponse(
             ClaimReasonType reasonType,
             String refundReason,
             ClaimStatus refundStatus,
-            String carrier,
-            String trackingNumber,
             List<String> imageUrls,
             LocalDateTime requestedAt
     ) {}
 
-    public static GetAdminRefundResponse from(Claim claim, ClaimReturn claimReturn, Refund refund, boolean orderShippingSettled) {
+    public static GetAdminRefundResponse from(Claim claim, Refund refund, boolean orderShippingSettled) {
         List<ClaimItem> items = claim.getItems();
         Order order = claim.getOrder();
         User user = order.getUser();
@@ -68,8 +65,6 @@ public record GetAdminRefundResponse(
                 .map(GetAdminRefundResponse::toReturnItem)
                 .toList();
         ReturnItem firstItem = returnItems.get(0);
-        String carrier = claimReturn != null ? claimReturn.getCarrier() : null;
-        String trackingNumber = claimReturn != null ? claimReturn.getTrackingNumber() : null;
         List<String> imageUrls = claim.getImages().stream()
                 .map(ClaimImage::getImageUrl)
                 .toList();
@@ -92,8 +87,6 @@ public record GetAdminRefundResponse(
                         claim.getReasonType(),
                         claim.getReason(),
                         claim.getClaimStatus(),
-                        carrier,
-                        trackingNumber,
                         imageUrls,
                         claim.getCreatedAt()
                 ))

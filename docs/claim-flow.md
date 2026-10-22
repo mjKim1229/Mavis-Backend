@@ -50,7 +50,7 @@
 | `claim_item` | 선택한 상품 수만큼 INSERT | |
 | `claim_image` | N건 INSERT | 반품 사진 |
 
-`claim_return`(택배사·송장)은 더 이상 쓰지 않는다. 기존 데이터는 그대로 두며 어드민 목록에서 값이 있으면 내려준다.
+택배사 수거라 고객이 택배사·송장을 입력하지 않는다. 예전 `claim_return` 테이블은 V37 에서 삭제했고, 어드민 목록 응답에서도 `carrier`·`trackingNumber` 를 뺐다.
 
 ### 2단계 — 어드민 승인
 **진입점:** `AdminRefundFacade.approveRefund` → `AdminRefundService.validateForApproval` / `approveAndComplete` (`POST /v1/api/refund/{claimId}/approve`, body 선택)

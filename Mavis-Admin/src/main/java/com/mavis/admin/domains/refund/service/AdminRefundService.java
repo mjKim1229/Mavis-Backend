@@ -7,14 +7,12 @@ import com.mavis.admin.domains.refund.dto.GetApprovePreviewResponse;
 import com.mavis.admin.domains.refund.dto.RefundValidateInfo;
 import com.mavis.domain.domains.claim.domain.Claim;
 import com.mavis.domain.domains.claim.domain.ClaimItem;
-import com.mavis.domain.domains.claim.domain.ClaimReturn;
 import com.mavis.domain.domains.claim.domain.ClaimStatus;
 import com.mavis.domain.domains.claim.domain.ClaimType;
 import com.mavis.domain.domains.claim.domain.ReturnDecision;
 import com.mavis.domain.domains.claim.domain.ReturnRefundPlan;
 import com.mavis.domain.domains.claim.implement.ClaimReader;
 import com.mavis.domain.domains.claim.repository.ClaimRepository;
-import com.mavis.domain.domains.claim.repository.ClaimReturnRepository;
 import com.mavis.domain.domains.order.domain.CardInfo;
 import com.mavis.domain.domains.order.domain.Order;
 import com.mavis.domain.domains.order.domain.Payment;
@@ -44,7 +42,6 @@ import java.util.stream.Collectors;
 public class AdminRefundService {
 
     private final ClaimRepository claimRepository;
-    private final ClaimReturnRepository claimReturnRepository;
     private final ClaimReader claimReader;
     private final RefundRepository refundRepository;
     private final PaymentRepository paymentRepository;
@@ -55,8 +52,6 @@ public class AdminRefundService {
         Page<Claim> claimPages = claimRepository.findClaimPages(ClaimType.RETURN, claimStatus, pageable);
         List<Claim> claims = claimPages.getContent();
 
-        Map<Long, ClaimReturn> claimReturnMap = claimReturnRepository.findByClaimIn(claims).stream()
-                .collect(Collectors.toMap(claimReturn -> claimReturn.getClaim().getId(), claimReturn -> claimReturn));
         Map<Long, Refund> refundMap = refundRepository.findByClaimInWithPayment(claims).stream()
                 .collect(Collectors.toMap(refund -> refund.getClaim().getId(), refund -> refund));
         List<Order> orders = claims.stream()
@@ -68,7 +63,7 @@ public class AdminRefundService {
         return PageResponse.of(claimPages.map(claim -> {
             boolean orderShippingSettled = settledOrderIds.contains(claim.getOrder().getId());
             return GetAdminRefundResponse.from(
-                    claim, claimReturnMap.get(claim.getId()), refundMap.get(claim.getId()), orderShippingSettled);
+                    claim, refundMap.get(claim.getId()), orderShippingSettled);
         }));
     }
 
